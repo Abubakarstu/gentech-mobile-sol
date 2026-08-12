@@ -1,0 +1,186 @@
+# GenTech Marketplace - Phase 2 Implementation
+
+## Security & Infrastructure Verification
+
+### IMEI Protection (SEC-001)
+- Verified public report path uses `toReportDto(row, false)` which masks IMEI before returning
+- Full IMEI only accessible through authorized `getReportWithFullImeiAuthorized` method
+- Audit logging for all sensitive IMEI access events
+- Client component `InspectionReportView` receives only masked IMEI in public context
+
+### Rate Limiting (SEC-002)
+- Implemented in-memory rate limiter at `lib/rate-limit.ts`
+- Configured limits:
+  - Auth: 5 requests / 15 minutes
+  - Password reset: 3 requests / hour
+  - Search suggestions: 30 requests / minute
+  - Messaging: 20 requests / minute
+  - Contact seller: 10 requests / hour
+- Integrated at API routes and server actions
+- Note: In-memory limiter should be replaced with Redis for production distributed deployment
+
+### Security Headers (SEC-003)
+- Added security headers in middleware:
+  - Content-Security-Policy (allowlisted for Cloudinary, OAuth)
+  - X-Frame-Options: DENY
+  - X-Content-Type-Options: nosniff
+  - X-XSS-Protection: 1; mode=block
+  - Referrer-Policy: strict-origin-when-cross-origin
+  - Permissions-Policy (camera/microphone/geolocation disabled)
+  - Strict-Transport-Security (production only)
+
+### Cloudinary Upload Hardening (SEC-004)
+- Server-generated signatures at `lib/cloudinary.ts`
+- Allowlisted folders: listings, messages, inspections
+- Restricted formats: jpg, jpeg, png, webp
+- resource_type: image enforced
+- Client-side validation in image uploader
+
+## Database & Schema Updates
+
+### New Prisma Migrations
+- `20250812120002_add_phone_history`: Phone history tracking for device lifecycle
+- `20250812120003_add_dealer_leads`: Lead tracking for dealer-buyer conversations
+- `20250812120004_add_promotion_system`: Promotion plans, listings, and payments
+
+### Schema Changes
+- Added `PhoneHistory` model with event types (INSPECTION, VERIFICATION, WARRANTY_CLAIM, REPAIR, etc.)
+- Added `DealerLead` model with status tracking (NEW, CONTACTED, NEGOTIATING, SOLD, LOST, CLOSED)
+- Added `PromotionPlan`, `ListingPromotion`, `PromotionPayment` models for monetization
+- Fixed relation conflicts and added missing opposite relations
+- All monetary columns use Decimal type
+- Proper foreign keys and indexes for performance
+
+## Feature Implementations
+
+### Phone History Foundation
+- Created `features/phone-history/` module with repository, service, types
+- Supports tracking inspection events automatically
+- Metadata structure for event-specific data
+- Query by listing, event type, or source
+
+### Extended Listing Model (Phone-Native Fields)
+- Added to schema: model, variant, networkType, carrier, isUnlocked, modelNumber, region
+- Added warranty fields: warranty type, warranty expiry
+- Added accessories tracking: hasOriginalBox, hasCharger, hasHeadphones
+- Added repair history field
+- Updated form validation in `create-listing-form.tsx`
+- Updated attribute formatting in `lib/attributes.ts`
+- Added constants for NETWORK_TYPE and WARRANTY_TYPE
+
+### Dealer Lead Tracking
+- Auto-creates `DealerLead` when conversation starts on dealer listing
+- Tracks lead status through sales cycle
+- Unique constraint on buyerId + conversationId to prevent duplicates
+- Authorization ensures dealer ownership before lead creation
+
+### Promotion System
+- Complete promotion infrastructure:
+  - `PromotionPlan`: Admin-managed plans with placement types, pricing, duration
+  - `ListingPromotion`: Active promotions on listings with expiry
+  - `PromotionPayment`: Payment records with status tracking
+- Placement types: FEATURED, BOOSTED, TOP_SEARCH, CATEGORY_FEATURED, HOMEPAGE_FEATURED
+- Server actions for plan management, listing promotion, payment recording
+- Expiration handling with `markExpiredPromotions` function
+- Authorization checks on all mutation actions
+
+### Dealer System Verification
+- Verified existing dealer architecture: Dealer, DealerUser, DealerBranch, DealerInventory
+- Created dealer actions for profile management, branch/inventory/staff operations
+- Server-side authorization for all dealer-specific operations
+- Staff management with role assignments
+
+### PTA/CPID Implementation Verification
+- Schema includes ptaStatus and cpidStatus in JSON attributes
+- Constants defined for all status values
+- Form validation and repository persistence verified
+- Display labels implemented in attribute formatter
+
+### AuditLog Implementation Verification
+- Records actor, action, resource, resourceId, timestamp, metadata, IP, user agent
+- Sensitive data access logging for IMEI
+- Server authorization required for audit log access
+- No sensitive values unnecessarily copied into logs
+
+## Code Quality Improvements
+
+### TypeScript Fixes
+- Fixed ActionResult generic type defaults
+- Resolved duplicate export conflicts
+- Fixed async headers() calls in messaging actions
+- Fixed import paths for phone-history module
+- Fixed Prisma relation conflicts
+
+### Architecture
+- Follows Actions → Services → Repositories pattern
+- Server-only modules properly marked
+- Prisma client imported from `lib/generated/prisma/client`
+- Consistent error handling and logging
+
+## Pre-existing Issues (Not Fixed in This Push)
+
+### TypeScript Errors
+- `app/api/auth/[...all]/route.ts`: Type errors with Better Auth handler
+- `app/api/v1/search/suggest/route.ts`: Optional chain issues
+- `features/audit/services/audit.service.ts`: Optional chain issues
+- `features/listings/components/create-listing-form.tsx`: Form type compatibility
+- Some existing repository functions with implicit any types
+
+### Remaining Work
+- Marketplace search and filter improvements
+- Filter UX enhancement
+- Listing detail page enhancements
+- Contact seller flow completion
+- Dealer dashboard UI and features
+- Moderation workflow
+- SEO and performance improvements
+- Full validation (lint, tests, build)
+
+## Files Modified
+
+### New Files Created
+- `features/phone-history/types.ts`
+- `features/phone-history/repositories/phone-history.repository.ts`
+- `features/phone-history/services/phone-history.service.ts`
+- `features/phone-history/index.ts`
+- `features/dealer/actions/dealer.actions.ts`
+- `features/promotions/types.ts`
+- `features/promotions/repositories/promotion.repository.ts`
+- `features/promotions/services/promotion.service.ts`
+- `features/promotions/schemas/promotion.ts`
+- `features/promotions/actions/promotion.actions.ts`
+- `features/promotions/index.ts`
+- `prisma/migrations/20250812120002_add_phone_history/migration.sql`
+- `prisma/migrations/20250812120003_add_dealer_leads/migration.sql`
+- `prisma/migrations/20250812120004_add_promotion_system/migration.sql`
+
+### Files Modified
+- `prisma/schema.prisma` - Added new models and relations
+- `lib/constants.ts` - Added NETWORK_TYPE, WARRANTY_TYPE, ROUTES.dealers
+- `lib/rate-limit.ts` - Rate limiting implementation
+- `middleware.ts` - Security headers
+- `app/api/auth/[...all]/route.ts` - Rate limiting integration
+- `app/api/v1/search/suggest/route.ts` - Rate limiting integration
+- `features/listings/schemas/create-listing.ts` - Extended phone fields
+- `features/listings/repositories/listing.repository.ts` - Attribute mapping
+- `features/listings/lib/attributes.ts` - Display formatting
+- `features/listings/components/create-listing-form.tsx` - Extended form fields
+- `features/inspections/repositories/inspection.repository.ts` - Phone history integration
+- `features/messaging/services/conversation.service.ts` - Dealer lead creation
+- `features/messaging/actions/messaging.actions.ts` - Rate limiting, async headers
+- `features/audit/repositories/audit.repository.ts` - Export cleanup
+- `features/dealer/index.ts` - Export organization
+- `features/dealer/services/dealer.service.ts` - Export organization
+
+## Next Steps
+
+1. Fix pre-existing TypeScript errors
+2. Implement marketplace search and filter improvements
+3. Build filter UX components
+4. Enhance listing detail page
+5. Complete contact seller flow
+6. Build dealer dashboard UI
+7. Implement moderation workflow
+8. SEO and performance improvements
+9. Add comprehensive tests
+10. Run full validation (lint, typecheck, build)

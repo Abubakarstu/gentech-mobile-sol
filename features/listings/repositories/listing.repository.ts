@@ -339,6 +339,24 @@ function buildAttributes(input: CreateListingInput): Prisma.InputJsonValue | und
   if (input.color) attributes.color = input.color;
   if (input.batteryHealth) attributes.batteryHealth = Number(input.batteryHealth);
   if (input.ptaApproved !== undefined) attributes.ptaApproved = input.ptaApproved;
+  if (input.ptaStatus) attributes.ptaStatus = input.ptaStatus;
+  if (input.cpidStatus) attributes.cpidStatus = input.cpidStatus;
+  
+  // Extended phone attributes
+  if (input.model) attributes.model = input.model;
+  if (input.variant) attributes.variant = input.variant;
+  if (input.networkType) attributes.networkType = input.networkType;
+  if (input.carrier) attributes.carrier = input.carrier;
+  if (input.isUnlocked !== undefined) attributes.isUnlocked = input.isUnlocked;
+  if (input.modelNumber) attributes.modelNumber = input.modelNumber;
+  if (input.region) attributes.region = input.region;
+  if (input.warranty) attributes.warranty = input.warranty;
+  if (input.warrantyExpiry) attributes.warrantyExpiry = input.warrantyExpiry;
+  if (input.hasOriginalBox !== undefined) attributes.hasOriginalBox = input.hasOriginalBox;
+  if (input.hasCharger !== undefined) attributes.hasCharger = input.hasCharger;
+  if (input.hasHeadphones !== undefined) attributes.hasHeadphones = input.hasHeadphones;
+  if (input.repairHistory) attributes.repairHistory = input.repairHistory;
+  
   return Object.keys(attributes).length > 0 ? attributes : undefined;
 }
 

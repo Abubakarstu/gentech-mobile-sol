@@ -10,6 +10,7 @@ import {
   createReport,
   createRequest,
   getPublishedReportForListing,
+  getReportWithFullImei,
   getRequestById,
   listActivePlans,
   listInspectorQueue,
@@ -17,6 +18,7 @@ import {
   scheduleRequest,
   setReportPublished,
 } from "@/features/inspections/repositories/inspection.repository";
+import { logImeiAccess } from "@/features/audit";
 import type {
   InspectionPlanDto,
   InspectionReportDto,
@@ -177,4 +179,34 @@ export async function toggleReportPublished(
   isPublished: boolean,
 ): Promise<boolean> {
   return setReportPublished(reportId, requesterId, isPublished);
+}
+
+/**
+ * Gets a report with full IMEI for authorized users only.
+ * Authorization must be enforced by the caller (requester, assigned inspector, or admin).
+ * Logs the sensitive data access for security monitoring.
+ */
+export async function getReportWithFullImeiAuthorized(
+  reportId: string,
+  actorId: string,
+  ipAddress?: string,
+  userAgent?: string,
+): Promise<InspectionReportDto | null> {
+  try {
+    const report = await getReportWithFullImei(reportId);
+    if (report && report.imei) {
+      // Log the sensitive IMEI access
+      await logImeiAccess({
+        actorId,
+        dataType: "IMEI",
+        resourceId: reportId,
+        ipAddress,
+        userAgent,
+      }).catch((error) => warn("failed to log IMEI access", error));
+    }
+    return report;
+  } catch (error) {
+    warn("could not load report with full IMEI", error);
+    return null;
+  }
 }

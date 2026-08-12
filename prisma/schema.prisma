@@ -63,6 +63,15 @@ model User {
   inspectionRequests  InspectionRequest[] @relation("InspectionRequester")
   inspectionsAssigned InspectionRequest[] @relation("InspectionInspector")
 
+  // Relations — audit
+  auditLogs AuditLog[]
+
+  // Relations — dealer
+  dealerUsers DealerUser[]
+
+  // Relations — dealer leads
+  dealerLeads DealerLead[] @relation("DealerLeads")
+
   @@index([role])
   @@map("user")
 }
@@ -249,12 +258,19 @@ model Listing {
   brandId String?
   brand   Brand?  @relation(fields: [brandId], references: [id], onDelete: SetNull)
 
+  dealerId String?
+  dealer   Dealer? @relation(fields: [dealerId], references: [id], onDelete: SetNull)
+
   images        ListingImage[]
   favorites     Favorite[]
   conversations Conversation[]
   reports       Report[]
   reviews       Review[]
   inspections   InspectionRequest[]
+  dealerInventory DealerInventory[]
+  history       PhoneHistory[]
+  dealerLeads   DealerLead[]
+  promotions    ListingPromotion[] @relation("ListingPromotions")
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -668,4 +684,335 @@ model InspectionPhoto {
 
   @@index([reportId])
   @@map("inspection_photo")
+}
+
+// ---------------------------------------------------------------------------
+// Audit logging for sensitive operations
+// ---------------------------------------------------------------------------
+
+/// Audit trail for sensitive admin and user actions
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String
+  actor     User     @relation(fields: [actorId], references: [id], onDelete: Cascade)
+  action    String
+  resource  String
+  resourceId String?
+  timestamp DateTime @default(now())
+  before    Json?
+  after     Json?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+
+  @@index([actorId])
+  @@index([action])
+  @@index([resource, resourceId])
+  @@index([timestamp])
+  @@map("audit_log")
+}
+
+// ---------------------------------------------------------------------------
+// Dealer system for professional sellers
+// ---------------------------------------------------------------------------
+
+/// Dealer subscription plans
+enum DealerPlan {
+  BASIC
+  PREMIUM
+  ENTERPRISE
+}
+
+/// Dealer status
+enum DealerStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+  REJECTED
+}
+
+/// Professional mobile phone dealer/store
+model Dealer {
+  id          String       @id @default(cuid())
+  name        String
+  slug        String       @unique
+  description String?
+  logo        String?
+  coverImage  String?
+  
+  // Business information
+  businessName String?
+  businessType String?
+  taxNumber    String?
+  
+  // Contact information
+  phone       String?
+  email       String?
+  website     String?
+  
+  // Location
+  city        String?
+  address     String?
+  latitude    Float?
+  longitude   Float?
+  
+  // Dealer status and subscription
+  status      DealerStatus @default(PENDING)
+  plan        DealerPlan   @default(BASIC)
+  planExpiresAt DateTime?
+  featuredUntil DateTime?
+  
+  // Verification
+  isVerified  Boolean      @default(false)
+  verifiedAt  DateTime?
+  
+  // Stats (denormalized for performance)
+  listingCount Int         @default(0)
+  soldCount    Int         @default(0)
+  rating       Float?
+  reviewCount  Int         @default(0)
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  users       DealerUser[]
+  branches    DealerBranch[]
+  inventory   DealerInventory[]
+  listings    Listing[]
+  leads       DealerLead[]
+  
+  @@index([status])
+  @@index([plan])
+  @@index([isVerified])
+  @@index([city])
+  @@map("dealer")
+}
+
+/// User association with a dealer (owner, staff, etc.)
+model DealerUser {
+  id        String   @id @default(cuid())
+  dealerId  String
+  dealer    Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String   @default("staff") // owner, manager, staff
+  isActive  Boolean  @default(true)
+  joinedAt  DateTime @default(now())
+  
+  @@unique([dealerId, userId])
+  @@index([userId])
+  @@index([dealerId])
+  @@map("dealer_user")
+}
+
+/// Dealer branch/location
+model DealerBranch {
+  id          String   @id @default(cuid())
+  dealerId    String
+  dealer      Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  name        String
+  address     String
+  city        String
+  phone       String?
+  email       String?
+  latitude    Float?
+  longitude   Float?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([dealerId])
+  @@index([city])
+  @@map("dealer_branch")
+}
+
+/// Dealer inventory management
+model DealerInventory {
+  id          String   @id @default(cuid())
+  dealerId    String
+  dealer      Dealer   @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  listingId   String?   @unique
+  listing     Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  
+  // Inventory-specific fields
+  sku         String?  @unique
+  stockCount  Int      @default(1)
+  location    String?  // branch ID or storage location
+  costPrice   Decimal? @db.Decimal(12, 2)
+  acquiredAt  DateTime?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([dealerId])
+  @@index([listingId])
+  @@index([sku])
+  @@map("dealer_inventory")
+}
+
+/// Lead status for dealer conversations
+enum DealerLeadStatus {
+  NEW
+  CONTACTED
+  NEGOTIATING
+  SOLD
+  LOST
+  CLOSED
+}
+
+/// Lead tracking for dealer-buyer conversations
+model DealerLead {
+  id          String          @id @default(cuid())
+  dealerId    String
+  dealer      Dealer          @relation(fields: [dealerId], references: [id], onDelete: Cascade)
+  buyerId     String
+  buyer       User            @relation("DealerLeads", fields: [buyerId], references: [id], onDelete: Cascade)
+  listingId   String?
+  listing     Listing?        @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  conversationId String?
+  status      DealerLeadStatus @default(NEW)
+  metadata    Json?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  
+  @@index([dealerId])
+  @@index([buyerId])
+  @@index([listingId])
+  @@index([status])
+  @@index([createdAt])
+  @@unique([buyerId, conversationId])
+  @@map("dealer_lead")
+}
+
+// ---------------------------------------------------------------------------
+// Promotion System for Monetization
+// ---------------------------------------------------------------------------
+
+/// Promotion placement types
+enum PromotionPlacement {
+  FEATURED
+  BOOSTED
+  TOP_SEARCH
+  CATEGORY_FEATURED
+  HOMEPAGE_FEATURED
+}
+
+/// Promotion status
+enum PromotionStatus {
+  ACTIVE
+  PAUSED
+  EXPIRED
+  CANCELLED
+}
+
+/// Promotion plan definition (admin-managed)
+model PromotionPlan {
+  id          String             @id @default(cuid())
+  name        String
+  slug        String             @unique
+  description String?
+  placement   PromotionPlacement
+  price       Decimal            @db.Decimal(12, 2)
+  currency    String             @default("PKR")
+  durationDays Int
+  isActive    Boolean            @default(true)
+  maxSlots    Int?               // Maximum concurrent promotions for this plan
+  metadata    Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  
+  // Relations
+  promotions  ListingPromotion[]
+  
+  @@index([placement])
+  @@index([isActive])
+  @@map("promotion_plan")
+}
+
+/// Active promotion on a listing
+model ListingPromotion {
+  id          String           @id @default(cuid())
+  listingId   String
+  listing     Listing          @relation("ListingPromotions", fields: [listingId], references: [id], onDelete: Cascade)
+  planId      String
+  plan        PromotionPlan    @relation(fields: [planId], references: [id], onDelete: Cascade)
+  status      PromotionStatus  @default(ACTIVE)
+  startedAt   DateTime         @default(now())
+  expiresAt   DateTime
+  metadata    Json?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  payments    PromotionPayment[]
+  
+  @@index([listingId])
+  @@index([planId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("listing_promotion")
+}
+
+/// Payment record for promotions
+model PromotionPayment {
+  id          String           @id @default(cuid())
+  promotionId String
+  promotion   ListingPromotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
+  amount      Decimal          @db.Decimal(12, 2)
+  currency    String           @default("PKR")
+  method      String           // Payment method (jazzcash, easypaisa, etc.)
+  status      String           // PENDING, COMPLETED, FAILED, REFUNDED
+  transactionId String?
+  metadata    Json?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([promotionId])
+  @@index([status])
+  @@map("promotion_payment")
+}
+
+// ---------------------------------------------------------------------------
+// Phone History Foundation
+// ---------------------------------------------------------------------------
+
+/// Event types for phone history tracking
+enum PhoneHistoryEventType {
+  INSPECTION
+  VERIFICATION
+  WARRANTY_CLAIM
+  REPAIR
+  BATTERY_REPLACEMENT
+  SCREEN_REPLACEMENT
+  OTHER_REPAIR
+  STATUS_CHANGE
+}
+
+/// Phone history event for tracking device lifecycle
+model PhoneHistory {
+  id          String               @id @default(cuid())
+  listingId   String?
+  listing     Listing?             @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  
+  // Event details
+  eventType   PhoneHistoryEventType
+  title       String
+  description String?
+  
+  // Status/Result
+  status      String?              // PASS, FAIL, PENDING, APPROVED, REJECTED, etc.
+  metadata    Json?                // Additional event-specific data
+  
+  // Source information
+  source      String?              // Source of the event (e.g., "inspection", "user_report", "admin")
+  sourceId    String?              // ID of the source record (e.g., inspectionId)
+  
+  // Timestamps
+  occurredAt  DateTime             @default(now())
+  createdAt   DateTime             @default(now())
+  
+  @@index([listingId])
+  @@index([eventType])
+  @@index([occurredAt])
+  @@index([source, sourceId])
+  @@map("phone_history")
 }

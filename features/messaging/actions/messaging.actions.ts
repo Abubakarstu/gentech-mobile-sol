@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 import { ROUTES } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
+import { checkRateLimit, getRateLimitIdentifier, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
 import type { MessageDto, ThreadUpdate } from "@/features/messaging/types";
 import { sendMessageSchema, startConversationSchema } from "@/features/messaging/schemas/message";
 import {
@@ -27,6 +29,19 @@ export async function startConversationAction(input: {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
+  // Rate limiting for contact seller
+  const headersList = await headers();
+  const ipAddress = headersList.get("x-forwarded-for")?.split(",")[0].trim() 
+    ?? headersList.get("x-real-ip")?.trim()
+    ?? "unknown";
+  
+  const identifier = getRateLimitIdentifier(ipAddress, user.id);
+  const rateLimitResult = checkRateLimit(identifier, "contactSeller");
+  
+  if (!rateLimitResult.allowed) {
+    return { ok: false, error: "You're contacting sellers too frequently. Please wait a moment." };
+  }
+
   const parsed = startConversationSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid listing." };
 
@@ -49,6 +64,19 @@ export async function sendMessageAction(input: {
 }): Promise<ActionResult<{ message: MessageDto }>> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
+
+  // Rate limiting for messaging
+  const headersList = await headers();
+  const ipAddress = headersList.get("x-forwarded-for")?.split(",")[0].trim() 
+    ?? headersList.get("x-real-ip")?.trim()
+    ?? "unknown";
+  
+  const identifier = getRateLimitIdentifier(ipAddress, user.id);
+  const rateLimitResult = checkRateLimit(identifier, "messaging");
+  
+  if (!rateLimitResult.allowed) {
+    return { ok: false, error: "You're sending messages too quickly. Please wait a moment." };
+  }
 
   const parsed = sendMessageSchema.safeParse(input);
   if (!parsed.success) {

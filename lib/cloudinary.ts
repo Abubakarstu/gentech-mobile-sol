@@ -14,7 +14,13 @@ export interface SignedUpload {
   timestamp: number;
   folder: string;
   signature: string;
+  allowedFormats: string[];
 }
+
+/**
+ * Allowed image formats for upload security.
+ */
+const ALLOWED_FORMATS = ["jpg", "jpeg", "png", "webp"] as const;
 
 /**
  * Produces a short-lived signature for a direct (browser → Cloudinary) upload.
@@ -29,7 +35,12 @@ export function createUploadSignature(folder = "listings"): SignedUpload {
   const timestamp = Math.floor(Date.now() / 1000);
 
   // Sign the alphabetically-sorted params (excluding file, api_key, cloud_name).
-  const paramsToSign: Record<string, string | number> = { folder, timestamp };
+  const paramsToSign: Record<string, string | number> = { 
+    folder, 
+    timestamp,
+    allowed_formats: ALLOWED_FORMATS.join(","),
+    resource_type: "image",
+  };
   const toSign = Object.keys(paramsToSign)
     .sort()
     .map((key) => `${key}=${paramsToSign[key]}`)
@@ -46,5 +57,6 @@ export function createUploadSignature(folder = "listings"): SignedUpload {
     timestamp,
     folder,
     signature,
+    allowedFormats: [...ALLOWED_FORMATS],
   };
 }

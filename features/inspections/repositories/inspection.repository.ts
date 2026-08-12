@@ -12,6 +12,7 @@ import {
   type PaymentMethod,
 } from "@/lib/constants";
 import { slugify } from "@/utils/slug";
+import { addHistoryEvent } from "@/features/phone-history/services/phone-history.service";
 import type {
   InspectionPlanDto,
   InspectionReportDto,
@@ -140,14 +141,20 @@ function toPlanDto(row: PlanRow): InspectionPlanDto {
   };
 }
 
-function toReportDto(row: ReportRow): InspectionReportDto {
+/** Masks IMEI to show only last 4 digits for public display. */
+function maskImei(imei: string | null): string | null {
+  if (!imei || imei.length < 4) return null;
+  return `************${imei.slice(-4)}`;
+}
+
+function toReportDto(row: ReportRow, includeFullImei: boolean = false): InspectionReportDto {
   return {
     id: row.id,
     overallScore: row.overallScore,
     grade: row.grade,
     verdict: row.verdict as InspectionVerdict,
     summary: row.summary,
-    imei: row.imei,
+    imei: includeFullImei ? row.imei : maskImei(row.imei),
     ptaApproved: row.ptaApproved,
     batteryHealth: row.batteryHealth,
     isPublished: row.isPublished,
@@ -202,7 +209,7 @@ function toRequestDto(row: RequestRow): InspectionRequestDto {
     cancelReason: row.cancelReason,
     requester: { id: row.requester.id, name: row.requester.name },
     inspector: row.inspector ? { id: row.inspector.id, name: row.inspector.name } : null,
-    report: row.report ? toReportDto(row.report) : null,
+    report: row.report ? toReportDto(row.report, false) : null,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -617,6 +624,26 @@ export async function createReport(
     }),
   ]);
 
+  // Create phone history event for inspection completion
+  if (request.listingId) {
+    await addHistoryEvent({
+      listingId: request.listingId,
+      eventType: "INSPECTION",
+      title: "Inspection Completed",
+      description: `Overall score: ${overallScore}/100 (${grade})`,
+      status: grade === "A" || grade === "B" ? "PASS" : grade === "C" ? "WARNING" : "FAIL",
+      source: "inspection",
+      sourceId: input.requestId,
+      metadata: {
+        overallScore,
+        grade,
+        verdict: input.verdict,
+        ptaApproved: input.ptaApproved,
+        batteryHealth: input.batteryHealth,
+      },
+    }).catch((error) => console.warn("[inspection] failed to create history event:", error));
+  }
+
   return { requesterId: request.requesterId, listingId: request.listingId };
 }
 
@@ -642,5 +669,19 @@ export async function getPublishedReportForListing(
     orderBy: { publishedAt: "desc" },
     select: reportSelect,
   });
-  return row ? toReportDto(row) : null;
+  return row ? toReportDto(row, false) : null;
+}
+
+/**
+ * Gets a report with full IMEI for authorized users (requester, assigned inspector, or admin).
+ * This should be called from the service layer after authorization checks.
+ */
+export async function getReportWithFullImei(
+  reportId: string,
+): Promise<InspectionReportDto | null> {
+  const row = await prisma.inspectionReport.findUnique({
+    where: { id: reportId },
+    select: reportSelect,
+  });
+  return row ? toReportDto(row, true) : null;
 }
