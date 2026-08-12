@@ -10,3 +10,4 @@ export type {
   UpdateDealerInput,
 } from "./schemas/dealer";
 export { addInventoryToDealer as addInventory } from "./repositories/dealer.repository";
+export { getUserDealer, getDealerStats } from "./services/dealer.service";

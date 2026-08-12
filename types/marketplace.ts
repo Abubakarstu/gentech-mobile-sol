@@ -35,6 +35,16 @@ export interface ListingCardData {
   createdAt: string;
   /** Optional image URL; when absent the card renders a branded gradient tile. */
   imageUrl?: string;
+  /** Phone-specific attributes for marketplace cards */
+  storage?: string;
+  ram?: string;
+  batteryHealth?: number;
+  ptaStatus?: string;
+  cpidStatus?: string;
+  warranty?: string;
+  isInspected?: boolean;
+  isVerifiedSeller?: boolean;
+  isDealer?: boolean;
 }
 
 /** Sort options for the marketplace feed. */
@@ -52,6 +62,16 @@ export interface ListingFilters {
   sort: ListingSort;
   page: number;
   pageSize: number;
+  // Phone-specific filters
+  storage?: string;
+  ram?: string;
+  batteryHealthMin?: number;
+  ptaStatus?: string;
+  cpidStatus?: string;
+  warranty?: string;
+  isInspected?: boolean;
+  isVerifiedSeller?: boolean;
+  isDealer?: boolean;
 }
 
 /** A page of listings plus metadata for pagination UI. */

@@ -1,5 +1,6 @@
 import "server-only";
 
+import { prisma } from "@/lib/prisma";
 import {
   addInventoryToDealer,
   addUserToDealer,
@@ -173,5 +174,43 @@ export async function removeStaffMember(dealerId: string, userId: string): Promi
   } catch (error) {
     warn("failed to remove staff member", error);
     throw new Error("Could not remove staff member.");
+  }
+}
+
+/**
+ * Gets aggregated statistics for a dealer dashboard.
+ */
+export async function getDealerStats(dealerId: string) {
+  try {
+    const [totalListings, staffCount, branchCount, soldCount] = await Promise.all([
+      prisma.listing.count({
+        where: { sellerId: dealerId, deletedAt: null },
+      }),
+      prisma.dealerUser.count({
+        where: { dealerId, isActive: true },
+      }),
+      prisma.dealerBranch.count({
+        where: { dealerId, isActive: true },
+      }),
+      prisma.dealer.findUnique({
+        where: { id: dealerId },
+        select: { soldCount: true },
+      }),
+    ]);
+
+    return {
+      totalListings,
+      staffCount,
+      branchCount,
+      soldCount: soldCount?.soldCount ?? 0,
+    };
+  } catch (error) {
+    warn("failed to get dealer stats", error);
+    return {
+      totalListings: 0,
+      staffCount: 0,
+      branchCount: 0,
+      soldCount: 0,
+    };
   }
 }

@@ -23,7 +23,16 @@ function hasActiveFilters(filters: ListingFilters): boolean {
       filters.condition ||
       filters.city ||
       filters.minPrice !== undefined ||
-      filters.maxPrice !== undefined,
+      filters.maxPrice !== undefined ||
+      filters.storage ||
+      filters.ram ||
+      filters.batteryHealthMin !== undefined ||
+      filters.ptaStatus ||
+      filters.cpidStatus ||
+      filters.warranty ||
+      filters.isInspected ||
+      filters.isVerifiedSeller ||
+      filters.isDealer,
   );
 }
 

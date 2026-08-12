@@ -336,3 +336,13 @@ export const WARRANTY_TYPE = {
   SELLER: "SELLER",
   THIRD_PARTY: "THIRD_PARTY",
 } as const;
+
+/**
+ * Storage options for mobile devices (in GB).
+ */
+export const STORAGE_OPTIONS = ["32", "64", "128", "256", "512"] as const;
+
+/**
+ * RAM options for mobile devices (in GB).
+ */
+export const RAM_OPTIONS = ["2", "3", "4", "6", "8", "12", "16"] as const;

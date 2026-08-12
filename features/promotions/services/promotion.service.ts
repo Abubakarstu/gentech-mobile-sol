@@ -1,5 +1,6 @@
 import "server-only";
 
+import { prisma } from "@/lib/prisma";
 import {
   createListingPromotion,
   createPromotionPayment,
@@ -89,6 +90,56 @@ export async function getActivePromotions(): Promise<
     return await getActivePromotedListings();
   } catch (error) {
     warn("failed to get active promotions", error);
+    return [];
+  }
+}
+
+export async function getUserActivePromotions(userId: string): Promise<
+  Array<{
+    id: string;
+    listingId: string;
+    listingTitle: string;
+    placement: string;
+    status: string;
+    startedAt: string;
+    expiresAt: string;
+    amountPaid: number;
+  }>
+> {
+  try {
+    const promotions = await prisma.listingPromotion.findMany({
+      where: {
+        listing: { sellerId: userId },
+        status: "ACTIVE",
+        expiresAt: { gte: new Date() },
+      },
+      include: {
+        listing: {
+          select: { title: true },
+        },
+        plan: {
+          select: { placement: true, price: true },
+        },
+        payments: {
+          where: { status: "COMPLETED" },
+          select: { amount: true },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return promotions.map((p) => ({
+      id: p.id,
+      listingId: p.listingId,
+      listingTitle: p.listing.title,
+      placement: p.plan.placement,
+      status: p.status,
+      startedAt: p.startedAt.toISOString(),
+      expiresAt: p.expiresAt.toISOString(),
+      amountPaid: p.payments.length > 0 && p.payments[0] ? Number(p.payments[0].amount) : Number(p.plan.price),
+    }));
+  } catch (error) {
+    warn("failed to get user active promotions", error);
     return [];
   }
 }

@@ -234,3 +234,94 @@
 - Build succeeds with dynamic server usage warnings for routes using `headers()`
 - This is expected behavior for authenticated routes in Next.js App Router
 - These routes correctly render dynamically (static content) rather than at build time
+
+---
+
+## Phase 3 Marketplace Features Implementation
+
+### Marketplace Search Improvements
+- Extended `ListingFilters` type with phone-specific filters: storage, RAM, batteryHealthMin, ptaStatus, cpidStatus, warranty, isInspected, isVerifiedSeller, isDealer
+- Updated `buildWhere` function in listing repository to handle basic filter conditions
+- Added `buildAttributeFilters` function for SQL-based JSON attribute filtering in ranked search
+- Updated `searchListingsRanked` to include phone-specific attribute filters via SQL
+- Added STORAGE_OPTIONS and RAM_OPTIONS constants to lib/constants.ts
+
+### Filter UX Components
+- Extended `MarketplaceFilters` component with new filter groups:
+  - Storage: Quick-select buttons for common storage sizes (32GB - 512GB)
+  - RAM: Quick-select buttons for common RAM sizes (2GB - 16GB)
+  - Battery Health: Numeric input for minimum battery percentage
+  - PTA Status: Links for all PTA status options
+  - CPID Status: Links for all CPID status options
+  - Warranty: Links for all warranty type options
+  - Trust: Toggle links for inspected only, verified sellers only, dealers only
+- Updated `ActiveFilters` component to display and remove phone-specific filter chips
+- Updated `parseListingFilters` schema to validate all new filter parameters
+- Updated marketplace page `hasActiveFilters` function to include new filters
+
+### Listing Detail Enhancements
+- Added trust badges section displaying PTA Approved, CPID Verified, Inspected, and Warranty status
+- Integrated phone history display showing device lifecycle events
+- Added phone history service import and data fetching
+- Removed unused imports (PTA_STATUS, CPID_STATUS, WARRANTY_TYPE, Button)
+- Fixed trust badge icons to use ShieldCheck instead of Shield
+
+### Listing Card Enhancements
+- Extended `ListingCardData` type with phone-specific fields: storage, ram, batteryHealth, ptaStatus, cpidStatus, warranty, isInspected, isVerifiedSeller, isDealer
+- Updated `toCardData` function to extract phone attributes from JSON attributes
+- Added trust badges display on listing cards (PTA, CPID, Inspected, Verified)
+- Added phone specs display (storage, RAM, battery health) on listing cards
+- Reorganized badge layout to show Featured badge alongside trust badges
+
+### Dealer Dashboard UI
+- Created dealer dashboard page at `app/(dashboard)/dashboard/dealer/page.tsx`
+- Added dealer stats cards showing: Total Listings, Staff Members, Branches, Items Sold
+- Implemented dealer status badges (status, verified, plan)
+- Added quick action buttons for: Edit Profile, Manage Branches, Manage Inventory, Manage Staff
+- Added dealer information card displaying business details
+- Implemented non-dealer state with "Apply for Dealer Account" CTA
+- Added `getDealerStats` function in dealer service to aggregate dashboard statistics
+- Updated dealer index exports to include getUserDealer and getDealerStats
+
+### Promotion UI Components
+- Created `PromotionSelect` component for displaying and selecting promotion plans
+- Added placement icons (Star, TrendingUp, Zap, Award, Crown) for different promotion types
+- Implemented plan cards with pricing, duration, and description
+- Added purchase/selection functionality with visual feedback
+- Created promotions dashboard page at `app/(dashboard)/dashboard/promotions/page.tsx`
+- Added `getUserActivePromotions` function in promotion service to fetch user's active promotions
+- Implemented promotion cards showing listing title, placement, status, dates, and amount paid
+- Added empty state with "Create Your First Promotion" CTA
+
+### Moderation Workflow
+- Verified existing moderation workflow in admin reports page
+- Confirmed report status management (OPEN, REVIEWING, RESOLVED, DISMISSED)
+- Verified admin actions for user management, listing management, and reports
+- Audit logging integrated for all admin actions
+
+### Code Quality Fixes
+- Fixed lint error: escaped apostrophe in dealer dashboard page
+- Removed unused imports: PTA_STATUS, CPID_STATUS from listing card
+- Removed unused imports: PTA_STATUS, CPID_STATUS, WARRANTY_TYPE, Button from listing detail
+- Removed unused NextRequest import from middleware
+- Fixed TypeScript error in promotion service for optional payments array access
+
+### Files Created
+- `app/(dashboard)/dashboard/dealer/page.tsx` - Dealer dashboard page
+- `app/(dashboard)/dashboard/promotions/page.tsx` - Promotions management page
+- `features/promotions/components/promotion-select.tsx` - Promotion plan selection component
+
+### Files Modified
+- `types/marketplace.ts` - Extended ListingFilters and ListingCardData with phone-specific fields
+- `lib/constants.ts` - Added STORAGE_OPTIONS and RAM_OPTIONS constants
+- `features/listings/repositories/listing.repository.ts` - Added phone attribute filtering
+- `features/listings/components/marketplace-filters.tsx` - Added phone-specific filter UI
+- `features/listings/components/active-filters.tsx` - Added phone-specific filter chips
+- `features/listings/schemas/filters.ts` - Added phone-specific filter validation
+- `app/(marketing)/marketplace/page.tsx` - Updated hasActiveFilters function
+- `app/(marketing)/listings/[slug]/page.tsx` - Added trust badges and phone history
+- `features/marketplace/components/listing-card.tsx` - Added trust badges and phone specs
+- `features/dealer/services/dealer.service.ts` - Added getDealerStats function
+- `features/dealer/index.ts` - Added getUserDealer and getDealerStats exports
+- `features/promotions/services/promotion.service.ts` - Added getUserActivePromotions function
+- `middleware.ts` - Removed unused NextRequest import

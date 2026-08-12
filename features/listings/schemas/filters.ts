@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { PAGINATION } from "@/lib/constants";
+import { PAGINATION, STORAGE_OPTIONS, RAM_OPTIONS, PTA_STATUS, CPID_STATUS, WARRANTY_TYPE } from "@/lib/constants";
 import type { ListingFilters } from "@/types/marketplace";
 
 export const LISTING_SORTS = ["recent", "price_asc", "price_desc", "popular"] as const;
@@ -30,6 +30,16 @@ const schema = z.object({
   maxPrice: z.coerce.number().int().positive().optional().catch(undefined),
   sort: z.enum(LISTING_SORTS).catch("recent"),
   page: z.coerce.number().int().min(1).catch(1),
+  // Phone-specific filters
+  storage: z.enum(STORAGE_OPTIONS).optional().catch(undefined),
+  ram: z.enum(RAM_OPTIONS).optional().catch(undefined),
+  batteryHealthMin: z.coerce.number().int().min(0).max(100).optional().catch(undefined),
+  ptaStatus: z.enum(Object.keys(PTA_STATUS) as [string, ...string[]]).optional().catch(undefined),
+  cpidStatus: z.enum(Object.keys(CPID_STATUS) as [string, ...string[]]).optional().catch(undefined),
+  warranty: z.enum(Object.keys(WARRANTY_TYPE) as [string, ...string[]]).optional().catch(undefined),
+  isInspected: z.string().optional().transform((v) => v === "true").optional().catch(undefined),
+  isVerifiedSeller: z.string().optional().transform((v) => v === "true").optional().catch(undefined),
+  isDealer: z.string().optional().transform((v) => v === "true").optional().catch(undefined),
 });
 
 type RawSearchParams = Record<string, string | string[] | undefined>;
@@ -50,6 +60,15 @@ export function parseListingFilters(raw: RawSearchParams): ListingFilters {
     maxPrice: first(raw.maxPrice),
     sort: first(raw.sort),
     page: first(raw.page),
+    storage: first(raw.storage),
+    ram: first(raw.ram),
+    batteryHealthMin: first(raw.batteryHealthMin),
+    ptaStatus: first(raw.ptaStatus),
+    cpidStatus: first(raw.cpidStatus),
+    warranty: first(raw.warranty),
+    isInspected: first(raw.isInspected),
+    isVerifiedSeller: first(raw.isVerifiedSeller),
+    isDealer: first(raw.isDealer),
   });
 
   // Guard against an inverted price range.
