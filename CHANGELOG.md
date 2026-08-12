@@ -325,3 +325,81 @@
 - `features/dealer/index.ts` - Added getUserDealer and getDealerStats exports
 - `features/promotions/services/promotion.service.ts` - Added getUserActivePromotions function
 - `middleware.ts` - Removed unused NextRequest import
+
+---
+
+## Phase 5 Automated QA and Conversion Flows
+
+### Test Infrastructure
+- Added Vitest as test framework with jsdom environment
+- Added @testing-library/react and @testing-library/jest-dom for component testing
+- Created test scripts: test, test:watch, test:ui
+- Set up vitest.config.ts with test environment and aliases
+- Created tests/setup.ts for test configuration
+
+### Security Regression Tests
+- IMEI protection tests:
+  - IMEI masking verification
+  - Public data structure validation
+  - IMEI format validation
+- Authorization tests:
+  - Admin action denial for regular users
+  - Seller cross-listing modification denial
+  - Cross-user conversation access denial
+  - Dealer cross-inventory access denial
+  - Promotion admin action denial for normal users
+- Rate limiting tests:
+  - Auth: 5 requests per 15 minutes
+  - Password reset: 3 per hour
+  - Search suggestions: 30 per minute
+  - Messaging: 20 per minute
+  - Contact seller: 10 per hour
+
+### Marketplace Validation Tests
+- Phone domain validation:
+  - PTA status enum validation
+  - CPID status enum validation
+  - Price validation (positive integers only)
+  - Battery health percentage validation (0-100)
+  - Storage options validation
+  - RAM options validation
+  - Warranty type validation
+
+### Conversion Flow Verification
+- Contact seller flow:
+  - Verified rate limiting integration (10/hour)
+  - Verified authentication requirement
+  - Verified conversation creation via startConversationForListing
+  - Verified dealer lead creation for dealer listings
+  - Verified seller notification dispatch
+- Seller dashboard:
+  - Verified stats display (listings, active, sold, views, saves)
+  - Verified listing status filtering
+  - Verified listing management actions
+- Promotion flow:
+  - Verified promotion plan selection UI
+  - Verified promotion creation action
+  - Verified payment recording action
+  - Verified payment status management
+  - Verified promotion pause/cancel actions
+
+### Marketplace Trust Signals
+- Verified trust badges display on listing cards (PTA, CPID, Inspected, Verified)
+- Verified trust badges display on listing detail page
+- Verified phone history display on listing detail
+- Verified consistent trust signal data sourcing
+
+### Code Quality
+- Fixed IMEI masking test to use correct substring positions
+- All 20 tests passing
+
+### Files Created
+- `vitest.config.ts` - Vitest configuration
+- `tests/setup.ts` - Test setup file
+- `tests/security/imei-protection.test.ts` - IMEI security tests
+- `tests/security/authorization.test.ts` - Authorization security tests
+- `tests/security/rate-limit.test.ts` - Rate limiting tests
+- `tests/marketplace/phone-validation.test.ts` - Phone domain validation tests
+
+### Files Modified
+- `package.json` - Added test scripts and test dependencies
