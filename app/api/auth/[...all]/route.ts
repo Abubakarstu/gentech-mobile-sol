@@ -12,14 +12,16 @@ const baseHandler = toNextJsHandler(auth.handler);
 /**
  * Rate-limited auth handler that applies different limits based on the endpoint type.
  */
-async function rateLimitedHandler(request: NextRequest) {
+async function rateLimitedHandler(request: NextRequest, method: keyof typeof baseHandler) {
   const url = new URL(request.url);
   const pathname = url.pathname;
   
   // Extract IP address for rate limiting
-  const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0].trim() 
-    ?? request.headers.get("x-real-ip")
-    ?? "unknown";
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  const ipAddress = forwardedFor 
+    ? forwardedFor.split(",")[0]?.trim() ?? null
+    : (realIp?.trim() ?? null);
   
   // Determine rate limit type based on endpoint
   let rateLimitType: keyof typeof RATE_LIMIT_CONFIG = "auth";
@@ -31,7 +33,7 @@ async function rateLimitedHandler(request: NextRequest) {
   }
   
   // Check rate limit
-  const identifier = getRateLimitIdentifier(ipAddress);
+  const identifier = getRateLimitIdentifier(ipAddress ?? "unknown");
   const rateLimitResult = checkRateLimit(identifier, rateLimitType);
   
   if (!rateLimitResult.allowed) {
@@ -53,8 +55,11 @@ async function rateLimitedHandler(request: NextRequest) {
   }
   
   // Pass through to the base handler
-  return baseHandler(request);
+  return baseHandler[method](request);
 }
 
-export const GET = rateLimitedHandler;
-export const POST = rateLimitedHandler;
+export const GET = (request: NextRequest) => rateLimitedHandler(request, "GET");
+export const POST = (request: NextRequest) => rateLimitedHandler(request, "POST");
+export const PATCH = (request: NextRequest) => rateLimitedHandler(request, "PATCH");
+export const PUT = (request: NextRequest) => rateLimitedHandler(request, "PUT");
+export const DELETE = (request: NextRequest) => rateLimitedHandler(request, "DELETE");

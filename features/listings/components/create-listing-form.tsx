@@ -46,7 +46,7 @@ export function CreateListingForm({
     formState: { errors, isSubmitting },
   } = useForm<CreateListingInput>({
     resolver: zodResolver(createListingSchema),
-    defaultValues: { images: [], negotiable: false, ptaApproved: false, ptaStatus: "", cpidStatus: "" },
+    defaultValues: { images: [], negotiable: false, ptaApproved: false, ptaStatus: undefined, cpidStatus: undefined },
   });
 
   const images = useWatch({ control, name: "images" }) ?? [];

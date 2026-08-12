@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
  * Security middleware that adds HTTP security headers to all responses.
  * These headers help protect against various security vulnerabilities.
  */
-export function middleware(request: NextRequest) {
+export function middleware() {
   const response = NextResponse.next();
 
   // Content Security Policy - restricts sources of content

@@ -1,6 +1,5 @@
 import "server-only";
 
-import { NOTIFICATION_TYPES } from "@/lib/constants";
 import {
   createAuditLog as createAuditLogRecord,
   getAuditLogs,
@@ -84,9 +83,11 @@ export function getRequestMetadata(request: Request): {
   ipAddress: string | null;
   userAgent: string | null;
 } {
-  const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0].trim() 
-    ?? request.headers.get("x-real-ip")
-    ?? null;
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  const ipAddress = forwardedFor 
+    ? forwardedFor.split(",")[0]?.trim() ?? null
+    : (realIp?.trim() ?? null);
   
   const userAgent = request.headers.get("user-agent") ?? null;
   

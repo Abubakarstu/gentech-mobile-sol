@@ -1,11 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 
 import { ROUTES } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
-import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
 import {
   addBranch,
   addInventory,
@@ -23,6 +21,7 @@ import type {
   CreateDealerInput,
   UpdateDealerInput,
 } from "../schemas/dealer";
+import type { DealerDto } from "../types";
 
 type ActionResult<T = void> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -51,7 +50,7 @@ export async function registerDealerAction(
 }
 
 /** Gets the current user's dealer profile if they have one. */
-export async function getMyDealerAction(): Promise<ActionResult<{ dealer: any }>> {
+export async function getMyDealerAction(): Promise<ActionResult<{ dealer: DealerDto }>> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
@@ -66,7 +65,7 @@ export async function getMyDealerAction(): Promise<ActionResult<{ dealer: any }>
 }
 
 /** Gets a dealer profile by ID (public view). */
-export async function getDealerAction(id: string): Promise<ActionResult<{ dealer: any }>> {
+export async function getDealerAction(id: string): Promise<ActionResult<{ dealer: DealerDto }>> {
   try {
     const dealer = await getDealer(id);
     if (!dealer) return { ok: false, error: "Dealer not found." };

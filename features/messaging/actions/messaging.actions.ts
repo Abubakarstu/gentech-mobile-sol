@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 
 import { ROUTES } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
-import { checkRateLimit, getRateLimitIdentifier, RATE_LIMIT_CONFIG } from "@/lib/rate-limit";
+import { checkRateLimit, getRateLimitIdentifier } from "@/lib/rate-limit";
 import type { MessageDto, ThreadUpdate } from "@/features/messaging/types";
 import { sendMessageSchema, startConversationSchema } from "@/features/messaging/schemas/message";
 import {
@@ -31,11 +31,13 @@ export async function startConversationAction(input: {
 
   // Rate limiting for contact seller
   const headersList = await headers();
-  const ipAddress = headersList.get("x-forwarded-for")?.split(",")[0].trim() 
-    ?? headersList.get("x-real-ip")?.trim()
-    ?? "unknown";
+  const forwardedFor = headersList.get("x-forwarded-for");
+  const realIp = headersList.get("x-real-ip");
+  const ipAddress = forwardedFor 
+    ? forwardedFor.split(",")[0]?.trim() ?? null
+    : (realIp?.trim() ?? null);
   
-  const identifier = getRateLimitIdentifier(ipAddress, user.id);
+  const identifier = getRateLimitIdentifier(ipAddress ?? "unknown", user.id);
   const rateLimitResult = checkRateLimit(identifier, "contactSeller");
   
   if (!rateLimitResult.allowed) {
@@ -67,11 +69,13 @@ export async function sendMessageAction(input: {
 
   // Rate limiting for messaging
   const headersList = await headers();
-  const ipAddress = headersList.get("x-forwarded-for")?.split(",")[0].trim() 
-    ?? headersList.get("x-real-ip")?.trim()
-    ?? "unknown";
+  const forwardedFor = headersList.get("x-forwarded-for");
+  const realIp = headersList.get("x-real-ip");
+  const ipAddress = forwardedFor 
+    ? forwardedFor.split(",")[0]?.trim() ?? null
+    : (realIp?.trim() ?? null);
   
-  const identifier = getRateLimitIdentifier(ipAddress, user.id);
+  const identifier = getRateLimitIdentifier(ipAddress ?? "unknown", user.id);
   const rateLimitResult = checkRateLimit(identifier, "messaging");
   
   if (!rateLimitResult.allowed) {

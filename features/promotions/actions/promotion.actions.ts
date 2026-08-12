@@ -20,6 +20,7 @@ import {
   type CreateListingPromotionInput,
   type CreatePromotionPaymentInput,
 } from "../schemas/promotion";
+import type { PromotionPlanDto, ListingPromotionDto } from "../types";
 
 type ActionResult<T = void> = ({ ok: true } & T) | { ok: false; error: string };
 
@@ -27,7 +28,7 @@ const SIGN_IN_REQUIRED = "Sign in to access promotion features.";
 const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 /** Gets all active promotion plans. */
-export async function getActivePromotionPlansAction(): Promise<ActionResult<{ plans: any[] }>> {
+export async function getActivePromotionPlansAction(): Promise<ActionResult<{ plans: PromotionPlanDto[] }>> {
   try {
     const plans = await getActivePlans();
     return { ok: true, plans };
@@ -40,7 +41,7 @@ export async function getActivePromotionPlansAction(): Promise<ActionResult<{ pl
 /** Gets promotion info for a listing. */
 export async function getListingPromotionAction(
   listingId: string,
-): Promise<ActionResult<{ promotion: any }>> {
+): Promise<ActionResult<{ promotion: ListingPromotionDto | null }>> {
   try {
     const promotion = await getListingPromotionInfo(listingId);
     if (!promotion) return { ok: false, error: "No active promotion found." };

@@ -103,7 +103,7 @@ export function checkRateLimit(
  * Combines IP address and user ID if available.
  */
 export function getRateLimitIdentifier(
-  ipAddress: string | null,
+  ipAddress: string | null | undefined,
   userId?: string,
 ): string {
   const parts = [];

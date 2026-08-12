@@ -3,7 +3,7 @@ import "server-only";
 import {
   createHistoryEvent,
   getHistoryByEventType,
-  getHistoryBySource,
+  getHistoryBySource as getHistoryBySourceRepo,
   getListingHistory,
 } from "../repositories/phone-history.repository";
 import type {
@@ -69,7 +69,7 @@ export async function getHistoryBySource(
   limit = 50,
 ): Promise<PhoneHistoryEvent[]> {
   try {
-    return await getHistoryBySource(source, sourceId, limit);
+    return await getHistoryBySourceRepo(source, sourceId, limit);
   } catch (error) {
     warn("failed to get history by source", error);
     return [];

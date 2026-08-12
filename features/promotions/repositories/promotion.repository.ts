@@ -10,6 +10,8 @@ import type {
   ListingPromotionDto,
   PromotionPaymentDto,
   PromotionPlanDto,
+  PromotionPlacement,
+  PromotionStatus,
 } from "../types";
 
 const planSelect = {
@@ -63,7 +65,7 @@ function toPlanDto(row: PlanRow): PromotionPlanDto {
     name: row.name,
     slug: row.slug,
     description: row.description,
-    placement: row.placement as any,
+    placement: row.placement as PromotionPlacement,
     price: Number(row.price),
     currency: row.currency,
     durationDays: row.durationDays,
@@ -80,7 +82,7 @@ function toPromotionDto(row: PromotionRow): ListingPromotionDto {
     id: row.id,
     listingId: row.listingId,
     planId: row.planId,
-    status: row.status as any,
+    status: row.status as PromotionStatus,
     startedAt: row.startedAt.toISOString(),
     expiresAt: row.expiresAt.toISOString(),
     metadata: row.metadata as Record<string, unknown> | null,

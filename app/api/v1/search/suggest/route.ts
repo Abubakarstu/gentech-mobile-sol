@@ -6,12 +6,14 @@ import { checkRateLimit, getRateLimitIdentifier, RATE_LIMIT_CONFIG } from "@/lib
 /** Public autocomplete endpoint: GET /api/v1/search/suggest?q=... */
 export async function GET(request: NextRequest) {
   // Extract IP address for rate limiting
-  const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0].trim() 
-    ?? request.headers.get("x-real-ip")
-    ?? "unknown";
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  const realIp = request.headers.get("x-real-ip");
+  const ipAddress = forwardedFor 
+    ? forwardedFor.split(",")[0]?.trim() ?? null
+    : (realIp?.trim() ?? null);
   
   // Check rate limit for search suggestions
-  const identifier = getRateLimitIdentifier(ipAddress);
+  const identifier = getRateLimitIdentifier(ipAddress ?? "unknown");
   const rateLimitResult = checkRateLimit(identifier, "searchSuggestions");
   
   if (!rateLimitResult.allowed) {
