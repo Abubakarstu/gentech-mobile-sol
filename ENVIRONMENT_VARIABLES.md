@@ -1,0 +1,138 @@
+# Environment Variables Reference
+
+## Variable Mapping
+
+| Variable | Required? | Build-time? | Runtime? | Client-visible? | Secret? | Purpose |
+|----------|----------|------------|---------|----------------|---------|---------|
+| `DATABASE_URL` | YES | NO | YES | NO | YES | PostgreSQL pooled connection (application) |
+| `DIRECT_URL` | OPTIONAL | NO | YES | NO | YES | PostgreSQL direct connection (migrations) |
+| `BETTER_AUTH_SECRET` | YES | NO | YES | NO | YES | Better Auth session signing key |
+| `BETTER_AUTH_URL` | OPTIONAL | NO | YES | NO | NO | Better Auth base URL (callbacks/redirects) |
+| `AUTH_SKIP_EMAIL_VERIFICATION` | OPTIONAL | NO | YES | NO | NO | Dev-only: skip email verification (ignored in production) |
+| `GOOGLE_CLIENT_ID` | OPTIONAL | NO | YES | NO | YES | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | OPTIONAL | NO | YES | NO | YES | Google OAuth client secret |
+| `FACEBOOK_CLIENT_ID` | OPTIONAL | NO | YES | NO | YES | Facebook OAuth client ID |
+| `FACEBOOK_CLIENT_SECRET` | OPTIONAL | NO | YES | NO | YES | Facebook OAuth client secret |
+| `RESEND_API_KEY` | OPTIONAL | NO | YES | NO | YES | Resend email API key |
+| `EMAIL_FROM` | OPTIONAL | NO | YES | NO | NO | Transactional email sender address |
+| `CLOUDINARY_CLOUD_NAME` | OPTIONAL | NO | YES | NO | YES | Cloudinary cloud name |
+| `CLOUDINARY_API_KEY` | OPTIONAL | NO | YES | NO | YES | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | OPTIONAL | NO | YES | NO | YES | Cloudinary API secret |
+| `PAYFAST_MERCHANT_ID` | OPTIONAL | NO | YES | NO | YES | PayFast merchant ID |
+| `PAYFAST_SECURED_KEY` | OPTIONAL | NO | YES | NO | YES | PayFast secured key |
+| `PAYFAST_API_BASE` | OPTIONAL | NO | YES | NO | NO | PayFast API base URL |
+| `NEXT_PUBLIC_APP_URL` | YES | YES | YES | YES | NO | Application base URL (client) |
+| `NEXT_PUBLIC_APP_NAME` | YES | YES | YES | YES | NO | Application name (client) |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | OPTIONAL | YES | YES | YES | NO | Google Maps API key |
+| `NEXT_PUBLIC_GTM_ID` | OPTIONAL | YES | YES | YES | NO | Google Tag Manager container ID |
+| `NEXT_PUBLIC_GA4_ID` | OPTIONAL | YES | YES | YES | NO | Google Analytics 4 measurement ID |
+| `NEXT_PUBLIC_META_PIXEL_ID` | OPTIONAL | YES | YES | YES | NO | Meta Pixel ID |
+| `NEXT_PUBLIC_MIXPANEL_TOKEN` | OPTIONAL | YES | YES | YES | NO | Mixpanel project token |
+| `NODE_ENV` | OPTIONAL | NO | YES | NO | NO | Node environment (development/test/production) |
+| `SKIP_ENV_VALIDATION` | OPTIONAL | YES | NO | NO | NO | Skip build-time env validation (NEVER use at runtime) |
+
+## Critical Variables (Mandatory for Operation)
+
+These variables MUST be configured for the application to function:
+
+1. **`DATABASE_URL`** - PostgreSQL connection string with pgbouncer
+   - Format: `postgresql://user:password@host:port/database?pgbouncer=true`
+   - Used by Prisma for all database operations
+   - Must use pooled connection for application
+   - **Do not use this for migrations**
+
+2. **`DIRECT_URL`** - PostgreSQL direct connection
+   - Format: `postgresql://user:password@host:port/database`
+   - Used by Prisma migrations only
+   - Required for schema changes
+   - **Do not use this for application runtime**
+
+3. **`BETTER_AUTH_SECRET`** - Session signing key
+   - Must be random, 32+ characters
+   - Generate with: `openssl rand -base64 32`
+   - Used to sign and verify session cookies
+   - **Rotate this if compromised**
+
+4. **`BETTER_AUTH_URL`** - Auth base URL
+   - Must match production domain
+   - Used for OAuth callbacks and redirects
+   - Example: `https://gentech.example.com`
+   - **Critical for OAuth and email links**
+
+5. **`NEXT_PUBLIC_APP_URL`** - Client base URL
+   - Must match production domain
+   - Used by client-side code for navigation
+   - Example: `https://gentech.example.com`
+
+6. **`NEXT_PUBLIC_APP_NAME`** - Application name
+   - Displayed in UI and metadata
+   - Example: `GenTech`
+
+## Optional Variables (Feature-Specific)
+
+### OAuth Providers
+- **Google OAuth**: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- **Facebook OAuth**: `FACEBOOK_CLIENT_ID`, `FACEBOOK_CLIENT_SECRET`
+- Redirect URIs must be configured in provider console
+
+### Email
+- **Resend**: `RESEND_API_KEY`, `EMAIL_FROM`
+- Without these, email links are printed to console (dev-only)
+
+### Media Uploads
+- **Cloudinary**: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- Required for image uploads
+- Server-side signature generation
+
+### Payments
+- **PayFast**: `PAYFAST_MERCHANT_ID`, `PAYFAST_SECURED_KEY`, `PAYFAST_API_BASE`
+- For JazzCash, Easypaisa, cards
+- Currently in sandbox state only
+
+### Maps
+- **Google Maps**: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`
+- For location features
+
+### Analytics
+- **GTM**: `NEXT_PUBLIC_GTM_ID`
+- **GA4**: `NEXT_PUBLIC_GA4_ID`
+- **Meta Pixel**: `NEXT_PUBLIC_META_PIXEL_ID`
+- **Mixpanel**: `NEXT_PUBLIC_MIXPANEL_TOKEN`
+
+## Development-Only Variables
+
+- **`AUTH_SKIP_EMAIL_VERIFICATION`**: Set to `"true"` to skip email verification in development
+  - **Ignored in production** (see `lib/auth.ts`)
+  - Only for local development without email provider
+
+## Build-Only Variables
+
+- **`SKIP_ENV_VALIDATION`**: Set to `"1"` to skip build-time environment validation
+  - **NEVER use at runtime**
+  - Only for CI/CD builds where environment is configured at deploy time
+  - Application will still fail at runtime if required variables are missing
+
+## Security Notes
+
+1. **Never commit secrets** - All secrets are in `.gitignore`
+2. **Use different secrets** for staging and production
+3. **Rotate secrets** periodically
+4. **Use strong secrets** - 32+ characters for `BETTER_AUTH_SECRET`
+5. **Configure CORS** - Restrict origins in production
+6. **Use HTTPS** - All production requests must be over HTTPS
+7. **Secure cookies** - Set `secure: true` and `httpOnly: true` in production
+
+## Validation Behavior
+
+- **Build-time**: Validates client-side variables (NEXT_PUBLIC_*)
+- **Runtime**: Validates server-side variables (DATABASE_URL, BETTER_AUTH_SECRET, etc.)
+- **Skip**: Use `SKIP_ENV_VALIDATION=1` only for builds, never runtime
+- **Failure**: Missing required variables throw immediately at process boot
+
+## Default Values
+
+- `NODE_ENV`: `development`
+- `NEXT_PUBLIC_APP_URL`: `http://localhost:3000`
+- `NEXT_PUBLIC_APP_NAME`: `GenTech`
+
+All other required variables must be explicitly configured.
