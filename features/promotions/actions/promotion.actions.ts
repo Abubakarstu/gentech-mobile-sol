@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { ROUTES } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import {
   cancelPromotion,
   getActivePlans,
@@ -52,7 +53,7 @@ export async function getListingPromotionAction(
   }
 }
 
-/** Promotes a listing with a specific plan. */
+/** Promotes a listing with a specific plan. User must own the listing. */
 export async function promoteListingAction(
   input: CreateListingPromotionInput,
 ): Promise<ActionResult<{ promotionId: string }>> {
@@ -63,6 +64,16 @@ export async function promoteListingAction(
   if (!parsed.success) return { ok: false, error: "Invalid promotion data." };
 
   try {
+    // Verify ownership before promoting
+    const listing = await prisma.listing.findUnique({
+      where: { id: parsed.data.listingId },
+      select: { sellerId: true },
+    });
+    
+    if (!listing || listing.sellerId !== user.id) {
+      return { ok: false, error: "You can only promote your own listings." };
+    }
+    
     const promotionId = await promoteListing(parsed.data);
     revalidatePath(`${ROUTES.marketplace}`);
     return { ok: true, promotionId };
@@ -72,12 +83,26 @@ export async function promoteListingAction(
   }
 }
 
-/** Pauses an active promotion. */
+/** Pauses an active promotion. User must own the listing. */
 export async function pausePromotionAction(promotionId: string) {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
   try {
+    // Verify ownership before pausing
+    const promotion = await getListingPromotionInfo(promotionId);
+    if (!promotion) return { ok: false, error: "Promotion not found." };
+    
+    // Check if user owns the listing
+    const listing = await prisma.listing.findUnique({
+      where: { id: promotion.listingId },
+      select: { sellerId: true },
+    });
+    
+    if (!listing || listing.sellerId !== user.id) {
+      return { ok: false, error: "You can only pause your own promotions." };
+    }
+    
     await pausePromotion(promotionId);
     revalidatePath(`${ROUTES.marketplace}`);
     return { ok: true };
@@ -87,12 +112,26 @@ export async function pausePromotionAction(promotionId: string) {
   }
 }
 
-/** Cancels an active promotion. */
+/** Cancels an active promotion. User must own the listing. */
 export async function cancelPromotionAction(promotionId: string) {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
   try {
+    // Verify ownership before canceling
+    const promotion = await getListingPromotionInfo(promotionId);
+    if (!promotion) return { ok: false, error: "Promotion not found." };
+    
+    // Check if user owns the listing
+    const listing = await prisma.listing.findUnique({
+      where: { id: promotion.listingId },
+      select: { sellerId: true },
+    });
+    
+    if (!listing || listing.sellerId !== user.id) {
+      return { ok: false, error: "You can only cancel your own promotions." };
+    }
+    
     await cancelPromotion(promotionId);
     revalidatePath(`${ROUTES.marketplace}`);
     return { ok: true };
@@ -102,7 +141,7 @@ export async function cancelPromotionAction(promotionId: string) {
   }
 }
 
-/** Records a payment for a promotion. */
+/** Records a payment for a promotion. User must own the listing. */
 export async function recordPromotionPaymentAction(
   input: CreatePromotionPaymentInput,
 ): Promise<ActionResult<{ paymentId: string }>> {
@@ -113,6 +152,21 @@ export async function recordPromotionPaymentAction(
   if (!parsed.success) return { ok: false, error: "Invalid payment data." };
 
   try {
+    // Verify ownership before recording payment
+    const promotion = await prisma.listingPromotion.findUnique({
+      where: { id: parsed.data.promotionId },
+      include: {
+        listing: {
+          select: { sellerId: true },
+        },
+      },
+    });
+    
+    if (!promotion) return { ok: false, error: "Promotion not found." };
+    if (promotion.listing.sellerId !== user.id) {
+      return { ok: false, error: "You can only record payments for your own promotions." };
+    }
+    
     const paymentId = await recordPayment(parsed.data);
     return { ok: true, paymentId };
   } catch (error) {
@@ -121,12 +175,31 @@ export async function recordPromotionPaymentAction(
   }
 }
 
-/** Marks a payment as completed. */
+/** Marks a payment as completed. User must own the listing. */
 export async function markPaymentCompletedAction(paymentId: string) {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
   try {
+    // Verify ownership before marking payment completed
+    const payment = await prisma.promotionPayment.findUnique({
+      where: { id: paymentId },
+      include: {
+        promotion: {
+          include: {
+            listing: {
+              select: { sellerId: true },
+            },
+          },
+        },
+      },
+    });
+    
+    if (!payment) return { ok: false, error: "Payment not found." };
+    if (payment.promotion.listing.sellerId !== user.id) {
+      return { ok: false, error: "You can only mark your own payments as completed." };
+    }
+    
     await markPaymentCompleted(paymentId);
     return { ok: true };
   } catch (error) {
@@ -135,12 +208,31 @@ export async function markPaymentCompletedAction(paymentId: string) {
   }
 }
 
-/** Marks a payment as failed. */
+/** Marks a payment as failed. User must own the listing. */
 export async function markPaymentFailedAction(paymentId: string) {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
   try {
+    // Verify ownership before marking payment failed
+    const payment = await prisma.promotionPayment.findUnique({
+      where: { id: paymentId },
+      include: {
+        promotion: {
+          include: {
+            listing: {
+              select: { sellerId: true },
+            },
+          },
+        },
+      },
+    });
+    
+    if (!payment) return { ok: false, error: "Payment not found." };
+    if (payment.promotion.listing.sellerId !== user.id) {
+      return { ok: false, error: "You can only mark your own payments as failed." };
+    }
+    
     await markPaymentFailed(paymentId);
     return { ok: true };
   } catch (error) {

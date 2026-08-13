@@ -14,7 +14,10 @@ import { getReports } from "@/features/admin/services/admin.service";
 import { AdminReportRow } from "@/features/admin/components/admin-report-row";
 import { AdminPagination } from "@/features/admin/components/admin-pagination";
 
-export const metadata: Metadata = { title: "Admin — Reports" };
+export const metadata: Metadata = { 
+  title: "Admin — Reports",
+  robots: { index: false, follow: false },
+};
 
 const FILTERS: Array<{ label: string; status?: ReportStatus }> = [
   { label: "All" },

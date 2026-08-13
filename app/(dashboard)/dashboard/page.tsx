@@ -12,7 +12,10 @@ import { SellerStatsCards } from "@/features/seller/components/seller-stats";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export const metadata: Metadata = { 
+  title: "Dashboard",
+  robots: { index: false, follow: false },
+};
 
 export default async function DashboardPage() {
   const session = await getCurrentSession();

@@ -10,7 +10,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-export const metadata: Metadata = { title: "My Promotions" };
+export const metadata: Metadata = { 
+  title: "My Promotions",
+  robots: { index: false, follow: false },
+};
 
 export default async function PromotionsPage() {
   const session = await getCurrentSession();

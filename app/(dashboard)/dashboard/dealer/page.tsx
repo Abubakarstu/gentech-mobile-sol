@@ -9,7 +9,10 @@ import { getUserDealer, getDealerStats } from "@/features/dealer/services/dealer
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export const metadata: Metadata = { title: "Dealer Dashboard" };
+export const metadata: Metadata = { 
+  title: "Dealer Dashboard",
+  robots: { index: false, follow: false },
+};
 
 export default async function DealerDashboardPage() {
   const session = await getCurrentSession();

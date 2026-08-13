@@ -6,7 +6,10 @@ import { getCurrentUser } from "@/lib/session";
 import { getInspectorQueue } from "@/features/inspections/services/inspection.service";
 import { InspectorQueue } from "@/features/inspections/components/inspector-queue";
 
-export const metadata: Metadata = { title: "Inspector Workspace" };
+export const metadata: Metadata = { 
+  title: "Inspector Workspace",
+  robots: { index: false, follow: false },
+};
 
 export default async function InspectorPage() {
   const user = await getCurrentUser();

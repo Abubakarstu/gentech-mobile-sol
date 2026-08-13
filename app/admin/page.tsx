@@ -6,7 +6,10 @@ import { ROUTES } from "@/lib/constants";
 import { getStats } from "@/features/admin/services/admin.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export const metadata: Metadata = { title: "Admin — Overview" };
+export const metadata: Metadata = { 
+  title: "Admin — Overview",
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminOverviewPage() {
   const stats = await getStats();
