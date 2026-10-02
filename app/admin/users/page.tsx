@@ -8,7 +8,10 @@ import { AdminSearch } from "@/features/admin/components/admin-search";
 import { AdminUserRow } from "@/features/admin/components/admin-user-row";
 import { AdminPagination } from "@/features/admin/components/admin-pagination";
 
-export const metadata: Metadata = { title: "Admin — Users" };
+export const metadata: Metadata = { 
+  title: "Admin — Users",
+  robots: { index: false, follow: false },
+};
 
 function parsePage(value: string | string[] | undefined): number {
   const raw = Array.isArray(value) ? value[0] : value;

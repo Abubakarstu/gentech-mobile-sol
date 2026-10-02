@@ -15,7 +15,10 @@ import { AdminSearch } from "@/features/admin/components/admin-search";
 import { AdminListingRow } from "@/features/admin/components/admin-listing-row";
 import { AdminPagination } from "@/features/admin/components/admin-pagination";
 
-export const metadata: Metadata = { title: "Admin — Listings" };
+export const metadata: Metadata = { 
+  title: "Admin — Listings",
+  robots: { index: false, follow: false },
+};
 
 const FILTERS: Array<{ label: string; status?: ListingStatus }> = [
   { label: "All" },

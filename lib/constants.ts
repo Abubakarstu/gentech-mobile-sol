@@ -58,6 +58,8 @@ export const ROUTES = {
   inspectionService: "/inspection",
   // Inspector workspace
   inspector: "/inspector",
+  // Dealers
+  dealers: "/dealers",
   // Admin
   admin: "/admin",
   adminUsers: "/admin/users",
@@ -292,3 +294,55 @@ export const INSPECTION_CHECKLIST: ReadonlyArray<{ category: string; items: read
   { category: "Biometrics & Sensors", items: ["Face ID / fingerprint", "Proximity sensor", "Gyroscope", "Speakers & mics"] },
   { category: "Software & Identity", items: ["IMEI check", "PTA approval", "iCloud / account lock", "OS version"] },
 ] as const;
+
+/**
+ * PTA (Pakistan Telecommunication Authority) status for mobile devices.
+ */
+export const PTA_STATUS = {
+  PTA_APPROVED: "PTA_APPROVED",
+  NON_PTA: "NON_PTA",
+  CPID: "CPID",
+  FACTORY_UNLOCKED: "FACTORY_UNLOCKED",
+  CARRIER_LOCKED: "CARRIER_LOCKED",
+  UNKNOWN: "UNKNOWN",
+  VERIFICATION_PENDING: "VERIFICATION_PENDING",
+} as const;
+
+/**
+ * CPID (Compliance ID) status for mobile devices.
+ */
+export const CPID_STATUS = {
+  CPID_APPROVED: "CPID_APPROVED",
+  NON_CPID: "NON_CPID",
+  UNKNOWN: "UNKNOWN",
+} as const;
+
+/**
+ * Network type for mobile devices.
+ */
+export const NETWORK_TYPE = {
+  SINGLE_SIM: "SINGLE_SIM",
+  DUAL_SIM: "DUAL_SIM",
+  ESIM: "ESIM",
+  HYBRID: "HYBRID",
+} as const;
+
+/**
+ * Warranty type for mobile devices.
+ */
+export const WARRANTY_TYPE = {
+  NO_WARRANTY: "NO_WARRANTY",
+  MANUFACTURER: "MANUFACTURER",
+  SELLER: "SELLER",
+  THIRD_PARTY: "THIRD_PARTY",
+} as const;
+
+/**
+ * Storage options for mobile devices (in GB).
+ */
+export const STORAGE_OPTIONS = ["32", "64", "128", "256", "512"] as const;
+
+/**
+ * RAM options for mobile devices (in GB).
+ */
+export const RAM_OPTIONS = ["2", "3", "4", "6", "8", "12", "16"] as const;

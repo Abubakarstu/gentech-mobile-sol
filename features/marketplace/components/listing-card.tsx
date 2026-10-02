@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MapPin, Smartphone } from "lucide-react";
+import { MapPin, Smartphone, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { LISTING_CONDITION_LABELS } from "@/lib/constants";
@@ -49,11 +49,37 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
             </div>
           )}
 
-          {listing.isFeatured ? (
-            <Badge className="absolute top-2 left-2 bg-amber-500 text-white hover:bg-amber-500">
-              Featured
-            </Badge>
-          ) : null}
+          <div className="absolute top-2 left-2 flex gap-1">
+            {listing.isFeatured && (
+              <Badge className="bg-amber-500 text-white hover:bg-amber-500">
+                Featured
+              </Badge>
+            )}
+            {listing.ptaStatus === "PTA_APPROVED" && (
+              <Badge variant="outline" className="border-green-500 text-green-700 bg-green-50/90 backdrop-blur text-xs">
+                <CheckCircle2 className="mr-0.5 size-3" />
+                PTA
+              </Badge>
+            )}
+            {listing.cpidStatus === "CPID_APPROVED" && (
+              <Badge variant="outline" className="border-blue-500 text-blue-700 bg-blue-50/90 backdrop-blur text-xs">
+                <CheckCircle2 className="mr-0.5 size-3" />
+                CPID
+              </Badge>
+            )}
+            {listing.isInspected && (
+              <Badge variant="outline" className="border-purple-500 text-purple-700 bg-purple-50/90 backdrop-blur text-xs">
+                <ShieldCheck className="mr-0.5 size-3" />
+                Inspected
+              </Badge>
+            )}
+            {listing.isVerifiedSeller && (
+              <Badge variant="outline" className="border-sky-500 text-sky-700 bg-sky-50/90 backdrop-blur text-xs">
+                <ShieldCheck className="mr-0.5 size-3" />
+                Verified
+              </Badge>
+            )}
+          </div>
         </div>
 
         {/* Body */}
@@ -71,6 +97,12 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
               <MapPin className="size-3 shrink-0" />
               {listing.city}
             </span>
+          </div>
+
+          <div className="text-muted-foreground flex items-center gap-2 text-xs">
+            {listing.storage && <span>{listing.storage}GB</span>}
+            {listing.ram && <span>• {listing.ram}GB RAM</span>}
+            {listing.batteryHealth && <span>• {listing.batteryHealth}% Battery</span>}
           </div>
 
           <p className="text-muted-foreground text-xs">{formatRelativeTime(listing.createdAt)}</p>

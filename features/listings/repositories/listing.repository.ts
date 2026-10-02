@@ -25,6 +25,7 @@ const cardSelect = {
   negotiable: true,
   views: true,
   createdAt: true,
+  attributes: true,
   brand: { select: { name: true, slug: true } },
   category: { select: { slug: true } },
   images: {
@@ -64,6 +65,41 @@ function buildWhere(filters: ListingFilters): Prisma.ListingWhereInput {
   return where;
 }
 
+// Build JSON attribute filter conditions for SQL queries
+function buildAttributeFilters(filters: ListingFilters): Prisma.Sql[] {
+  const conditions: Prisma.Sql[] = [];
+  
+  if (filters.storage) {
+    conditions.push(Prisma.sql`"attributes"->>'storage' = ${filters.storage}`);
+  }
+  if (filters.ram) {
+    conditions.push(Prisma.sql`"attributes"->>'ram' = ${filters.ram}`);
+  }
+  if (filters.batteryHealthMin !== undefined) {
+    conditions.push(Prisma.sql`CAST("attributes"->>'batteryHealth' AS NUMERIC) >= ${filters.batteryHealthMin}`);
+  }
+  if (filters.ptaStatus) {
+    conditions.push(Prisma.sql`"attributes"->>'ptaStatus' = ${filters.ptaStatus}`);
+  }
+  if (filters.cpidStatus) {
+    conditions.push(Prisma.sql`"attributes"->>'cpidStatus' = ${filters.cpidStatus}`);
+  }
+  if (filters.warranty) {
+    conditions.push(Prisma.sql`"attributes"->>'warranty' = ${filters.warranty}`);
+  }
+  if (filters.isInspected !== undefined) {
+    conditions.push(Prisma.sql`("attributes"->>'inspected')::BOOLEAN = ${filters.isInspected}`);
+  }
+  if (filters.isDealer !== undefined) {
+    conditions.push(Prisma.sql`("attributes"->>'isDealer')::BOOLEAN = ${filters.isDealer}`);
+  }
+  if (filters.isVerifiedSeller !== undefined) {
+    conditions.push(Prisma.sql`"sellerId" IN (SELECT id FROM "user" JOIN "profile" ON "profile"."userId" = "user"."id" WHERE "profile"."isVerified" = ${filters.isVerifiedSeller})`);
+  }
+  
+  return conditions;
+}
+
 function buildOrderBy(sort: ListingFilters["sort"]): Prisma.ListingOrderByWithRelationInput[] {
   // Featured items always float to the top, then the chosen sort, then a stable tiebreak.
   const featuredFirst: Prisma.ListingOrderByWithRelationInput = { isFeatured: "desc" };
@@ -83,6 +119,7 @@ function buildOrderBy(sort: ListingFilters["sort"]): Prisma.ListingOrderByWithRe
 }
 
 function toCardData(row: ListingCardRow): ListingCardData {
+  const attrs = row.attributes as Record<string, unknown> | null;
   return {
     id: row.id,
     title: row.title,
@@ -99,6 +136,16 @@ function toCardData(row: ListingCardRow): ListingCardData {
     views: row.views,
     createdAt: row.createdAt.toISOString(),
     imageUrl: row.images[0]?.url,
+    // Phone-specific attributes
+    storage: typeof attrs?.storage === "string" ? attrs.storage : undefined,
+    ram: typeof attrs?.ram === "string" ? attrs.ram : undefined,
+    batteryHealth: typeof attrs?.batteryHealth === "number" ? attrs.batteryHealth : undefined,
+    ptaStatus: typeof attrs?.ptaStatus === "string" ? attrs.ptaStatus : undefined,
+    cpidStatus: typeof attrs?.cpidStatus === "string" ? attrs.cpidStatus : undefined,
+    warranty: typeof attrs?.warranty === "string" ? attrs.warranty : undefined,
+    isInspected: typeof attrs?.inspected === "boolean" ? attrs.inspected : undefined,
+    isVerifiedSeller: undefined, // Will be populated via separate query if needed
+    isDealer: typeof attrs?.isDealer === "boolean" ? attrs.isDealer : undefined,
   };
 }
 
@@ -156,6 +203,10 @@ export async function searchListingsRanked(filters: ListingFilters): Promise<Lis
   }
   if (filters.minPrice !== undefined) conditions.push(Prisma.sql`price >= ${filters.minPrice}`);
   if (filters.maxPrice !== undefined) conditions.push(Prisma.sql`price <= ${filters.maxPrice}`);
+  
+  // Add phone-specific attribute filters
+  const attributeConditions = buildAttributeFilters(filters);
+  conditions.push(...attributeConditions);
 
   const whereSql = Prisma.join(conditions, " AND ");
   const skip = (filters.page - 1) * filters.pageSize;
@@ -339,6 +390,24 @@ function buildAttributes(input: CreateListingInput): Prisma.InputJsonValue | und
   if (input.color) attributes.color = input.color;
   if (input.batteryHealth) attributes.batteryHealth = Number(input.batteryHealth);
   if (input.ptaApproved !== undefined) attributes.ptaApproved = input.ptaApproved;
+  if (input.ptaStatus) attributes.ptaStatus = input.ptaStatus;
+  if (input.cpidStatus) attributes.cpidStatus = input.cpidStatus;
+  
+  // Extended phone attributes
+  if (input.model) attributes.model = input.model;
+  if (input.variant) attributes.variant = input.variant;
+  if (input.networkType) attributes.networkType = input.networkType;
+  if (input.carrier) attributes.carrier = input.carrier;
+  if (input.isUnlocked !== undefined) attributes.isUnlocked = input.isUnlocked;
+  if (input.modelNumber) attributes.modelNumber = input.modelNumber;
+  if (input.region) attributes.region = input.region;
+  if (input.warranty) attributes.warranty = input.warranty;
+  if (input.warrantyExpiry) attributes.warrantyExpiry = input.warrantyExpiry;
+  if (input.hasOriginalBox !== undefined) attributes.hasOriginalBox = input.hasOriginalBox;
+  if (input.hasCharger !== undefined) attributes.hasCharger = input.hasCharger;
+  if (input.hasHeadphones !== undefined) attributes.hasHeadphones = input.hasHeadphones;
+  if (input.repairHistory) attributes.repairHistory = input.repairHistory;
+  
   return Object.keys(attributes).length > 0 ? attributes : undefined;
 }
 

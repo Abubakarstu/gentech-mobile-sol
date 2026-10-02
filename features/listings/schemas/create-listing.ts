@@ -35,6 +35,23 @@ export const createListingSchema = z.object({
     .optional()
     .or(z.literal("")),
   ptaApproved: z.boolean().optional(),
+  ptaStatus: z.enum(["PTA_APPROVED", "NON_PTA", "CPID", "FACTORY_UNLOCKED", "CARRIER_LOCKED", "UNKNOWN", "VERIFICATION_PENDING"]).optional(),
+  cpidStatus: z.enum(["CPID_APPROVED", "NON_CPID", "UNKNOWN"]).optional(),
+  
+  // Extended phone attributes
+  model: z.string().trim().max(100).optional(),
+  variant: z.string().trim().max(100).optional(),
+  networkType: z.enum(["SINGLE_SIM", "DUAL_SIM", "ESIM", "HYBRID"]).optional(),
+  carrier: z.string().trim().max(50).optional(),
+  isUnlocked: z.boolean().optional(),
+  modelNumber: z.string().trim().max(50).optional(),
+  region: z.string().trim().max(50).optional(),
+  warranty: z.enum(["NO_WARRANTY", "MANUFACTURER", "SELLER", "THIRD_PARTY"]).optional(),
+  warrantyExpiry: z.string().optional(),
+  hasOriginalBox: z.boolean().optional(),
+  hasCharger: z.boolean().optional(),
+  hasHeadphones: z.boolean().optional(),
+  repairHistory: z.string().trim().max(500).optional(),
 
   images: z.array(uploadedImageSchema).min(1, "Add at least one photo").max(10),
 });

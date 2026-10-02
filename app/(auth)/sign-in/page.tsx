@@ -4,7 +4,10 @@ import { getEnabledSocialProviders } from "@/features/auth/server/enabled-provid
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = { 
+  title: "Sign in",
+  robots: { index: false, follow: false },
+};
 
 export default function SignInPage() {
   const providers = getEnabledSocialProviders();

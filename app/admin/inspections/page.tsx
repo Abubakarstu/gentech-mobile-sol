@@ -8,7 +8,10 @@ import { listAllPlans } from "@/features/inspections/repositories/inspection.rep
 import { AdminPlansManager } from "@/features/inspections/components/admin-plans-manager";
 import type { InspectionPlanDto } from "@/features/inspections/types";
 
-export const metadata: Metadata = { title: "Inspection Packages · Admin" };
+export const metadata: Metadata = { 
+  title: "Inspection Packages · Admin",
+  robots: { index: false, follow: false },
+};
 
 export default async function AdminInspectionsPage() {
   const admin = await requireAdmin();

@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
-import { LISTING_CONDITION_LABELS, PK_CITIES, ROUTES } from "@/lib/constants";
+import { LISTING_CONDITION_LABELS, PK_CITIES, PTA_STATUS, CPID_STATUS, NETWORK_TYPE, WARRANTY_TYPE, ROUTES } from "@/lib/constants";
 import type { BrandItem, CategoryItem } from "@/types/marketplace";
 import {
   createListingSchema,
@@ -46,7 +46,7 @@ export function CreateListingForm({
     formState: { errors, isSubmitting },
   } = useForm<CreateListingInput>({
     resolver: zodResolver(createListingSchema),
-    defaultValues: { images: [], negotiable: false, ptaApproved: false },
+    defaultValues: { images: [], negotiable: false, ptaApproved: false, ptaStatus: undefined, cpidStatus: undefined },
   });
 
   const images = useWatch({ control, name: "images" }) ?? [];
@@ -220,6 +220,107 @@ export function CreateListingForm({
               <input type="checkbox" className="size-4" {...register("ptaApproved")} />
               PTA approved
             </label>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="ptaStatus">PTA Status (optional)</Label>
+            <select id="ptaStatus" className={selectClass} defaultValue="" {...register("ptaStatus")}>
+              <option value="">Unknown</option>
+              {Object.entries(PTA_STATUS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="cpidStatus">CPID Status (optional)</Label>
+            <select id="cpidStatus" className={selectClass} defaultValue="" {...register("cpidStatus")}>
+              <option value="">Unknown</option>
+              {Object.entries(CPID_STATUS).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </section>
+
+      {/* Extended phone details */}
+      <section className="grid gap-4">
+        <h3 className="text-sm font-semibold">Extended Details (optional)</h3>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-2">
+            <Label htmlFor="model">Model</Label>
+            <Input id="model" placeholder="iPhone 15 Pro" {...register("model")} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="variant">Variant</Label>
+            <Input id="variant" placeholder="Max" {...register("variant")} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="networkType">Network Type</Label>
+            <select id="networkType" className={selectClass} defaultValue="" {...register("networkType")}>
+              <option value="">Unknown</option>
+              {Object.entries(NETWORK_TYPE).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="carrier">Carrier</Label>
+            <Input id="carrier" placeholder="e.g. Jazz, Telenor" {...register("carrier")} />
+          </div>
+          <div className="flex items-end pb-2">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" className="size-4" {...register("isUnlocked")} />
+              Unlocked
+            </label>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="warranty">Warranty</Label>
+            <select id="warranty" className={selectClass} defaultValue="" {...register("warranty")}>
+              <option value="">Unknown</option>
+              {Object.entries(WARRANTY_TYPE).map(([value, label]) => (
+                <option key={value} value={value}>
+                  {label.replace(/_/g, " ")}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="warrantyExpiry">Warranty Expiry</Label>
+            <Input id="warrantyExpiry" type="date" {...register("warrantyExpiry")} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="modelNumber">Model Number</Label>
+            <Input id="modelNumber" placeholder="A3101" {...register("modelNumber")} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="region">Region</Label>
+            <Input id="region" placeholder="e.g. USA, HK, UAE" {...register("region")} />
+          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex items-center gap-2 pb-2">
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" className="size-4" {...register("hasOriginalBox")} />
+              Original Box
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" className="size-4" {...register("hasCharger")} />
+              Charger
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" className="size-4" {...register("hasHeadphones")} />
+              Headphones
+            </label>
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="repairHistory">Repair History</Label>
+            <Textarea id="repairHistory" rows={2} placeholder="Any repairs or replacements (screen, battery, etc.)" {...register("repairHistory")} />
           </div>
         </div>
       </section>

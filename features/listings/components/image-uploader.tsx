@@ -21,6 +21,7 @@ interface SignResponse {
   timestamp: number;
   folder: string;
   signature: string;
+  allowedFormats: string[];
 }
 
 export function ImageUploader({ value, onChange, max = 10, folder }: Props) {
@@ -35,6 +36,19 @@ export function ImageUploader({ value, onChange, max = 10, folder }: Props) {
       return;
     }
     const selected = Array.from(files).slice(0, remaining);
+    
+    // Client-side validation for file types
+    const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
+    const invalidFiles = selected.filter(file => {
+      const ext = file.name.split('.').pop()?.toLowerCase();
+      return !ext || !allowedExtensions.includes(ext);
+    });
+    
+    if (invalidFiles.length > 0) {
+      toast.error(`Only ${allowedExtensions.join(", ")} files are allowed.`);
+      return;
+    }
+    
     setUploading(true);
 
     try {
@@ -59,6 +73,8 @@ export function ImageUploader({ value, onChange, max = 10, folder }: Props) {
         form.append("timestamp", String(sign.timestamp));
         form.append("signature", sign.signature);
         form.append("folder", sign.folder);
+        form.append("allowed_formats", sign.allowedFormats.join(","));
+        form.append("resource_type", "image");
 
         const res = await fetch(`https://api.cloudinary.com/v1_1/${sign.cloudName}/auto/upload`, {
           method: "POST",
@@ -146,7 +162,7 @@ export function ImageUploader({ value, onChange, max = 10, folder }: Props) {
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/jpeg,image/jpg,image/png,image/webp"
         multiple
         hidden
         onChange={(e) => handleFiles(e.target.files)}

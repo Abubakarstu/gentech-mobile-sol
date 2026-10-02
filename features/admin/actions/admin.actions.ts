@@ -10,6 +10,7 @@ import {
   USER_ROLES,
 } from "@/lib/constants";
 import { requireAdmin } from "@/features/admin/lib/require-admin";
+import { logAudit } from "@/features/audit";
 import {
   adminRemoveListing,
   adminSetListingStatus,
@@ -64,6 +65,17 @@ export async function setUserBannedAction(input: {
     if (parsed.data.userId === adminId) return { ok: false, error: "You can't ban yourself." };
 
     await setUserBanned(parsed.data.userId, parsed.data.banned, parsed.data.reason);
+    
+    // Audit log
+    await logAudit({
+      actorId: adminId,
+      action: parsed.data.banned ? "USER_BANNED" : "USER_UNBANNED",
+      resource: "User",
+      resourceId: parsed.data.userId,
+      before: { banned: !parsed.data.banned },
+      after: { banned: parsed.data.banned, reason: parsed.data.reason },
+    });
+    
     revalidatePath(ROUTES.adminUsers);
   });
 }
@@ -91,6 +103,16 @@ export async function setUserRoleAction(input: {
     }
 
     await setUserRole(parsed.data.userId, parsed.data.role);
+    
+    // Audit log
+    await logAudit({
+      actorId: adminId,
+      action: "USER_ROLE_CHANGED",
+      resource: "User",
+      resourceId: parsed.data.userId,
+      after: { role: parsed.data.role },
+    });
+    
     revalidatePath(ROUTES.adminUsers);
   });
 }
@@ -114,10 +136,20 @@ export async function adminSetListingStatusAction(input: {
   listingId: string;
   status: (typeof LISTING_STATUSES)[keyof typeof LISTING_STATUSES];
 }): Promise<ActionResult> {
-  return adminAction(async () => {
+  return adminAction(async (adminId) => {
     const parsed = listingStatusSchema.safeParse(input);
     if (!parsed.success) return { ok: false, error: "Invalid request." };
     await adminSetListingStatus(parsed.data.listingId, parsed.data.status);
+    
+    // Audit log
+    await logAudit({
+      actorId: adminId,
+      action: "LISTING_STATUS_CHANGED",
+      resource: "Listing",
+      resourceId: parsed.data.listingId,
+      after: { status: parsed.data.status },
+    });
+    
     revalidatePath(ROUTES.adminListings);
   });
 }

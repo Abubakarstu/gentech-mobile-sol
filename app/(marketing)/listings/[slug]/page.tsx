@@ -12,6 +12,8 @@ import {
   getInspectionPlans,
   getListingInspectionReport,
 } from "@/features/inspections/services/inspection.service";
+import { getPhoneHistory } from "@/features/phone-history/services/phone-history.service";
+import type { PhoneHistoryEvent } from "@/features/phone-history/types";
 import { ListingInspectionCta } from "@/features/inspections/components/listing-inspection-cta";
 import { PublishedReportPanel } from "@/features/inspections/components/published-report-panel";
 import { ListingGallery } from "@/features/listings/components/listing-gallery";
@@ -24,6 +26,7 @@ import { ListingsGrid } from "@/features/marketplace/components/listings-grid";
 import { SectionHeader } from "@/features/marketplace/components/section-header";
 import { ViewListingTracker } from "@/features/analytics/components/view-listing-tracker";
 import { Badge } from "@/components/ui/badge";
+import { CheckCircle2, ShieldCheck } from "lucide-react";
 
 /** Shared per-request loader → metadata + page reuse one fetch (one view increment). */
 const loadListing = cache((slug: string) => getListingDetail(slug));
@@ -59,9 +62,10 @@ export default async function ListingDetailPage({ params }: PageProps) {
   const { detail, related } = result;
 
   // Inspection service data (fail-soft): pricing packages + any published report.
-  const [inspectionPlans, publishedReport] = await Promise.all([
+  const [inspectionPlans, publishedReport, phoneHistory] = await Promise.all([
     getInspectionPlans(),
     getListingInspectionReport(detail.id),
+    getPhoneHistory(detail.id, 10),
   ]);
 
   const jsonLd = {
@@ -143,6 +147,34 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
           {publishedReport ? <PublishedReportPanel report={publishedReport} /> : null}
 
+          {/* Trust Badges */}
+          <section className="flex flex-wrap gap-2">
+            {detail.attributes.find((a) => a.label === "PTA Status" && a.value === "PTA_APPROVED") && (
+              <Badge variant="outline" className="border-green-500 text-green-700 bg-green-50">
+                <CheckCircle2 className="mr-1 size-3" />
+                PTA Approved
+              </Badge>
+            )}
+            {detail.attributes.find((a) => a.label === "CPID Status" && a.value === "CPID_APPROVED") && (
+              <Badge variant="outline" className="border-blue-500 text-blue-700 bg-blue-50">
+                <CheckCircle2 className="mr-1 size-3" />
+                CPID Verified
+              </Badge>
+            )}
+            {publishedReport && (
+              <Badge variant="outline" className="border-purple-500 text-purple-700 bg-purple-50">
+                <ShieldCheck className="mr-1 size-3" />
+                Inspected
+              </Badge>
+            )}
+            {detail.attributes.find((a) => a.label === "Warranty" && a.value !== "NO_WARRANTY") && (
+              <Badge variant="outline" className="border-orange-500 text-orange-700 bg-orange-50">
+                <CheckCircle2 className="mr-1 size-3" />
+                Warranty
+              </Badge>
+            )}
+          </section>
+
           <ListingSpecs attributes={detail.attributes} />
 
           <section>
@@ -151,6 +183,25 @@ export default async function ListingDetailPage({ params }: PageProps) {
               {detail.description}
             </p>
           </section>
+
+          {phoneHistory.length > 0 ? (
+            <section>
+              <h2 className="mb-3 text-lg font-semibold">Phone History</h2>
+              <div className="space-y-2">
+                {phoneHistory.map((event: PhoneHistoryEvent) => (
+                  <div key={event.id} className="border-b pb-2 last:border-b-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm">{event.eventType}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {new Date(event.occurredAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    {event.title && <p className="text-muted-foreground text-sm mt-1">{event.title}</p>}
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           <LocationMap
             city={detail.city}

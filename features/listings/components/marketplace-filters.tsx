@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import { LISTING_CONDITION_LABELS, PK_CITIES } from "@/lib/constants";
+import { LISTING_CONDITION_LABELS, PK_CITIES, STORAGE_OPTIONS, RAM_OPTIONS, WARRANTY_TYPE, PTA_STATUS, CPID_STATUS } from "@/lib/constants";
 import type { BrandItem, CategoryItem, ListingFilters } from "@/types/marketplace";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ export function MarketplaceFilters({ categories, brands, filters }: Props) {
 
   const [minPrice, setMinPrice] = React.useState(filters.minPrice?.toString() ?? "");
   const [maxPrice, setMaxPrice] = React.useState(filters.maxPrice?.toString() ?? "");
+  const [batteryHealthMin, setBatteryHealthMin] = React.useState(filters.batteryHealthMin?.toString() ?? "");
 
   function applyPrice(e: React.FormEvent) {
     e.preventDefault();
@@ -158,6 +159,168 @@ export function MarketplaceFilters({ categories, brands, filters }: Props) {
             </option>
           ))}
         </select>
+      </FilterGroup>
+
+      <FilterGroup title="Storage">
+        <div className="flex flex-wrap gap-1.5">
+          {STORAGE_OPTIONS.map((storage) => {
+            const active = filters.storage === storage;
+            return (
+              <Link
+                key={storage}
+                href={buildHref({ storage: active ? null : storage })}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-xs transition-colors",
+                  active ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent",
+                )}
+              >
+                {storage}GB
+              </Link>
+            );
+          })}
+        </div>
+      </FilterGroup>
+
+      <FilterGroup title="RAM">
+        <div className="flex flex-wrap gap-1.5">
+          {RAM_OPTIONS.map((ram) => {
+            const active = filters.ram === ram;
+            return (
+              <Link
+                key={ram}
+                href={buildHref({ ram: active ? null : ram })}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-xs transition-colors",
+                  active ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent",
+                )}
+              >
+                {ram}GB
+              </Link>
+            );
+          })}
+        </div>
+      </FilterGroup>
+
+      <FilterGroup title="Battery Health">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Input
+              inputMode="numeric"
+              value={batteryHealthMin}
+              onChange={(e) => setBatteryHealthMin(e.target.value.replace(/\D/g, ""))}
+              placeholder="Min %"
+              className="h-9"
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(buildHref({ batteryHealthMin: batteryHealthMin || null }))}
+            >
+              Apply
+            </Button>
+          </div>
+        </div>
+      </FilterGroup>
+
+      <FilterGroup title="PTA Status">
+        <ul className="space-y-0.5">
+          {Object.entries(PTA_STATUS).map(([value, label]) => {
+            const active = filters.ptaStatus === value;
+            return (
+              <li key={value}>
+                <Link
+                  href={buildHref({ ptaStatus: active ? null : value })}
+                  className={cn(
+                    "hover:bg-accent block rounded-md px-2 py-1.5",
+                    active && "bg-accent font-medium",
+                  )}
+                >
+                  {label.replace(/_/g, " ")}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </FilterGroup>
+
+      <FilterGroup title="CPID Status">
+        <ul className="space-y-0.5">
+          {Object.entries(CPID_STATUS).map(([value, label]) => {
+            const active = filters.cpidStatus === value;
+            return (
+              <li key={value}>
+                <Link
+                  href={buildHref({ cpidStatus: active ? null : value })}
+                  className={cn(
+                    "hover:bg-accent block rounded-md px-2 py-1.5",
+                    active && "bg-accent font-medium",
+                  )}
+                >
+                  {label.replace(/_/g, " ")}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </FilterGroup>
+
+      <FilterGroup title="Warranty">
+        <ul className="space-y-0.5">
+          {Object.entries(WARRANTY_TYPE).map(([value, label]) => {
+            const active = filters.warranty === value;
+            return (
+              <li key={value}>
+                <Link
+                  href={buildHref({ warranty: active ? null : value })}
+                  className={cn(
+                    "hover:bg-accent block rounded-md px-2 py-1.5",
+                    active && "bg-accent font-medium",
+                  )}
+                >
+                  {label.replace(/_/g, " ")}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </FilterGroup>
+
+      <FilterGroup title="Trust">
+        <ul className="space-y-0.5">
+          <li>
+            <Link
+              href={buildHref({ isInspected: filters.isInspected ? null : "true" })}
+              className={cn(
+                "hover:bg-accent block rounded-md px-2 py-1.5",
+                filters.isInspected && "bg-accent font-medium",
+              )}
+            >
+              Inspected only
+            </Link>
+          </li>
+          <li>
+            <Link
+              href={buildHref({ isVerifiedSeller: filters.isVerifiedSeller ? null : "true" })}
+              className={cn(
+                "hover:bg-accent block rounded-md px-2 py-1.5",
+                filters.isVerifiedSeller && "bg-accent font-medium",
+              )}
+            >
+              Verified sellers only
+            </Link>
+          </li>
+          <li>
+            <Link
+              href={buildHref({ isDealer: filters.isDealer ? null : "true" })}
+              className={cn(
+                "hover:bg-accent block rounded-md px-2 py-1.5",
+                filters.isDealer && "bg-accent font-medium",
+              )}
+            >
+              Dealers only
+            </Link>
+          </li>
+        </ul>
       </FilterGroup>
     </div>
   );
