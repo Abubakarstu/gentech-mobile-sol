@@ -5,6 +5,7 @@ import { nextCookies } from "better-auth/next-js";
 import { APP, USER_ROLES } from "@/lib/constants";
 import { sendEmail } from "@/lib/email";
 import { env } from "@/lib/env";
+import { DEMO_LOCAL_SECRET, isReadOnlyDemoEnabled } from "@/lib/demo-mode";
 // Better Auth owns its tables, so it is the one infrastructure module besides
 // repositories that may import the Prisma client directly.
 import { prisma } from "@/lib/prisma";
@@ -43,7 +44,7 @@ const requireEmailVerification =
 export const auth = betterAuth({
   appName: APP.name,
   baseURL: env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL,
-  secret: env.BETTER_AUTH_SECRET,
+  secret: env.BETTER_AUTH_SECRET || (isReadOnlyDemoEnabled() ? DEMO_LOCAL_SECRET : ""),
 
   database: prismaAdapter(prisma, { provider: "postgresql" }),
 

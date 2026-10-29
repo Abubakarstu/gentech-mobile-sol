@@ -28,9 +28,11 @@ import {
 export function SignInForm({
   providers,
   demoAccessEnabled = false,
+  demoOnly = false,
 }: {
   providers: EnabledSocialProviders;
   demoAccessEnabled?: boolean;
+  demoOnly?: boolean;
 }) {
   const router = useRouter();
   const form = useForm<SignInInput>({
@@ -65,75 +67,85 @@ export function SignInForm({
 
   return (
     <div className="grid gap-6">
-      <SocialButtons providers={providers} />
-      {(providers.google || providers.facebook) && <AuthDivider />}
+      {demoOnly ? (
+        <p className="text-muted-foreground text-sm">
+          Explore the read-only preview. Account registration and database features are disabled.
+        </p>
+      ) : (
+        <>
+          <SocialButtons providers={providers} />
+          {(providers.google || providers.facebook) && <AuthDivider />}
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel>Password</FormLabel>
-                  <Link
-                    href={ROUTES.forgotPassword}
-                    className="text-muted-foreground text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot password?
-                  </Link>
-                </div>
-                <FormControl>
-                  <Input
-                    type="password"
-                    autoComplete="current-password"
-                    placeholder="••••••••"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4" noValidate>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@example.com"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center justify-between">
+                      <FormLabel>Password</FormLabel>
+                      <Link
+                        href={ROUTES.forgotPassword}
+                        className="text-muted-foreground text-sm underline-offset-4 hover:underline"
+                      >
+                        Forgot password?
+                      </Link>
+                    </div>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        autoComplete="current-password"
+                        placeholder="••••••••"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="size-4 animate-spin" />}
-            Sign in
-          </Button>
-        </form>
-      </Form>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="size-4 animate-spin" />}
+                Sign in
+              </Button>
+            </form>
+          </Form>
+        </>
+      )}
 
-      {demoAccessEnabled ? <DemoAccess /> : null}
+      {demoAccessEnabled ? <DemoAccess productionDemo={demoOnly} /> : null}
 
-      <p className="text-muted-foreground text-center text-sm">
-        New to {""}
-        <span className="font-medium">the marketplace?</span>{" "}
-        <Link
-          href={ROUTES.signUp}
-          className="text-foreground font-medium underline-offset-4 hover:underline"
-        >
-          Create an account
-        </Link>
-      </p>
+      {!demoOnly ? (
+        <p className="text-muted-foreground text-center text-sm">
+          New to {""}
+          <span className="font-medium">the marketplace?</span>{" "}
+          <Link
+            href={ROUTES.signUp}
+            className="text-foreground font-medium underline-offset-4 hover:underline"
+          >
+            Create an account
+          </Link>
+        </p>
+      ) : null}
     </div>
   );
 }

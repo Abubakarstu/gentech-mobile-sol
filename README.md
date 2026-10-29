@@ -26,17 +26,21 @@ pnpm install
 ## 2. Configure environment
 
 For a database-free public demo, copy the example as-is. The homepage uses demo fixtures
-when PostgreSQL is unavailable; sign-in, registration, and database-backed writes will
-not work until a real database is configured.
+when PostgreSQL is unavailable. The read-only demo login is `user` / `user`; admin,
+dealer, registration, and database-backed write features are disabled.
 
 ```bash
 cp .env.example .env
 ```
 
-For database-backed features, set `DEMO_MODE="false"` and replace the database and
-auth placeholders with real values. For a Vercel demo, set `DEMO_MODE=true` and
-`NEXT_PUBLIC_APP_URL` in the project environment variables. Do not deploy the example
-auth secret for an app that accepts user accounts.
+For database-backed features, set `DEMO_MODE="false"` and `DEMO_READ_ONLY="false"`,
+then replace the database and auth placeholders with real values.
+
+For an initial database-free Vercel demo, no environment variables are required. When
+both `DATABASE_URL` and `BETTER_AUTH_SECRET` are absent, production automatically
+starts in read-only demo mode and exposes only the `user` / `user` preview login.
+Database requests and all write methods are blocked. To use the real app later, configure
+the database and auth variables and set `DEMO_MODE=false` and `DEMO_READ_ONLY=false`.
 
 Minimum required to run auth locally:
 
@@ -70,11 +74,11 @@ For a protected demo database only, set `DEMO_MODE="true"` and
 `DEMO_SEED_USERS="true"`, then run `pnpm db:seed`. The seed creates or resets these
 Better Auth-compatible sign-in accounts:
 
-| Panel | Email | Password |
-| --- | --- | --- |
-| Admin | `admin@demo.gentech.test` | `DemoAdmin-2026!` |
+| Panel     | Email                         | Password              |
+| --------- | ----------------------------- | --------------------- |
+| Admin     | `admin@demo.gentech.test`     | `DemoAdmin-2026!`     |
 | Inspector | `inspector@demo.gentech.test` | `DemoInspector-2026!` |
-| User | `user@demo.gentech.test` | `DemoUser-2026!` |
+| User      | `user@demo.gentech.test`      | `DemoUser-2026!`      |
 
 The admin account has full admin access. Do not seed these accounts on an unprotected
 public deployment; anyone with this list could sign in as admin. Keep

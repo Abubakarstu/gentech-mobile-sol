@@ -4,10 +4,27 @@ import Link from "next/link";
 import { DEMO_BRANDS, DEMO_CATEGORIES } from "@/features/marketplace/data/fixtures";
 import { CreateListingForm } from "@/features/listings/components/create-listing-form";
 import { buttonVariants } from "@/components/ui/button";
+import { getCurrentUser } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Post your ad" };
 
-export default function SellPage() {
+export default async function SellPage() {
+  const user = await getCurrentUser();
+  if (user?.id.startsWith("demo:")) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-3">
+        <h1 className="text-2xl font-bold tracking-tight">Read-only demo</h1>
+        <p className="text-muted-foreground text-sm">
+          Creating listings is disabled in the demo. Browse the marketplace or explore the phone
+          tools.
+        </p>
+        <Link href="/marketplace" className={buttonVariants({ variant: "outline" })}>
+          Browse marketplace
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-2xl">
       <header className="mb-6">
@@ -18,22 +35,28 @@ export default function SellPage() {
       </header>
 
       {/* Phone Intelligence Quick Links */}
-      <div className="grid grid-cols-2 gap-4 mb-6">
+      <div className="mb-6 grid grid-cols-2 gap-4">
         <Link
           href="/valuation"
-          className={buttonVariants({ variant: "outline", className: "flex flex-col items-center justify-center gap-2 h-auto py-4" })}
+          className={buttonVariants({
+            variant: "outline",
+            className: "flex h-auto flex-col items-center justify-center gap-2 py-4",
+          })}
         >
           <span className="text-lg">💰</span>
           <span className="text-sm font-medium">Check Value</span>
-          <span className="text-xs text-muted-foreground">Get price estimate</span>
+          <span className="text-muted-foreground text-xs">Get price estimate</span>
         </Link>
         <Link
           href="/imei-check"
-          className={buttonVariants({ variant: "outline", className: "flex flex-col items-center justify-center gap-2 h-auto py-4" })}
+          className={buttonVariants({
+            variant: "outline",
+            className: "flex h-auto flex-col items-center justify-center gap-2 py-4",
+          })}
         >
           <span className="text-lg">🔍</span>
           <span className="text-sm font-medium">Verify IMEI</span>
-          <span className="text-xs text-muted-foreground">Check PTA status</span>
+          <span className="text-muted-foreground text-xs">Check PTA status</span>
         </Link>
       </div>
 

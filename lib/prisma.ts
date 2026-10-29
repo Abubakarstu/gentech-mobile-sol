@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { env } from "@/lib/env";
 import { PrismaClient } from "@/lib/generated/prisma/client";
+import { isReadOnlyDemoEnabled } from "@/lib/demo-mode";
 
 /**
  * Single shared PrismaClient.
@@ -17,7 +18,11 @@ import { PrismaClient } from "@/lib/generated/prisma/client";
  */
 const createPrismaClient = () =>
   new PrismaClient({
-    adapter: new PrismaPg({ connectionString: env.DATABASE_URL }),
+    adapter: new PrismaPg({
+      connectionString: isReadOnlyDemoEnabled()
+        ? "postgresql://127.0.0.1:1/gentech-demo-disabled"
+        : env.DATABASE_URL,
+    }),
     log: env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
 

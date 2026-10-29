@@ -6,18 +6,24 @@ import { cookies, headers } from "next/headers";
 
 import { auth } from "@/lib/auth";
 import { USER_ROLES, type UserRole } from "@/lib/constants";
+import { DEMO_LOCAL_SECRET, isDemoModeEnabled, isReadOnlyDemoEnabled } from "@/lib/demo-mode";
 
 const DEMO_COOKIE = "gentech_demo_session";
-const DEMO_COOKIE_SECRET = "gentech-local-demo-session-only";
+const DEMO_AUTH_SECRET_PLACEHOLDER = "local-demo-secret-change-before-deploy-000000000000";
 const DEMO_SESSION_MAX_AGE = 8 * 60 * 60 * 1000;
 type DemoRole = "ADMIN" | "USER" | "DEALER";
 
 function demoModeEnabled() {
-  return process.env.NODE_ENV !== "production" && process.env.DEMO_MODE === "true";
+  if (!isDemoModeEnabled()) return false;
+  if (process.env.NODE_ENV !== "production") return true;
+  if (isReadOnlyDemoEnabled()) return true;
+  const secret = process.env.BETTER_AUTH_SECRET;
+  return Boolean(secret && secret !== DEMO_AUTH_SECRET_PLACEHOLDER && secret.length >= 32);
 }
 
 function signDemoPayload(payload: string) {
-  return createHmac("sha256", DEMO_COOKIE_SECRET).update(payload).digest("base64url");
+  const secret = process.env.BETTER_AUTH_SECRET ?? DEMO_LOCAL_SECRET;
+  return createHmac("sha256", secret).update(payload).digest("base64url");
 }
 
 function createDemoSession(role: DemoRole) {
@@ -55,6 +61,9 @@ function createDemoSession(role: DemoRole) {
 }
 
 export function createDemoCookieValue(role: DemoRole) {
+  if (process.env.NODE_ENV === "production" && role !== "USER") {
+    throw new Error("Production demo sessions are restricted to the preview user.");
+  }
   const payload = `${role}.${Date.now()}`;
   return `${payload}.${signDemoPayload(payload)}`;
 }
@@ -67,7 +76,8 @@ function readDemoRole(value?: string): DemoRole | null {
     !role ||
     !issuedAt ||
     !signature ||
-    !["ADMIN", "USER", "DEALER"].includes(role)
+    !["ADMIN", "USER", "DEALER"].includes(role) ||
+    (process.env.NODE_ENV === "production" && role !== "USER")
   ) {
     return null;
   }
@@ -89,6 +99,12 @@ function readDemoRole(value?: string): DemoRole | null {
  * Returns `null` when there is no authenticated user.
  */
 export const getCurrentSession = cache(async () => {
+  if (isReadOnlyDemoEnabled()) {
+    if (!demoModeEnabled()) return null;
+    const role = readDemoRole((await cookies()).get(DEMO_COOKIE)?.value);
+    return role ? createDemoSession(role) : null;
+  }
+
   if (demoModeEnabled()) {
     const role = readDemoRole((await cookies()).get(DEMO_COOKIE)?.value);
     if (role) return createDemoSession(role);

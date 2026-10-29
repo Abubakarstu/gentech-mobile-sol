@@ -9,7 +9,7 @@ import { getUserDealer, getDealerStats } from "@/features/dealer/services/dealer
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-export const metadata: Metadata = { 
+export const metadata: Metadata = {
   title: "Dealer Dashboard",
   robots: { index: false, follow: false },
 };
@@ -19,6 +19,7 @@ export default async function DealerDashboardPage() {
   if (!session) redirect(ROUTES.signIn);
 
   const { user } = session;
+  if (user.id === "demo:user") redirect(ROUTES.dashboard);
   if (user.id === "demo:dealer") {
     return (
       <div className="space-y-8">
@@ -32,18 +33,24 @@ export default async function DealerDashboardPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {["Listings", "Staff Members", "Branches", "Items Sold"].map((label) => (
             <Card key={label}>
-              <CardHeader><CardTitle className="text-sm font-medium">{label}</CardTitle></CardHeader>
-              <CardContent><div className="text-2xl font-bold">Demo</div></CardContent>
+              <CardHeader>
+                <CardTitle className="text-sm font-medium">{label}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">Demo</div>
+              </CardContent>
             </Card>
           ))}
         </div>
-        <p className="text-muted-foreground text-sm">Preview mode: database actions are unavailable.</p>
+        <p className="text-muted-foreground text-sm">
+          Preview mode: database actions are unavailable.
+        </p>
       </div>
     );
   }
 
   const dealer = await getUserDealer(user.id);
-  
+
   if (!dealer) {
     return (
       <div className="space-y-6">
@@ -55,7 +62,8 @@ export default async function DealerDashboardPage() {
           <CardHeader>
             <CardTitle>Not a Dealer</CardTitle>
             <CardDescription>
-              You don&apos;t have a dealer account yet. Apply to become a dealer to access advanced features.
+              You don&apos;t have a dealer account yet. Apply to become a dealer to access advanced
+              features.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -141,25 +149,25 @@ export default async function DealerDashboardPage() {
           </CardHeader>
           <CardContent className="space-y-2">
             <Link href={`${ROUTES.dashboard}/dealer/profile`}>
-              <Badge variant="outline" className="cursor-pointer w-full justify-center py-2">
+              <Badge variant="outline" className="w-full cursor-pointer justify-center py-2">
                 <Building2 className="mr-2 size-4" />
                 Edit Profile
               </Badge>
             </Link>
             <Link href={`${ROUTES.dashboard}/dealer/branches`}>
-              <Badge variant="outline" className="cursor-pointer w-full justify-center py-2">
+              <Badge variant="outline" className="w-full cursor-pointer justify-center py-2">
                 <MapPin className="mr-2 size-4" />
                 Manage Branches
               </Badge>
             </Link>
             <Link href={`${ROUTES.dashboard}/dealer/inventory`}>
-              <Badge variant="outline" className="cursor-pointer w-full justify-center py-2">
+              <Badge variant="outline" className="w-full cursor-pointer justify-center py-2">
                 <Package className="mr-2 size-4" />
                 Manage Inventory
               </Badge>
             </Link>
             <Link href={`${ROUTES.dashboard}/dealer/staff`}>
-              <Badge variant="outline" className="cursor-pointer w-full justify-center py-2">
+              <Badge variant="outline" className="w-full cursor-pointer justify-center py-2">
                 <Users className="mr-2 size-4" />
                 Manage Staff
               </Badge>

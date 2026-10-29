@@ -108,48 +108,57 @@ export function UserMenu({
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href={ROUTES.dashboard} />}>
-          <LayoutDashboard className="size-4" />
-          Dashboard
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href={ROUTES.myListings} />}>
-          <Package className="size-4" />
-          My Listings
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href={ROUTES.messages} />}>
-          <MessageSquare className="size-4" />
-          Messages
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href={ROUTES.savedSearches} />}>
-          <Bookmark className="size-4" />
-          Saved Searches
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href={ROUTES.inspections} />}>
-          <ShieldCheck className="size-4" />
-          My Inspections
-        </DropdownMenuItem>
-        <DropdownMenuItem render={<Link href={ROUTES.account} />}>
-          <UserIcon className="size-4" />
-          Profile
-        </DropdownMenuItem>
-        {role === USER_ROLES.INSPECTOR || role === USER_ROLES.ADMIN ? (
-          <DropdownMenuItem render={<Link href={ROUTES.inspector} />}>
-            <ClipboardCheck className="size-4" />
-            Inspector
-          </DropdownMenuItem>
-        ) : null}
-        {role === USER_ROLES.ADMIN ? (
-          <DropdownMenuItem render={<Link href={ROUTES.admin} />}>
+        {isDemoSession ? (
+          <DropdownMenuItem render={<Link href={ROUTES.dashboard} />}>
             <LayoutDashboard className="size-4" />
-            Admin
+            Dashboard
           </DropdownMenuItem>
-        ) : null}
-        {isDemoDealer ? (
-          <DropdownMenuItem render={<Link href={`${ROUTES.dashboard}/dealer`} />}>
-            <LayoutDashboard className="size-4" />
-            Dealer panel
-          </DropdownMenuItem>
-        ) : null}
+        ) : (
+          <>
+            <DropdownMenuItem render={<Link href={ROUTES.dashboard} />}>
+              <LayoutDashboard className="size-4" />
+              Dashboard
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href={ROUTES.myListings} />}>
+              <Package className="size-4" />
+              My Listings
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href={ROUTES.messages} />}>
+              <MessageSquare className="size-4" />
+              Messages
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href={ROUTES.savedSearches} />}>
+              <Bookmark className="size-4" />
+              Saved Searches
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href={ROUTES.inspections} />}>
+              <ShieldCheck className="size-4" />
+              My Inspections
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href={ROUTES.account} />}>
+              <UserIcon className="size-4" />
+              Profile
+            </DropdownMenuItem>
+            {role === USER_ROLES.INSPECTOR || role === USER_ROLES.ADMIN ? (
+              <DropdownMenuItem render={<Link href={ROUTES.inspector} />}>
+                <ClipboardCheck className="size-4" />
+                Inspector
+              </DropdownMenuItem>
+            ) : null}
+            {role === USER_ROLES.ADMIN ? (
+              <DropdownMenuItem render={<Link href={ROUTES.admin} />}>
+                <LayoutDashboard className="size-4" />
+                Admin
+              </DropdownMenuItem>
+            ) : null}
+            {isDemoDealer ? (
+              <DropdownMenuItem render={<Link href={`${ROUTES.dashboard}/dealer`} />}>
+                <LayoutDashboard className="size-4" />
+                Dealer panel
+              </DropdownMenuItem>
+            ) : null}
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={(e) => e.preventDefault()}
