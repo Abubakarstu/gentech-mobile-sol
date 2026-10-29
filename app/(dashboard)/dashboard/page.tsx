@@ -23,6 +23,26 @@ export default async function DashboardPage() {
 
   const { user } = session;
   const role = (user.role as UserRole | undefined) ?? USER_ROLES.USER;
+  if (user.id === "demo:user") {
+    return (
+      <div className="space-y-6">
+        <header>
+          <h1 className="text-2xl font-bold tracking-tight">Welcome back, Demo</h1>
+          <p className="text-muted-foreground text-sm">{user.email}</p>
+        </header>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {["My Listings", "Messages", "Saved Searches", "Inspections"].map((label) => (
+            <Card key={label}>
+              <CardHeader><CardTitle className="text-sm font-medium">{label}</CardTitle></CardHeader>
+              <CardContent><div className="text-2xl font-bold">Demo</div></CardContent>
+            </Card>
+          ))}
+        </div>
+        <p className="text-muted-foreground text-sm">Preview mode: database actions are unavailable.</p>
+      </div>
+    );
+  }
+
   const [unread, sellerStats, inspectionCount] = await Promise.all([
     getUnreadCount(user.id),
     getStats(user.id),

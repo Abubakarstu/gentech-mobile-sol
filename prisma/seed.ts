@@ -2,12 +2,13 @@
  * Database seed — catalog reference data.
  *
  * Seeds the phone-focused category tree and popular brands. Idempotent: safe to
- * run repeatedly (everything upserts by unique slug). User accounts are NOT seeded
- * here — they go through Better Auth's sign-up flow so passwords hash correctly.
+ * run repeatedly (everything upserts by unique slug). Optional demo accounts use
+ * Better Auth's password hash format and are gated by two explicit environment flags.
  *
  * Run via `pnpm db:seed` or automatically after `pnpm db:migrate`.
  */
 import { PrismaPg } from "@prisma/adapter-pg";
+import { hashPassword } from "better-auth/crypto";
 
 import { PrismaClient } from "../lib/generated/prisma/client";
 
@@ -64,6 +65,73 @@ const BRANDS = [
   "Huawei",
   "Motorola",
 ];
+
+const DEMO_ACCOUNTS = [
+  {
+    name: "GenTech Demo Admin",
+    email: "admin@demo.gentech.test",
+    password: "DemoAdmin-2026!",
+    role: "ADMIN" as const,
+  },
+  {
+    name: "GenTech Demo Inspector",
+    email: "inspector@demo.gentech.test",
+    password: "DemoInspector-2026!",
+    role: "INSPECTOR" as const,
+  },
+  {
+    name: "GenTech Demo User",
+    email: "user@demo.gentech.test",
+    password: "DemoUser-2026!",
+    role: "USER" as const,
+  },
+];
+
+async function seedDemoAccounts(prisma: PrismaClient) {
+  if (process.env.DEMO_SEED_USERS !== "true") return;
+  if (process.env.DEMO_MODE !== "true") {
+    throw new Error("DEMO_SEED_USERS requires DEMO_MODE=true.");
+  }
+
+  for (const demoAccount of DEMO_ACCOUNTS) {
+    const password = await hashPassword(demoAccount.password);
+    const user = await prisma.user.upsert({
+      where: { email: demoAccount.email },
+      update: {
+        name: demoAccount.name,
+        emailVerified: true,
+        role: demoAccount.role,
+      },
+      create: {
+        name: demoAccount.name,
+        email: demoAccount.email,
+        emailVerified: true,
+        role: demoAccount.role,
+      },
+    });
+
+    await prisma.profile.upsert({
+      where: { userId: user.id },
+      update: {},
+      create: { userId: user.id },
+    });
+
+    await prisma.account.upsert({
+      where: {
+        providerId_accountId: { providerId: "credential", accountId: user.id },
+      },
+      update: { password },
+      create: {
+        accountId: user.id,
+        providerId: "credential",
+        userId: user.id,
+        password,
+      },
+    });
+  }
+
+  console.info("✓ Seeded demo admin, inspector, and user accounts.");
+}
 
 /** Inspection packages (PakWheels-style tiers). Prices in PKR. */
 const INSPECTION_PLANS: Array<{
@@ -266,6 +334,8 @@ async function main() {
   const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
   try {
+    await seedDemoAccounts(prisma);
+
     // Categories (roots, then children referencing the root id).
     for (const [rootIndex, root] of CATEGORIES.entries()) {
       const parent = await prisma.category.upsert({

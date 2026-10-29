@@ -13,6 +13,7 @@ import { ROUTES } from "@/lib/constants";
 import { signInSchema, type SignInInput } from "@/features/auth/schemas";
 import { SocialButtons, type EnabledSocialProviders } from "./social-buttons";
 import { AuthDivider } from "./auth-divider";
+import { DemoAccess } from "./demo-access";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,7 +25,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
-export function SignInForm({ providers }: { providers: EnabledSocialProviders }) {
+export function SignInForm({
+  providers,
+  demoAccessEnabled = false,
+}: {
+  providers: EnabledSocialProviders;
+  demoAccessEnabled?: boolean;
+}) {
   const router = useRouter();
   const form = useForm<SignInInput>({
     resolver: zodResolver(signInSchema),
@@ -114,6 +121,8 @@ export function SignInForm({ providers }: { providers: EnabledSocialProviders })
           </Button>
         </form>
       </Form>
+
+      {demoAccessEnabled ? <DemoAccess /> : null}
 
       <p className="text-muted-foreground text-center text-sm">
         New to {""}

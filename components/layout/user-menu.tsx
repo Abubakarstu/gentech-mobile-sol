@@ -33,7 +33,9 @@ interface UserMenuProps {
   name: string;
   email: string;
   image?: string | null;
-  role: UserRole;
+  role: UserRole | "DEALER";
+  isDemoSession?: boolean;
+  isDemoDealer?: boolean;
 }
 
 function initials(name: string) {
@@ -47,12 +49,26 @@ function initials(name: string) {
   );
 }
 
-export function UserMenu({ name, email, image, role }: UserMenuProps) {
+export function UserMenu({
+  name,
+  email,
+  image,
+  role,
+  isDemoSession = false,
+  isDemoDealer = false,
+}: UserMenuProps) {
   const router = useRouter();
   const [pending, setPending] = React.useState(false);
 
   async function handleSignOut() {
     setPending(true);
+    if (isDemoSession) {
+      await fetch("/api/demo-login", { method: "DELETE" });
+      router.push(ROUTES.home);
+      router.refresh();
+      return;
+    }
+
     await signOut({
       fetchOptions: {
         onSuccess: () => {
@@ -126,6 +142,12 @@ export function UserMenu({ name, email, image, role }: UserMenuProps) {
           <DropdownMenuItem render={<Link href={ROUTES.admin} />}>
             <LayoutDashboard className="size-4" />
             Admin
+          </DropdownMenuItem>
+        ) : null}
+        {isDemoDealer ? (
+          <DropdownMenuItem render={<Link href={`${ROUTES.dashboard}/dealer`} />}>
+            <LayoutDashboard className="size-4" />
+            Dealer panel
           </DropdownMenuItem>
         ) : null}
         <DropdownMenuSeparator />

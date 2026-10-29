@@ -7,6 +7,8 @@
 | `DATABASE_URL` | YES | NO | YES | NO | YES | PostgreSQL pooled connection (application) |
 | `DIRECT_URL` | OPTIONAL | NO | YES | NO | YES | PostgreSQL direct connection (migrations) |
 | `BETTER_AUTH_SECRET` | YES | NO | YES | NO | YES | Better Auth session signing key |
+| `DEMO_MODE` | OPTIONAL | NO | YES | NO | NO | `true` supplies local-only fallback DB/auth values for a public demo; database features remain unavailable |
+| `DEMO_SEED_USERS` | OPTIONAL | NO | YES | NO | NO | `true` with `DEMO_MODE=true` opts into seeding the documented demo login accounts |
 | `BETTER_AUTH_URL` | OPTIONAL | NO | YES | NO | NO | Better Auth base URL (callbacks/redirects) |
 | `AUTH_SKIP_EMAIL_VERIFICATION` | OPTIONAL | NO | YES | NO | NO | Dev-only: skip email verification (ignored in production) |
 | `GOOGLE_CLIENT_ID` | OPTIONAL | NO | YES | NO | YES | Google OAuth client ID |
@@ -134,5 +136,7 @@ These variables MUST be configured for the application to function:
 - `NODE_ENV`: `development`
 - `NEXT_PUBLIC_APP_URL`: `http://localhost:3000`
 - `NEXT_PUBLIC_APP_NAME`: `GenTech`
+- `DEMO_MODE`: `false` (required DB and auth values remain enforced unless explicitly enabled)
+- `DEMO_SEED_USERS`: `false` (demo users are not created unless explicitly enabled)
 
 All other required variables must be explicitly configured.
