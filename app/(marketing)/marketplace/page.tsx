@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { parseListingFilters } from "@/features/listings/schemas/filters";
 import { getListingFeed } from "@/features/listings/services/listing.service";
@@ -13,6 +14,7 @@ import { ListingsPagination } from "@/features/listings/components/listings-pagi
 import { SaveSearchButton } from "@/features/saved-searches/components/save-search-button";
 import type { ListingFilters } from "@/types/marketplace";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
 
 /** True when the user has narrowed the feed in some way worth saving. */
 function hasActiveFilters(filters: ListingFilters): boolean {
@@ -77,6 +79,19 @@ export default async function MarketplacePage({
           Preview data — connect a database to see live listings
         </Badge>
       ) : null}
+
+      {/* Phone Intelligence Quick Links */}
+      <div className="flex flex-wrap gap-3 mb-4">
+        <Link href="/compare" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          Compare Phones
+        </Link>
+        <Link href="/valuation" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          Check Value
+        </Link>
+        <Link href="/imei-check" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          Verify IMEI
+        </Link>
+      </div>
 
       <div className="mb-4">
         <ActiveFilters filters={filters} categories={DEMO_CATEGORIES} brands={DEMO_BRANDS} />

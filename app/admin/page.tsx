@@ -5,6 +5,7 @@ import { Flag, Package, ShoppingBag, Tag, UserPlus, Users } from "lucide-react";
 import { ROUTES } from "@/lib/constants";
 import { getStats } from "@/features/admin/services/admin.service";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { getCurrentUser } from "@/lib/session";
 
 export const metadata: Metadata = { 
   title: "Admin — Overview",
@@ -12,6 +13,31 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminOverviewPage() {
+  const user = await getCurrentUser();
+  if (user?.id === "demo:admin") {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {["Users", "Listings", "Reports", "Categories", "Inspections", "Promotions"].map(
+            (label) => (
+              <Card key={label}>
+                <CardHeader>
+                  <CardTitle className="text-sm font-medium">{label}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">Demo</div>
+                </CardContent>
+              </Card>
+            ),
+          )}
+        </div>
+        <p className="text-muted-foreground text-sm">
+          Preview mode: database actions are unavailable.
+        </p>
+      </div>
+    );
+  }
+
   const stats = await getStats();
 
   const cards = [

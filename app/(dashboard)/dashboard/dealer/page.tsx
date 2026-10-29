@@ -19,6 +19,29 @@ export default async function DealerDashboardPage() {
   if (!session) redirect(ROUTES.signIn);
 
   const { user } = session;
+  if (user.id === "demo:dealer") {
+    return (
+      <div className="space-y-8">
+        <header className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">Demo Mobile Store</h1>
+            <p className="text-muted-foreground text-sm">Dealer dashboard preview</p>
+          </div>
+          <Badge>DEMO</Badge>
+        </header>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {["Listings", "Staff Members", "Branches", "Items Sold"].map((label) => (
+            <Card key={label}>
+              <CardHeader><CardTitle className="text-sm font-medium">{label}</CardTitle></CardHeader>
+              <CardContent><div className="text-2xl font-bold">Demo</div></CardContent>
+            </Card>
+          ))}
+        </div>
+        <p className="text-muted-foreground text-sm">Preview mode: database actions are unavailable.</p>
+      </div>
+    );
+  }
+
   const dealer = await getUserDealer(user.id);
   
   if (!dealer) {

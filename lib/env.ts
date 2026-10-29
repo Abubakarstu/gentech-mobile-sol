@@ -1,6 +1,8 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+const demoMode = process.env.DEMO_MODE === "true";
+
 /**
  * Type-safe, validated environment variables.
  *
@@ -17,14 +19,19 @@ import { z } from "zod";
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    DEMO_MODE: z.enum(["true", "false"]).default("false"),
 
     // --- Database (Neon PostgreSQL) ---
     // Pooled connection (PgBouncer) for the app; direct connection for migrations.
-    DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
+    DATABASE_URL: demoMode
+      ? z.string().min(1).default("postgresql://demo:demo@127.0.0.1:5432/gentech")
+      : z.string().min(1, "DATABASE_URL is required"),
     DIRECT_URL: z.string().min(1).optional(),
 
     // --- Better Auth ---
-    BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
+    BETTER_AUTH_SECRET: demoMode
+      ? z.string().min(1).default("local-demo-secret-change-before-deploy-000000000000")
+      : z.string().min(1, "BETTER_AUTH_SECRET is required"),
     BETTER_AUTH_URL: z.url().optional(),
     // DEV-ONLY escape hatch: set to "true" to skip the email-verification gate when no
     // email provider is configured. Ignored in production (see lib/auth.ts).

@@ -23,8 +23,9 @@ import { DEMO_CATEGORIES } from "@/features/marketplace/data/fixtures";
 export async function SiteHeader() {
   const session = await getCurrentSession();
   const user = session?.user;
+  const isDemoSession = user?.id.startsWith("demo:") ?? false;
 
-  const [unreadNotifications, recentNotifications] = user
+  const [unreadNotifications, recentNotifications] = user && !isDemoSession
     ? await Promise.all([getUnreadNotificationCount(user.id), getNotifications(user.id, 6)])
     : [0, []];
 
@@ -82,7 +83,9 @@ export async function SiteHeader() {
               name={user.name}
               email={user.email}
               image={user.image}
-              role={(user.role as UserRole | undefined) ?? USER_ROLES.USER}
+              role={(user.role as UserRole | "DEALER" | undefined) ?? USER_ROLES.USER}
+              isDemoSession={isDemoSession}
+              isDemoDealer={user.id === "demo:dealer"}
             />
           ) : (
             <Link
