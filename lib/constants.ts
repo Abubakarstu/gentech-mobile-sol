@@ -110,7 +110,9 @@ export const LISTING_CONDITION_LABELS: Record<ListingCondition, string> = {
 /** Listing lifecycle states — kept in sync with the Prisma `ListingStatus` enum. */
 export const LISTING_STATUSES = {
   DRAFT: "DRAFT",
+  PENDING_APPROVAL: "PENDING_APPROVAL",
   ACTIVE: "ACTIVE",
+  REJECTED: "REJECTED",
   SOLD: "SOLD",
   EXPIRED: "EXPIRED",
   REMOVED: "REMOVED",
@@ -121,7 +123,9 @@ export type ListingStatus = (typeof LISTING_STATUSES)[keyof typeof LISTING_STATU
 /** Human-readable labels for listing statuses. */
 export const LISTING_STATUS_LABELS: Record<ListingStatus, string> = {
   DRAFT: "Draft",
+  PENDING_APPROVAL: "Pending Approval",
   ACTIVE: "Active",
+  REJECTED: "Rejected",
   SOLD: "Sold",
   EXPIRED: "Expired",
   REMOVED: "Removed",

@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { DEMO_BRANDS, DEMO_CATEGORIES } from "@/features/marketplace/data/fixtures";
 import { CreateListingForm } from "@/features/listings/components/create-listing-form";
 import { buttonVariants } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/session";
+import {
+  getMarketplaceBrands,
+  getMarketplaceCategories,
+} from "@/features/marketplace/services/catalog.service";
 
 export const metadata: Metadata = { title: "Post your ad" };
 
@@ -24,6 +27,11 @@ export default async function SellPage() {
       </div>
     );
   }
+
+  const [categories, brands] = await Promise.all([
+    getMarketplaceCategories(),
+    getMarketplaceBrands(),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -60,7 +68,7 @@ export default async function SellPage() {
         </Link>
       </div>
 
-      <CreateListingForm categories={DEMO_CATEGORIES} brands={DEMO_BRANDS} />
+      <CreateListingForm categories={categories} brands={brands} />
     </div>
   );
 }

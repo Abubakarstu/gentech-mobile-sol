@@ -95,8 +95,13 @@ read-only demo mode and disables database access.
 ### Payments
 
 - **PayFast**: `PAYFAST_MERCHANT_ID`, `PAYFAST_SECURED_KEY`, `PAYFAST_API_BASE`
-- For JazzCash, Easypaisa, cards
-- Currently in sandbox state only
+- The current PayFast adapter is an **unfinished scaffold**; checkout creation and provider verification are not implemented.
+- When PayFast credentials are absent, inspection checkout uses the built-in sandbox. Sandbox outcomes are simulated and must never be treated as real payments.
+- If PayFast credentials are present, the provider resolver selects the unfinished PayFast adapter; inspection checkout will fail until the adapter is completed. Do not configure production credentials yet.
+- Do not add JazzCash, Easypaisa, NayaPay, Visa, Mastercard, or bank-transfer secrets as `NEXT_PUBLIC_*` variables. Use a server-side provider adapter and managed secret storage.
+- Visa and Mastercard acceptance must be enabled through an acquiring bank or supported payment gateway; they are card networks, not wallet adapters.
+- Before accepting real payments, implement hosted checkout/tokenization, signed webhook verification, amount/currency/order validation, idempotency, append-only transaction records, refunds, and settlement reconciliation.
+- Never store or request full card numbers, CVV, PINs, or OTPs in application forms or admin settings.
 
 ### Maps
 
