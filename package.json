@@ -9,10 +9,9 @@
     "pnpm": ">=10"
   },
   "scripts": {
-    "vercel-build": "pnpm db:migrate && pnpm db:seed",
-    "vercel-postbuild": "pnpm vercel-build",
+    "vercel-build": "pnpm db:deploy && pnpm db:seed && cross-env SKIP_ENV_VALIDATION=1 next build",
     "dev": "next dev --turbopack",
-    "build": "pnpm vercel-build && cross-env SKIP_ENV_VALIDATION=1 next build",
+    "build": "pnpm db:migrate && pnpm db:seed && cross-env SKIP_ENV_VALIDATION=1 next build",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
@@ -24,6 +23,7 @@
     "test:ui": "vitest --ui",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
