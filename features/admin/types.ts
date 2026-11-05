@@ -18,6 +18,7 @@ export interface PlatformStats {
   totalBrands: number;
   totalModels: number;
   totalDealers: number;
+
 }
 
 /** A row in the admin users table. */
@@ -30,6 +31,7 @@ export interface AdminUserRow {
   emailVerified: boolean;
   listingCount: number;
   createdAt: string;
+
 }
 
 /** A row in the admin listings table. */
