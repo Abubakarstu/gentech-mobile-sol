@@ -40,16 +40,20 @@ function paginate<T>(items: T[], total: number, page: number): Paginated<T> {
 export async function getPlatformStats(): Promise<PlatformStats> {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const [totalUsers, newUsers7d, statusGroups, openReports] = await Promise.all([
-    prisma.user.count({ where: { deletedAt: null } }),
-    prisma.user.count({ where: { deletedAt: null, createdAt: { gte: sevenDaysAgo } } }),
-    prisma.listing.groupBy({
-      by: ["status"],
-      where: { deletedAt: null },
-      _count: { _all: true },
-    }),
-    prisma.report.count({ where: { status: REPORT_STATUSES.OPEN } }),
-  ]);
+  const [totalUsers, newUsers7d, statusGroups, openReports, totalBrands, totalModels, totalDealers] =
+    await Promise.all([
+      prisma.user.count({ where: { deletedAt: null } }),
+      prisma.user.count({ where: { deletedAt: null, createdAt: { gte: sevenDaysAgo } } }),
+      prisma.listing.groupBy({
+        by: ["status"],
+        where: { deletedAt: null },
+        _count: { _all: true },
+      }),
+      prisma.report.count({ where: { status: REPORT_STATUSES.OPEN } }),
+      prisma.brand.count({ where: { isActive: true } }),
+      prisma.phoneModel.count({ where: { isActive: true } }),
+      prisma.dealer.count(),
+    ]);
 
   const countByStatus = new Map<ListingStatus, number>(
     statusGroups.map((g) => [g.status, g._count._all]),
@@ -60,9 +64,14 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     totalUsers,
     newUsers7d,
     totalListings,
+    pendingListings: countByStatus.get(LISTING_STATUSES.PENDING_APPROVAL) ?? 0,
     activeListings: countByStatus.get(LISTING_STATUSES.ACTIVE) ?? 0,
+    rejectedListings: countByStatus.get(LISTING_STATUSES.REJECTED) ?? 0,
     soldListings: countByStatus.get(LISTING_STATUSES.SOLD) ?? 0,
     openReports,
+    totalBrands,
+    totalModels,
+    totalDealers,
   };
 }
 
@@ -208,6 +217,37 @@ export async function adminRemoveListing(listingId: string): Promise<void> {
   await prisma.listing.update({
     where: { id: listingId },
     data: { status: LISTING_STATUSES.REMOVED, deletedAt: new Date() },
+  });
+}
+
+export async function adminApproveListing(
+  listingId: string,
+  adminId: string,
+): Promise<void> {
+  await prisma.listing.update({
+    where: { id: listingId },
+    data: {
+      status: LISTING_STATUSES.ACTIVE,
+      reviewedAt: new Date(),
+      reviewedById: adminId,
+      rejectionReason: null,
+    },
+  });
+}
+
+export async function adminRejectListing(
+  listingId: string,
+  adminId: string,
+  reason: string,
+): Promise<void> {
+  await prisma.listing.update({
+    where: { id: listingId },
+    data: {
+      status: LISTING_STATUSES.REJECTED,
+      reviewedAt: new Date(),
+      reviewedById: adminId,
+      rejectionReason: reason,
+    },
   });
 }
 

@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 
 import { createDemoCookieValue, DEMO_COOKIE, demoModeEnabled } from "@/lib/session";
+
+const demoLoginSchema = z.object({
+  username: z.enum(["admin", "user", "dealer"]),
+  password: z.string(),
+});
 
 const DEMO_CREDENTIALS = {
   admin: { password: "admin", role: "ADMIN" },
@@ -10,7 +16,7 @@ const DEMO_CREDENTIALS = {
 
 const cookieOptions = {
   httpOnly: true,
-  secure: false,
+  secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
   path: "/",
   maxAge: 8 * 60 * 60,
@@ -21,22 +27,39 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Demo access is disabled." }, { status: 404 });
   }
   const hostname = new URL(request.url).hostname;
-  if (hostname !== "localhost" && hostname !== "127.0.0.1" && hostname !== "[::1]") {
-    return NextResponse.json({ error: "Demo access is available only on this machine." }, { status: 404 });
+  if (
+    process.env.NODE_ENV !== "production" &&
+    hostname !== "localhost" &&
+    hostname !== "127.0.0.1" &&
+    hostname !== "[::1]"
+  ) {
+    return NextResponse.json(
+      { error: "Demo access is available only on this machine." },
+      { status: 404 },
+    );
   }
 
-  let credentials: { username?: string; password?: string };
+  let body: unknown;
   try {
-    credentials = await request.json();
+    body = await request.json();
   } catch {
     return NextResponse.json({ error: "Invalid request." }, { status: 400 });
   }
 
-  const account = credentials.username
-    ? DEMO_CREDENTIALS[credentials.username as keyof typeof DEMO_CREDENTIALS]
-    : undefined;
+  const parsed = demoLoginSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
 
-  if (!account || credentials.password !== account.password) {
+  const { username, password } = parsed.data;
+  const account =
+    process.env.NODE_ENV === "production"
+      ? username === "user"
+        ? DEMO_CREDENTIALS.user
+        : undefined
+      : DEMO_CREDENTIALS[username];
+
+  if (!account || password !== account.password) {
     return NextResponse.json({ error: "Invalid demo credentials." }, { status: 401 });
   }
 

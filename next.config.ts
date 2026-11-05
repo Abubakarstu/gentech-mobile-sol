@@ -19,4 +19,6 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 
 // Must be called after the config is defined; enables `getCloudflareContext()` in dev.
-void initOpenNextCloudflareForDev();
+if (process.env.NODE_ENV === "development") {
+  void initOpenNextCloudflareForDev();
+}

@@ -439,6 +439,7 @@ export async function createListing(
       price: new Prisma.Decimal(input.price),
       negotiable: input.negotiable ?? false,
       condition: input.condition,
+      status: "PENDING_APPROVAL",
       city: input.city,
       area: input.area,
       attributes: buildAttributes(input),

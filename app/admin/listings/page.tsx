@@ -22,7 +22,9 @@ export const metadata: Metadata = {
 
 const FILTERS: Array<{ label: string; status?: ListingStatus }> = [
   { label: "All" },
+  { label: LISTING_STATUS_LABELS.PENDING_APPROVAL, status: LISTING_STATUSES.PENDING_APPROVAL },
   { label: LISTING_STATUS_LABELS.ACTIVE, status: LISTING_STATUSES.ACTIVE },
+  { label: LISTING_STATUS_LABELS.REJECTED, status: LISTING_STATUSES.REJECTED },
   { label: LISTING_STATUS_LABELS.SOLD, status: LISTING_STATUSES.SOLD },
   { label: LISTING_STATUS_LABELS.DRAFT, status: LISTING_STATUSES.DRAFT },
   { label: LISTING_STATUS_LABELS.EXPIRED, status: LISTING_STATUSES.EXPIRED },

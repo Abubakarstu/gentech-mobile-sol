@@ -61,7 +61,7 @@ export function CreateListingForm({
       toast.error(result.error ?? "Could not create the listing.");
       return;
     }
-    toast.success("Your listing is live!");
+    toast.success("Listing submitted! It will go live once approved by our team.");
     router.push(result.slug ? `/listings/${result.slug}` : ROUTES.dashboard);
     router.refresh();
   }

@@ -9,8 +9,10 @@
     "pnpm": ">=10"
   },
   "scripts": {
+    "vercel-build": "pnpm db:migrate && pnpm db:seed",
+    "vercel-postbuild": "pnpm vercel-build",
     "dev": "next dev --turbopack",
-    "build": "cross-env SKIP_ENV_VALIDATION=1 next build",
+    "build": "pnpm vercel-build && cross-env SKIP_ENV_VALIDATION=1 next build",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

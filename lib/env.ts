@@ -1,7 +1,10 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
-const demoMode = process.env.DEMO_MODE === "true";
+import { isDemoModeEnabled, isReadOnlyDemoEnabled } from "@/lib/demo-mode";
+
+const demoMode = isDemoModeEnabled();
+const readOnlyDemo = isReadOnlyDemoEnabled();
 
 /**
  * Type-safe, validated environment variables.
@@ -19,7 +22,8 @@ const demoMode = process.env.DEMO_MODE === "true";
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-    DEMO_MODE: z.enum(["true", "false"]).default("false"),
+    DEMO_MODE: z.enum(["true", "false"]).default(demoMode ? "true" : "false"),
+    DEMO_READ_ONLY: z.enum(["true", "false"]).default(readOnlyDemo ? "true" : "false"),
 
     // --- Database (Neon PostgreSQL) ---
     // Pooled connection (PgBouncer) for the app; direct connection for migrations.

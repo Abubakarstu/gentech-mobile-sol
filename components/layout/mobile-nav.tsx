@@ -14,9 +14,10 @@ import { CategoryIcon } from "@/features/marketplace/components/category-icon";
 interface MobileNavProps {
   categories: CategoryItem[];
   isAuthenticated: boolean;
+  isDemoSession?: boolean;
 }
 
-export function MobileNav({ categories, isAuthenticated }: MobileNavProps) {
+export function MobileNav({ categories, isAuthenticated, isDemoSession = false }: MobileNavProps) {
   const [open, setOpen] = React.useState(false);
 
   // Lock body scroll while open.
@@ -118,10 +119,12 @@ export function MobileNav({ categories, isAuthenticated }: MobileNavProps) {
               </nav>
 
               <div className="space-y-2 border-t p-4">
-                <Link href={ROUTES.sell} className={cn(buttonVariants(), "w-full")}>
-                  <Plus className="size-4" />
-                  Post your ad
-                </Link>
+                {!isDemoSession ? (
+                  <Link href={ROUTES.sell} className={cn(buttonVariants(), "w-full")}>
+                    <Plus className="size-4" />
+                    Post your ad
+                  </Link>
+                ) : null}
                 {!isAuthenticated ? (
                   <Link
                     href={ROUTES.signIn}

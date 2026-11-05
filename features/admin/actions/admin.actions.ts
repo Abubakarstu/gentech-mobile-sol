@@ -12,6 +12,8 @@ import {
 import { requireAdmin } from "@/features/admin/lib/require-admin";
 import { logAudit } from "@/features/audit";
 import {
+  adminApproveListing,
+  adminRejectListing,
   adminRemoveListing,
   adminSetListingStatus,
   createCategory,
@@ -160,6 +162,52 @@ export async function adminDeleteListingAction(input: {
   return adminAction(async () => {
     if (!input.listingId) return { ok: false, error: "Invalid request." };
     await adminRemoveListing(input.listingId);
+    revalidatePath(ROUTES.adminListings);
+  });
+}
+
+const approveListingSchema = z.object({ listingId: z.string().min(1) });
+
+export async function approveListingAction(input: {
+  listingId: string;
+}): Promise<ActionResult> {
+  return adminAction(async (adminId) => {
+    const parsed = approveListingSchema.safeParse(input);
+    if (!parsed.success) return { ok: false, error: "Invalid request." };
+    await adminApproveListing(parsed.data.listingId, adminId);
+    await logAudit({
+      actorId: adminId,
+      action: "LISTING_APPROVED",
+      resource: "Listing",
+      resourceId: parsed.data.listingId,
+      after: { status: "ACTIVE" },
+    });
+    revalidatePath(ROUTES.adminListings);
+  });
+}
+
+const rejectListingSchema = z.object({
+  listingId: z.string().min(1),
+  reason: z.string().trim().min(5, "Please provide a rejection reason (min 5 characters).").max(500),
+});
+
+export async function rejectListingAction(input: {
+  listingId: string;
+  reason: string;
+}): Promise<ActionResult> {
+  return adminAction(async (adminId) => {
+    const parsed = rejectListingSchema.safeParse(input);
+    if (!parsed.success) {
+      return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid request." };
+    }
+    await adminRejectListing(parsed.data.listingId, adminId, parsed.data.reason);
+    await logAudit({
+      actorId: adminId,
+      action: "LISTING_REJECTED",
+      resource: "Listing",
+      resourceId: parsed.data.listingId,
+      after: { status: "REJECTED", reason: parsed.data.reason },
+    });
     revalidatePath(ROUTES.adminListings);
   });
 }

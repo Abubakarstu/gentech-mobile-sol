@@ -3,15 +3,22 @@ import type {
   ReportStatus,
   UserRole,
 } from "@/lib/constants";
+import type { ReportReason } from "@/lib/generated/prisma/client";
 
 /** Headline metrics for the admin overview. */
 export interface PlatformStats {
   totalUsers: number;
   newUsers7d: number;
   totalListings: number;
+  pendingListings: number;
   activeListings: number;
+  rejectedListings: number;
   soldListings: number;
   openReports: number;
+  totalBrands: number;
+  totalModels: number;
+  totalDealers: number;
+
 }
 
 /** A row in the admin users table. */
@@ -24,6 +31,7 @@ export interface AdminUserRow {
   emailVerified: boolean;
   listingCount: number;
   createdAt: string;
+
 }
 
 /** A row in the admin listings table. */
@@ -43,7 +51,7 @@ export interface AdminListingRow {
 /** A row in the admin reports queue. */
 export interface AdminReportRow {
   id: string;
-  reason: string;
+  reason: ReportReason;
   details: string | null;
   status: ReportStatus;
   reporterName: string;
@@ -52,7 +60,7 @@ export interface AdminReportRow {
   createdAt: string;
 }
 
-/** A row in the admin categories manager. */
+/** A row in the admin category tree. */
 export interface AdminCategoryRow {
   id: string;
   name: string;
@@ -63,7 +71,6 @@ export interface AdminCategoryRow {
   position: number;
 }
 
-/** A page of rows plus pagination metadata. */
 export interface Paginated<T> {
   items: T[];
   total: number;

@@ -22,9 +22,14 @@ const EMPTY_STATS: PlatformStats = {
   totalUsers: 0,
   newUsers7d: 0,
   totalListings: 0,
+  pendingListings: 0,
   activeListings: 0,
+  rejectedListings: 0,
   soldListings: 0,
   openReports: 0,
+  totalBrands: 0,
+  totalModels: 0,
+  totalDealers: 0,
 };
 
 function emptyPage<T>(page: number): Paginated<T> {

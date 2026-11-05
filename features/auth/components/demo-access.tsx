@@ -18,9 +18,12 @@ const DEMO_ACCOUNTS = [
   },
 ];
 
-export function DemoAccess() {
+export function DemoAccess({ productionDemo = false }: { productionDemo?: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState<string | null>(null);
+  const accounts = productionDemo
+    ? DEMO_ACCOUNTS.filter((account) => account.username === "user")
+    : DEMO_ACCOUNTS;
 
   async function enterDemo(username: string, password: string, href: string) {
     setPending(username);
@@ -43,10 +46,12 @@ export function DemoAccess() {
     <section className="border-t pt-5" aria-label="Demo accounts">
       <h2 className="text-sm font-semibold">Demo access</h2>
       <p className="text-muted-foreground mt-1 text-xs">
-        Local preview accounts. Data changes are not saved.
+        {productionDemo
+          ? "Read-only preview account. Database changes are disabled."
+          : "Local preview accounts. Data changes are not saved."}
       </p>
       <div className="mt-3 grid gap-2">
-        {DEMO_ACCOUNTS.map((account) => (
+        {accounts.map((account) => (
           <Button
             key={account.username}
             type="button"

@@ -25,14 +25,19 @@ export async function SiteHeader() {
   const user = session?.user;
   const isDemoSession = user?.id.startsWith("demo:") ?? false;
 
-  const [unreadNotifications, recentNotifications] = user && !isDemoSession
-    ? await Promise.all([getUnreadNotificationCount(user.id), getNotifications(user.id, 6)])
-    : [0, []];
+  const [unreadNotifications, recentNotifications] =
+    user && !isDemoSession
+      ? await Promise.all([getUnreadNotificationCount(user.id), getNotifications(user.id, 6)])
+      : [0, []];
 
   return (
     <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full border-b backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-        <MobileNav categories={DEMO_CATEGORIES} isAuthenticated={Boolean(user)} />
+        <MobileNav
+          categories={DEMO_CATEGORIES}
+          isAuthenticated={Boolean(user)}
+          isDemoSession={isDemoSession}
+        />
 
         <Link
           href={ROUTES.home}
@@ -61,17 +66,19 @@ export async function SiteHeader() {
             Inspection
           </Link>
 
-          <Link
-            href={ROUTES.sell}
-            className={cn(buttonVariants({ size: "sm" }), "hidden rounded-full sm:inline-flex")}
-          >
-            <Plus className="size-4" />
-            Post Ad
-          </Link>
+          {!isDemoSession ? (
+            <Link
+              href={ROUTES.sell}
+              className={cn(buttonVariants({ size: "sm" }), "hidden rounded-full sm:inline-flex")}
+            >
+              <Plus className="size-4" />
+              Post Ad
+            </Link>
+          ) : null}
 
           <ThemeToggle />
 
-          {user ? (
+          {user && !isDemoSession ? (
             <NotificationBell
               initialCount={unreadNotifications}
               initialItems={recentNotifications}

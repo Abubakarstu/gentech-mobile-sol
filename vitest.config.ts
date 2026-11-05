@@ -9,6 +9,8 @@ export default defineConfig({
     exclude: ['node_modules', '.next', 'dist'],
     globals: true,
     isolate: false,
+    pool: 'threads',
+    fileParallelism: false,
   },
   resolve: {
     alias: {

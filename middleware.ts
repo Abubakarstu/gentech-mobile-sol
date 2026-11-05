@@ -1,11 +1,19 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { isReadOnlyDemoEnabled } from "@/lib/demo-mode";
 
 /**
  * Security middleware that adds HTTP security headers to all responses.
  * These headers help protect against various security vulnerabilities.
  */
-export function middleware() {
-  const response = NextResponse.next();
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const allowedDemoRequest =
+    pathname === "/api/demo-login" && (request.method === "POST" || request.method === "DELETE");
+  const blockedDemoMutation =
+    isReadOnlyDemoEnabled() && !["GET", "HEAD"].includes(request.method) && !allowedDemoRequest;
+  const response = blockedDemoMutation
+    ? NextResponse.json({ error: "This read-only demo does not accept changes." }, { status: 403 })
+    : NextResponse.next();
 
   // Content Security Policy - restricts sources of content
   // Allowlist for current trusted sources (Cloudinary, OAuth providers)
@@ -42,14 +50,14 @@ export function middleware() {
   // Permissions policy to control browser features
   response.headers.set(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(), interest-cohort=()"
+    "camera=(), microphone=(), geolocation=(), interest-cohort=()",
   );
 
   // Strict Transport Security (only in production with HTTPS)
   if (process.env.NODE_ENV === "production") {
     response.headers.set(
       "Strict-Transport-Security",
-      "max-age=31536000; includeSubDomains; preload"
+      "max-age=31536000; includeSubDomains; preload",
     );
   }
 
