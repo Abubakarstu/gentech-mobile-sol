@@ -10,6 +10,8 @@ import "./globals.css";
 const geistSans = { variable: "font-sans" };
 const geistMono = { variable: "font-mono" };
 
+
+
 export const metadata: Metadata = {
   metadataBase: new URL(APP.url),
   title: {
