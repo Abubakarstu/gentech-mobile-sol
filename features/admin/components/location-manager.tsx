@@ -25,7 +25,7 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
   // New City Form State
   const [showAddCity, setShowAddCity] = React.useState(false);
   const [cityName, setCityName] = React.useState("");
-  const [province, setProvince] = React.useState("Punjab");
+  const [province, setProvince] = React.useState("");
   const [popular, setPopular] = React.useState(false);
   const [creatingCity, setCreatingCity] = React.useState(false);
 
@@ -95,7 +95,14 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
 
   async function handleCreateArea(e: React.FormEvent) {
     e.preventDefault();
-    if (!areaCityId || areaName.trim().length < 2) return;
+    if (!areaCityId) {
+      toast.error("Choose a city before adding an area.");
+      return;
+    }
+    if (areaName.trim().length < 2) {
+      toast.error("Area name must be at least 2 characters.");
+      return;
+    }
 
     setCreatingArea(true);
     const res = await createAreaAction({
@@ -130,69 +137,95 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Location Taxonomy</h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs font-semibold tracking-[0.16em] text-emerald-300 uppercase">
+            Marketplace catalog
+          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Location taxonomy
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
             Manage cities, provinces, and neighbourhood areas for mobile classified listings.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+        <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-[minmax(12rem,16rem)_auto]">
+          <div className="relative min-w-0">
+            <Search className="absolute top-2.5 left-3 size-4 text-slate-400" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search cities or areas…"
-              className="pl-9 bg-[#141519] border-white/10 text-white placeholder:text-slate-500"
+              aria-label="Search cities or areas"
+              className="border-white/10 bg-[#141519] pl-9 text-white placeholder:text-slate-500"
             />
           </div>
           <Button
             onClick={() => setShowAddCity(!showAddCity)}
-            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+            className="min-h-10 bg-emerald-400 font-semibold text-slate-950 hover:bg-emerald-300"
           >
-            <Plus className="size-4 mr-1.5" />
+            <Plus className="mr-1.5 size-4" />
             {showAddCity ? "Cancel" : "Add City"}
           </Button>
         </div>
+      </header>
+
+      <div
+        className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-white/[0.07] bg-[#141519] px-4 py-3 text-xs"
+        aria-live="polite"
+      >
+        <span className="font-semibold text-slate-100">{cities.length.toLocaleString()}</span>
+        <span className="text-slate-500">cities</span>
+        <span className="hidden h-4 w-px bg-white/10 sm:block" aria-hidden="true" />
+        <span className="font-semibold text-slate-100">
+          {cities.reduce((total, city) => total + city.areas.length, 0).toLocaleString()}
+        </span>
+        <span className="text-slate-500">areas</span>
+        <span className="ml-auto text-slate-500">Showing {filteredCities.length} matching</span>
       </div>
 
       {/* Add City Form */}
       {showAddCity && (
         <form
           onSubmit={handleCreateCity}
-          className="rounded-xl border border-white/10 bg-[#141519] p-5 shadow-lg space-y-4"
+          className="space-y-4 rounded-xl border border-white/10 bg-[#141519] p-5 shadow-lg"
         >
           <h3 className="text-sm font-semibold text-white">Register New City</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">City Name *</label>
+              <label
+                htmlFor="city-create-name"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                City Name *
+              </label>
               <Input
+                id="city-create-name"
                 value={cityName}
                 onChange={(e) => setCityName(e.target.value)}
-                placeholder="e.g. Islamabad, Lahore, Karachi"
+                placeholder="Enter city name"
                 required
-                className="bg-[#0e0f12] border-white/10 text-white"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Province / Region</label>
-              <select
+              <label
+                htmlFor="city-create-region"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Province / Region
+              </label>
+              <Input
+                id="city-create-region"
                 value={province}
                 onChange={(e) => setProvince(e.target.value)}
-                className="w-full h-9 rounded-md bg-[#0e0f12] border border-white/10 px-3 text-xs text-white"
-              >
-                <option value="Punjab">Punjab</option>
-                <option value="Sindh">Sindh</option>
-                <option value="Khyber Pakhtunkhwa">Khyber Pakhtunkhwa</option>
-                <option value="Balochistan">Balochistan</option>
-                <option value="Islamabad Capital Territory">Islamabad Capital Territory</option>
-                <option value="Azad Jammu & Kashmir">Azad Jammu & Kashmir</option>
-                <option value="Gilgit-Baltistan">Gilgit-Baltistan</option>
-              </select>
+                placeholder="Add a province or region"
+                maxLength={100}
+                className="border-white/10 bg-[#0e0f12] text-white"
+              />
             </div>
             <div className="flex items-center gap-2 pt-6">
-              <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-slate-300">
                 <input
                   type="checkbox"
                   checked={popular}
@@ -215,9 +248,9 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
             <Button
               type="submit"
               disabled={creatingCity}
-              className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+              className="bg-emerald-500 font-semibold text-slate-950 hover:bg-emerald-600"
             >
-              {creatingCity ? <Loader2 className="size-4 animate-spin mr-1.5" /> : null}
+              {creatingCity ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
               Save City
             </Button>
           </div>
@@ -225,9 +258,9 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
       )}
 
       {/* Cities and Areas List */}
-      <div className="rounded-xl border border-white/10 bg-[#141519] overflow-hidden divide-y divide-white/5">
+      <div className="divide-y divide-white/5 overflow-hidden rounded-xl border border-white/10 bg-[#141519]">
         {filteredCities.length === 0 ? (
-          <div className="p-12 text-center text-slate-500 text-sm">
+          <div className="p-12 text-center text-sm text-slate-500">
             No cities configured yet. Click &quot;Add City&quot; to register locations.
           </div>
         ) : (
@@ -235,11 +268,15 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
             const isExpanded = expandedCityId === city.id;
             return (
               <div key={city.id} className="transition-colors">
-                <div className="flex items-center justify-between p-4 hover:bg-white/[0.02]">
-                  <div className="flex items-center gap-3">
+                <div className="flex flex-col gap-3 p-4 transition-colors hover:bg-white/[0.02] sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
                     <button
+                      type="button"
                       onClick={() => setExpandedCityId(isExpanded ? null : city.id)}
-                      className="text-slate-400 hover:text-white transition-colors"
+                      aria-label={`${isExpanded ? "Collapse" : "Expand"} ${city.name} areas`}
+                      aria-expanded={isExpanded}
+                      aria-controls={`city-areas-${city.id}`}
+                      className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-white/[0.06] hover:text-white focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
                     >
                       {isExpanded ? (
                         <ChevronDown className="size-4" />
@@ -247,17 +284,17 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
                         <ChevronRight className="size-4" />
                       )}
                     </button>
-                    <div className="size-8 rounded bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                    <div className="flex size-8 items-center justify-center rounded bg-emerald-500/10 text-emerald-400">
                       <MapPin className="size-4" />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-white">{city.name}</span>
+                        <span className="truncate font-semibold text-white">{city.name}</span>
                         {city.province && (
                           <span className="text-xs text-slate-400">({city.province})</span>
                         )}
                         {city.popular && (
-                          <Badge className="bg-amber-500/20 text-amber-300 border-amber-500/30 text-[10px]">
+                          <Badge className="border-amber-500/30 bg-amber-500/20 text-[10px] text-amber-300">
                             Popular
                           </Badge>
                         )}
@@ -268,18 +305,21 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                     <button
+                      type="button"
                       onClick={() => handleToggleCityActive(city)}
-                      className="cursor-pointer"
-                      title="Toggle active status"
+                      className="cursor-pointer rounded-full focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
+                      title={`${city.isActive ? "Deactivate" : "Activate"} ${city.name}`}
+                      aria-label={`${city.isActive ? "Deactivate" : "Activate"} ${city.name}`}
+                      aria-pressed={city.isActive}
                     >
                       {city.isActive ? (
-                        <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-xs">
+                        <Badge className="border-emerald-500/30 bg-emerald-500/20 text-xs text-emerald-300">
                           Active
                         </Badge>
                       ) : (
-                        <Badge className="bg-slate-800 text-slate-400 border-white/10 text-xs">
+                        <Badge className="border-white/10 bg-slate-800 text-xs text-slate-400">
                           Inactive
                         </Badge>
                       )}
@@ -289,9 +329,9 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
                       size="sm"
                       variant="ghost"
                       onClick={() => setAreaCityId(city.id)}
-                      className="text-xs text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
+                      className="text-xs text-emerald-400 hover:bg-emerald-500/10 hover:text-emerald-300"
                     >
-                      <Plus className="size-3.5 mr-1" />
+                      <Plus className="mr-1 size-3.5" />
                       Add Area
                     </Button>
 
@@ -299,8 +339,9 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
                       size="sm"
                       variant="ghost"
                       onClick={() => handleDeleteCity(city.id, city.name)}
-                      className="size-8 p-0 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
-                      title="Delete City"
+                      className="size-9 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+                      title={`Delete ${city.name}`}
+                      aria-label={`Delete ${city.name}`}
                     >
                       <Trash2 className="size-3.5" />
                     </Button>
@@ -311,22 +352,23 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
                 {areaCityId === city.id && (
                   <form
                     onSubmit={handleCreateArea}
-                    className="mx-6 my-2 p-3 rounded-lg border border-white/10 bg-[#0e0f12] flex items-center gap-3"
+                    className="mx-3 my-2 flex flex-col gap-2 rounded-lg border border-white/10 bg-[#0e0f12] p-3 sm:mx-6 sm:flex-row sm:items-center"
                   >
                     <Input
                       value={areaName}
                       onChange={(e) => setAreaName(e.target.value)}
-                      placeholder={`New area for ${city.name} (e.g. DHA Phase 5, Blue Area, Gulberg)`}
-                      className="h-8 text-xs bg-[#141519] border-white/10 text-white"
+                      aria-label={`New area name for ${city.name}`}
+                      placeholder={`New area in ${city.name}`}
+                      className="h-10 border-white/10 bg-[#141519] text-xs text-white sm:h-8"
                       autoFocus
                     />
                     <Button
                       type="submit"
                       size="sm"
                       disabled={creatingArea || areaName.trim().length < 2}
-                      className="h-8 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold text-xs shrink-0"
+                      className="h-10 shrink-0 bg-emerald-400 text-xs font-semibold text-slate-950 hover:bg-emerald-300 sm:h-8"
                     >
-                      {creatingArea ? <Loader2 className="size-3 animate-spin mr-1" /> : null}
+                      {creatingArea ? <Loader2 className="mr-1 size-3 animate-spin" /> : null}
                       Save Area
                     </Button>
                     <Button
@@ -334,7 +376,7 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
                       variant="ghost"
                       size="sm"
                       onClick={() => setAreaCityId(null)}
-                      className="h-8 text-xs text-slate-400 hover:text-white shrink-0"
+                      className="h-10 shrink-0 text-xs text-slate-400 hover:text-white sm:h-8"
                     >
                       Cancel
                     </Button>
@@ -342,33 +384,38 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
                 )}
 
                 {/* Expanded Areas list */}
-                {isExpanded && (
-                  <div className="bg-[#0e0f12] px-12 py-3 border-t border-white/5 space-y-2">
-                    {city.areas.length === 0 ? (
-                      <p className="text-xs text-slate-500 italic py-2">
-                        No sub-areas registered for {city.name}. Click &quot;Add Area&quot; above to create one.
-                      </p>
-                    ) : (
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                        {city.areas.map((area) => (
-                          <div
-                            key={area.id}
-                            className="flex items-center justify-between rounded bg-white/5 border border-white/10 px-2.5 py-1.5 text-xs text-slate-300"
+                <div
+                  id={`city-areas-${city.id}`}
+                  hidden={!isExpanded}
+                  className="space-y-2 border-t border-white/5 bg-[#0e0f12] px-5 py-3 sm:px-12"
+                >
+                  {city.areas.length === 0 ? (
+                    <p className="py-2 text-xs text-slate-500 italic">
+                      No sub-areas registered for {city.name}. Click &quot;Add Area&quot; above to
+                      create one.
+                    </p>
+                  ) : (
+                    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                      {city.areas.map((area) => (
+                        <div
+                          key={area.id}
+                          className="flex items-center justify-between rounded-lg border border-white/10 bg-white/[0.03] px-2.5 py-1.5 text-xs text-slate-300"
+                        >
+                          <span className="truncate">{area.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteArea(area.id, area.name)}
+                            className="ml-1.5 flex size-8 shrink-0 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-rose-400/10 hover:text-rose-300 focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:outline-none"
+                            title={`Delete ${area.name}`}
+                            aria-label={`Delete ${area.name}`}
                           >
-                            <span className="truncate">{area.name}</span>
-                            <button
-                              onClick={() => handleDeleteArea(area.id, area.name)}
-                              className="text-slate-500 hover:text-rose-400 transition-colors ml-1.5"
-                              title="Delete Area"
-                            >
-                              <Trash2 className="size-3" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                            <Trash2 className="size-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })
@@ -377,4 +424,3 @@ export function LocationManager({ cities }: { cities: CityWithAreas[] }) {
     </div>
   );
 }
-

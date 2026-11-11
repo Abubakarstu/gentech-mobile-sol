@@ -6,11 +6,13 @@ import {
   ArrowUpRight,
   BookOpen,
   BarChart3,
+  ChevronDown,
   BellRing,
   CreditCard,
   FileStack,
   FolderTree,
   LayoutDashboard,
+  Menu,
   MapPin,
   Megaphone,
   MessageSquareText,
@@ -28,7 +30,7 @@ import {
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-const GROUPS = [
+export const ADMIN_NAV_GROUPS = [
   {
     label: "Workspace",
     links: [{ href: ROUTES.admin, label: "Overview", icon: LayoutDashboard, exact: true }],
@@ -83,58 +85,88 @@ const GROUPS = [
   },
 ];
 
+function AdminGroupList({ pathname }: { pathname: string }) {
+  return (
+    <>
+      {ADMIN_NAV_GROUPS.map((group) => (
+        <div key={group.label} className="space-y-2">
+          <p className="px-3 text-[10px] font-semibold tracking-[0.16em] text-slate-500 uppercase">
+            {group.label}
+          </p>
+          <div className="space-y-1">
+            {group.links.map((link) => {
+              const { href, label, icon: Icon } = link;
+              const active =
+                "exact" in link && link.exact ? pathname === href : pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  onClick={(event) => {
+                    event.currentTarget.closest("details")?.removeAttribute("open");
+                  }}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors",
+                    active
+                      ? "bg-emerald-400 font-semibold text-slate-950"
+                      : "text-slate-400 hover:bg-white/[0.06] hover:text-white",
+                  )}
+                >
+                  <Icon className="size-4 shrink-0" />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
 export function AdminNav() {
   const pathname = usePathname();
 
   return (
     <aside className="flex w-full shrink-0 flex-col border-b border-white/10 bg-[#08090b] text-slate-300 md:sticky md:top-0 md:h-svh md:w-64 md:border-r md:border-b-0">
-      <Link
-        href={ROUTES.admin}
-        className="flex h-[72px] items-center gap-3 border-b border-white/10 px-6"
-      >
-        <span className="flex size-9 items-center justify-center rounded-xl bg-emerald-400 text-sm font-black text-slate-950">
-          G
-        </span>
-        <span>
-          <span className="block text-sm font-bold tracking-wide text-white">GenTech</span>
-          <span className="block text-[11px] text-slate-400">Operations workspace</span>
-        </span>
-      </Link>
+      <div className="flex h-16 items-center justify-between border-b border-white/10 px-4 md:h-[72px] md:px-6">
+        <Link href={ROUTES.admin} className="flex items-center gap-3">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-emerald-400 text-sm font-black text-slate-950">
+            G
+          </span>
+          <span>
+            <span className="block text-sm font-bold tracking-wide text-white">GenTech</span>
+            <span className="block text-[11px] text-slate-400">Operations workspace</span>
+          </span>
+        </Link>
+
+        <details className="group relative md:hidden">
+          <summary className="flex min-h-10 cursor-pointer list-none items-center gap-2 rounded-lg border border-white/10 px-3 text-xs font-medium text-slate-200 transition-colors hover:bg-white/[0.06] [&::-webkit-details-marker]:hidden">
+            <Menu className="size-4" />
+            Menu
+            <ChevronDown className="size-3.5 text-slate-500 transition-transform group-open:rotate-180" />
+          </summary>
+          <nav
+            className="absolute top-12 right-0 z-30 max-h-[75svh] w-[min(22rem,calc(100vw-2rem))] space-y-6 overflow-y-auto rounded-xl border border-white/10 bg-[#101114] p-3 shadow-2xl shadow-black/50"
+            aria-label="Admin sections"
+          >
+            <AdminGroupList pathname={pathname} />
+            <Link
+              href="/"
+              className="flex items-center justify-between border-t border-white/10 px-3 pt-4 text-xs font-medium text-slate-400 transition-colors hover:text-white"
+            >
+              View marketplace <ArrowUpRight className="size-4" />
+            </Link>
+          </nav>
+        </details>
+      </div>
 
       <nav
-        className="flex gap-4 overflow-x-auto px-3 py-3 md:block md:flex-1 md:space-y-7 md:overflow-x-hidden md:overflow-y-auto md:px-3 md:py-6"
+        className="hidden flex-1 space-y-7 overflow-y-auto px-3 py-6 md:block"
         aria-label="Admin sections"
       >
-        {GROUPS.map((group) => (
-          <div key={group.label} className="shrink-0 md:space-y-2">
-            <p className="hidden px-3 text-[10px] font-semibold tracking-[0.16em] text-slate-500 uppercase md:block">
-              {group.label}
-            </p>
-            <div className="flex gap-1 md:block md:space-y-1">
-              {group.links.map((link) => {
-                const { href, label, icon: Icon } = link;
-                const active =
-                  "exact" in link && link.exact ? pathname === href : pathname.startsWith(href);
-                return (
-                  <Link
-                    key={href}
-                    href={href}
-                    aria-current={active ? "page" : undefined}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-medium whitespace-nowrap transition-colors md:text-[13px]",
-                      active
-                        ? "bg-emerald-400 font-semibold text-slate-950"
-                        : "text-slate-400 hover:bg-white/[0.06] hover:text-white",
-                    )}
-                  >
-                    <Icon className="size-4 shrink-0" />
-                    {label}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+        <AdminGroupList pathname={pathname} />
       </nav>
 
       <Link

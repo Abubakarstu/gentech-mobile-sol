@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  AlertCircle,
+  ArrowRight,
   ArrowUpRight,
-  Clock,
-  Flag,
+  BadgeCheck,
+  CircleAlert,
+  ClipboardCheck,
   Package,
-  ShoppingBag,
+  ShieldAlert,
   Smartphone,
   Store,
-  Tag,
-  UserPlus,
   Users,
 } from "lucide-react";
 
@@ -51,136 +50,155 @@ const WORKSPACES = [
   },
 ];
 
+const formatCount = (value: number) => value.toLocaleString();
+
 export default async function AdminOverviewPage() {
   const user = await getCurrentUser();
   const isDemo = user?.id === "demo:admin";
   const stats = isDemo ? null : await getStats();
 
-  const cards = [
-    {
-      icon: Clock,
-      label: "Pending Approvals",
-      value: stats?.pendingListings,
-      href: `${ROUTES.adminListings}?status=PENDING_APPROVAL`,
-      highlight: (stats?.pendingListings ?? 0) > 0,
-    },
-    {
-      icon: Tag,
-      label: "Active listings",
-      value: stats?.activeListings,
-      href: `${ROUTES.adminListings}?status=ACTIVE`,
-    },
-    {
-      icon: ShoppingBag,
-      label: "Sold mobiles",
-      value: stats?.soldListings,
-      href: `${ROUTES.adminListings}?status=SOLD`,
-    },
-    { icon: Users, label: "Total customers", value: stats?.totalUsers, href: ROUTES.adminUsers },
-    {
-      icon: Smartphone,
-      label: "Catalog Models",
-      value: stats?.totalModels,
-      href: "/admin/models",
-    },
-    {
-      icon: Store,
-      label: "Registered Dealers",
-      value: stats?.totalDealers,
-      href: "/admin/dealers",
-    },
-    { icon: Flag, label: "Open reports", value: stats?.openReports, href: ROUTES.adminReports },
-    {
-      icon: UserPlus,
-      label: "New customers · 7d",
-      value: stats?.newUsers7d,
-      href: ROUTES.adminUsers,
-    },
+  const metrics = [
     {
       icon: Package,
-      label: "Total listings",
-      value: stats?.totalListings,
-      href: ROUTES.adminListings,
+      label: "Active listings",
+      value: stats?.activeListings,
+      detail: "Published on the marketplace",
+      href: `${ROUTES.adminListings}?status=ACTIVE`,
+      tone: "emerald",
     },
-  ];
+    {
+      icon: ClipboardCheck,
+      label: "Awaiting review",
+      value: stats?.pendingListings,
+      detail: "Listings in the approval queue",
+      href: `${ROUTES.adminListings}?status=PENDING_APPROVAL`,
+      tone: "amber",
+    },
+    {
+      icon: Users,
+      label: "Customers",
+      value: stats?.totalUsers,
+      detail:
+        stats === null
+          ? "Marketplace members"
+          : `${formatCount(stats.newUsers7d)} joined this week`,
+      href: ROUTES.adminUsers,
+      tone: "blue",
+    },
+    {
+      icon: ShieldAlert,
+      label: "Open reports",
+      value: stats?.openReports,
+      detail: "Trust & safety cases to review",
+      href: ROUTES.adminReports,
+      tone: "rose",
+    },
+  ] as const;
+
+  const listingStatuses = stats
+    ? [
+        { label: "Active", value: stats.activeListings, color: "bg-emerald-400" },
+        { label: "Pending", value: stats.pendingListings, color: "bg-amber-400" },
+        { label: "Sold", value: stats.soldListings, color: "bg-sky-400" },
+        { label: "Rejected", value: stats.rejectedListings, color: "bg-rose-400" },
+        {
+          label: "Other",
+          value: Math.max(
+            0,
+            stats.totalListings -
+              stats.activeListings -
+              stats.pendingListings -
+              stats.soldListings -
+              stats.rejectedListings,
+          ),
+          color: "bg-slate-500",
+        },
+      ]
+    : [];
 
   return (
-    <div className="space-y-9">
-      <section className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="text-xs font-semibold tracking-[0.16em] text-emerald-500 uppercase">
-            Marketplace Command Center
-          </p>
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">
-            Good to see you, {user?.name?.split(" ")[0] ?? "Admin"}
-          </h1>
-          <p className="mt-2 text-sm text-slate-400">
-            Real-time classified marketplace operations, approval queues, and catalog health.
-          </p>
-        </div>
-        <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-xs font-medium text-emerald-300">
-          Pakistan Mobile Classifieds
-        </span>
-      </section>
-
-      {/* Moderation Alert Banner if listings are waiting */}
-      {stats && stats.pendingListings > 0 && (
-        <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-amber-200 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="size-5 text-amber-400 shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-white">
-                {stats.pendingListings} mobile advertisement{stats.pendingListings > 1 ? "s" : ""} waiting for approval
-              </p>
-              <p className="text-xs text-amber-300/80">
-                Review photos, specifications, and pricing before publishing to the public feed.
-              </p>
-            </div>
-          </div>
-          <Link
-            href={`${ROUTES.adminListings}?status=PENDING_APPROVAL`}
-            className="rounded-lg bg-amber-400 px-3.5 py-1.5 text-xs font-bold text-slate-950 hover:bg-amber-300 transition-colors"
-          >
-            Review Queue →
-          </Link>
-        </div>
-      )}
-
-      <section>
-        <div className="mb-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-slate-100">Marketplace Health & Metrics</h2>
-            <p className="mt-1 text-xs text-slate-500">
-              {isDemo
-                ? "Preview mode · live database metrics are unavailable"
-                : "Live operational metrics"}
+    <div className="space-y-7">
+      <section className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(115deg,#171b21_0%,#151a1b_55%,#10201c_100%)] px-5 py-6 sm:px-7 sm:py-7">
+        <div className="pointer-events-none absolute -top-24 -right-14 size-64 rounded-full bg-emerald-400/[0.08] blur-3xl" />
+        <div className="relative flex flex-wrap items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold tracking-[0.16em] text-emerald-300 uppercase">
+              Marketplace overview
+            </p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+              Welcome back, {user?.name?.split(" ")[0] ?? "Admin"}
+            </h1>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
+              Keep an eye on marketplace activity, review new listings, and manage your operations
+              from one place.
             </p>
           </div>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href={ROUTES.adminListings}
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.05] px-3.5 text-sm font-medium text-slate-200 transition-colors hover:bg-white/10"
+            >
+              All listings <ArrowUpRight className="size-4" />
+            </Link>
+            <Link
+              href="/admin/models"
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-emerald-400 px-3.5 text-sm font-semibold text-slate-950 transition-colors hover:bg-emerald-300"
+            >
+              Manage catalog <ArrowRight className="size-4" />
+            </Link>
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {cards.map(({ icon: Icon, label, value, href, highlight }) => (
-            <Link key={label} href={href} className="rounded-xl outline-none focus-visible:ring-2">
-              <Card
-                className={`h-full border-white/10 bg-[#141519] shadow-sm shadow-black/20 transition-colors hover:border-emerald-400/40 ${
-                  highlight ? "border-amber-500/40 bg-amber-500/[0.04]" : ""
-                }`}
-              >
+      </section>
+
+      <section aria-labelledby="marketplace-metrics-title">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 id="marketplace-metrics-title" className="text-sm font-semibold text-slate-100">
+              Marketplace at a glance
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">
+              {isDemo
+                ? "Demo preview · live database metrics are unavailable"
+                : "Current operational totals"}
+            </p>
+          </div>
+          <Link
+            href="/admin/analytics"
+            className="inline-flex items-center gap-1 text-xs font-medium text-emerald-300 transition-colors hover:text-emerald-200"
+          >
+            View analytics <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {metrics.map(({ icon: Icon, label, value, detail, href, tone }) => (
+            <Link
+              key={label}
+              href={href}
+              className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+            >
+              <Card className="h-full border-white/[0.08] bg-[#141519] transition-colors group-hover:border-white/20">
                 <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-xs font-medium text-slate-400">{label}</CardTitle>
-                  <Icon
-                    className={`size-4 ${
-                      highlight ? "text-amber-400" : "text-emerald-400"
-                    }`}
-                  />
-                </CardHeader>
-                <CardContent>
-                  <div
-                    className={`text-2xl font-bold ${
-                      highlight ? "text-amber-300" : "text-slate-100"
+                  <span
+                    className={`flex size-9 items-center justify-center rounded-lg ${
+                      tone === "emerald"
+                        ? "bg-emerald-400/10 text-emerald-300"
+                        : tone === "amber"
+                          ? "bg-amber-400/10 text-amber-300"
+                          : tone === "blue"
+                            ? "bg-sky-400/10 text-sky-300"
+                            : "bg-rose-400/10 text-rose-300"
                     }`}
                   >
-                    {value === undefined ? "—" : value.toLocaleString()}
-                  </div>
+                    <Icon className="size-4" />
+                  </span>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold tracking-tight text-slate-100">
+                    {value === undefined ? "—" : formatCount(value)}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">{detail}</p>
                 </CardContent>
               </Card>
             </Link>
@@ -188,25 +206,174 @@ export default async function AdminOverviewPage() {
         </div>
       </section>
 
-      <section>
-        <div className="mb-4">
-          <h2 className="text-sm font-semibold text-slate-100">Business Workspaces</h2>
+      <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
+        <Card className="border-white/[0.08] bg-[#141519]">
+          <CardHeader className="flex-row items-start justify-between gap-4 border-b border-white/[0.07] pb-4">
+            <div>
+              <CardTitle className="text-sm font-semibold text-slate-100">Listing status</CardTitle>
+              <p className="mt-1 text-xs text-slate-500">
+                A breakdown of current marketplace inventory
+              </p>
+            </div>
+            <Link
+              href={ROUTES.adminListings}
+              aria-label="View all listings"
+              className="rounded-md p-1 text-slate-500 transition-colors hover:bg-white/[0.06] hover:text-white"
+            >
+              <ArrowUpRight className="size-4" />
+            </Link>
+          </CardHeader>
+          <CardContent className="pt-5">
+            {stats ? (
+              <>
+                <div className="flex items-baseline gap-2">
+                  <p className="text-3xl font-bold tracking-tight text-white">
+                    {formatCount(stats.totalListings)}
+                  </p>
+                  <span className="text-xs text-slate-500">total listings</span>
+                </div>
+                <div
+                  className="mt-5 flex h-2.5 overflow-hidden rounded-full bg-white/[0.06]"
+                  role="img"
+                  aria-label={listingStatuses
+                    .map(({ label, value }) => `${formatCount(value)} ${label.toLowerCase()}`)
+                    .join(", ")}
+                >
+                  {listingStatuses.map(({ label, value, color }) =>
+                    value > 0 && stats.totalListings > 0 ? (
+                      <span
+                        key={label}
+                        className={`${color} first:rounded-l-full last:rounded-r-full`}
+                        style={{ width: `${(value / stats.totalListings) * 100}%` }}
+                      />
+                    ) : null,
+                  )}
+                </div>
+                <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4 sm:grid-cols-3">
+                  {listingStatuses.map(({ label, value, color }) => (
+                    <div key={label} className="flex items-center gap-2.5">
+                      <span className={`size-2 rounded-full ${color}`} />
+                      <div className="min-w-0">
+                        <p className="text-xs text-slate-400">{label}</p>
+                        <p className="mt-0.5 text-sm font-semibold text-slate-100">
+                          {formatCount(value)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <p className="py-8 text-sm text-slate-400">
+                Listing metrics are unavailable in demo preview.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-white/[0.08] bg-[#141519]">
+          <CardHeader className="border-b border-white/[0.07] pb-4">
+            <CardTitle className="text-sm font-semibold text-slate-100">Quick access</CardTitle>
+            <p className="text-xs text-slate-500">Jump back into your key workflows</p>
+          </CardHeader>
+          <CardContent className="space-y-1 pt-3">
+            <Link
+              href="/admin/models"
+              className="flex items-center gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-white/[0.04]"
+            >
+              <span className="flex size-9 items-center justify-center rounded-lg bg-violet-400/10 text-violet-300">
+                <Smartphone className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-slate-200">Phone catalog</span>
+                <span className="mt-0.5 block text-xs text-slate-500">
+                  {stats ? `${formatCount(stats.totalModels)} models` : "Manage models and specs"}
+                </span>
+              </span>
+              <ArrowUpRight className="size-4 text-slate-600" />
+            </Link>
+            <Link
+              href="/admin/dealers"
+              className="flex items-center gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-white/[0.04]"
+            >
+              <span className="flex size-9 items-center justify-center rounded-lg bg-sky-400/10 text-sky-300">
+                <Store className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-slate-200">Dealer network</span>
+                <span className="mt-0.5 block text-xs text-slate-500">
+                  {stats
+                    ? `${formatCount(stats.totalDealers)} registered dealers`
+                    : "Manage dealers"}
+                </span>
+              </span>
+              <ArrowUpRight className="size-4 text-slate-600" />
+            </Link>
+            <Link
+              href={ROUTES.adminReports}
+              className="flex items-center gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-white/[0.04]"
+            >
+              <span className="flex size-9 items-center justify-center rounded-lg bg-rose-400/10 text-rose-300">
+                <BadgeCheck className="size-4" />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium text-slate-200">Trust &amp; safety</span>
+                <span className="mt-0.5 block text-xs text-slate-500">
+                  Review reports and protect buyers
+                </span>
+              </span>
+              <ArrowUpRight className="size-4 text-slate-600" />
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+
+      {stats && stats.pendingListings > 0 && (
+        <Link
+          href={`${ROUTES.adminListings}?status=PENDING_APPROVAL`}
+          className="group flex flex-wrap items-center justify-between gap-4 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] p-4 transition-colors hover:bg-amber-400/[0.09] sm:px-5"
+        >
+          <div className="flex items-start gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-400/10 text-amber-300">
+              <CircleAlert className="size-4" />
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-slate-100">
+                {formatCount(stats.pendingListings)} listing
+                {stats.pendingListings === 1 ? "" : "s"} need review
+              </p>
+              <p className="mt-1 text-xs leading-5 text-slate-400">
+                Check submitted details before these listings appear in the marketplace.
+              </p>
+            </div>
+          </div>
+          <span className="inline-flex items-center gap-2 rounded-lg bg-amber-300 px-3.5 py-2 text-xs font-bold text-slate-950 transition-colors group-hover:bg-amber-200">
+            Open approval queue <ArrowRight className="size-3.5" />
+          </span>
+        </Link>
+      )}
+
+      <section aria-labelledby="workspaces-title">
+        <div className="mb-3">
+          <h2 id="workspaces-title" className="text-sm font-semibold text-slate-100">
+            Business workspaces
+          </h2>
           <p className="mt-1 text-xs text-slate-500">
             Marketing, customer service, finance, and content operations.
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {WORKSPACES.map((workspace) => (
             <Link
               key={workspace.href}
               href={workspace.href}
-              className="group rounded-xl border border-white/10 bg-[#141519] p-5 shadow-sm shadow-black/20 transition-colors hover:border-emerald-400/40"
+              className="group rounded-xl border border-white/[0.08] bg-[#141519] p-4 transition-colors hover:border-emerald-400/30 hover:bg-[#181a1f]"
             >
               <div className="flex items-center justify-between">
                 <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
                   {workspace.label}
                 </span>
-                <ArrowUpRight className="size-4 text-slate-500 transition-colors group-hover:text-emerald-400" />
+                <ArrowUpRight className="size-4 text-slate-600 transition-colors group-hover:text-emerald-300" />
               </div>
               <h3 className="mt-4 text-sm font-semibold text-slate-100">{workspace.title}</h3>
               <p className="mt-1 text-xs leading-5 text-slate-400">{workspace.description}</p>
