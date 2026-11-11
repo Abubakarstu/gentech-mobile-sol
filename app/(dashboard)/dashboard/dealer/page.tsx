@@ -67,7 +67,7 @@ export default async function DealerDashboardPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Link href={`${ROUTES.dashboard}/dealer/apply`}>
+            <Link href={ROUTES.dealerApply}>
               <Badge variant="outline" className="cursor-pointer">
                 Apply for Dealer Account
               </Badge>
@@ -148,19 +148,19 @@ export default async function DealerDashboardPage() {
             <CardTitle>Quick Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Link href={`${ROUTES.dashboard}/dealer/profile`}>
+            <Link href={ROUTES.dealerProfile}>
               <Badge variant="outline" className="w-full cursor-pointer justify-center py-2">
                 <Building2 className="mr-2 size-4" />
                 Edit Profile
               </Badge>
             </Link>
-            <Link href={`${ROUTES.dashboard}/dealer/branches`}>
+            <Link href={ROUTES.dealerBranches}>
               <Badge variant="outline" className="w-full cursor-pointer justify-center py-2">
                 <MapPin className="mr-2 size-4" />
                 Manage Branches
               </Badge>
             </Link>
-            <Link href={`${ROUTES.dashboard}/dealer/inventory`}>
+            <Link href={ROUTES.dealerInventory}>
               <Badge variant="outline" className="w-full cursor-pointer justify-center py-2">
                 <Package className="mr-2 size-4" />
                 Manage Inventory

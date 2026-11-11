@@ -1,38 +1,49 @@
 # GenTech Marketplace — Project Status Tracker
 
-Last Updated: 2026-11-05
+Last Updated: 2026-11-11
 
 ## Overall Status
-- **Baseline Technical Quality:** Verified (31/31 unit & integration tests passing, TypeScript 0 errors, Next.js production build clean).
-- **Active Phase:** Milestone 1 — Core Marketplace Foundation.
+
+- **Baseline Technical Quality:** Verified (64/64 unit & integration tests passing, TypeScript 0 errors, Next.js production build clean).
+- **Active Phase:** Milestone 5 — Trust & Phone Intelligence. M3-F02 remains paused pending external PayFast sandbox/compliance verification.
 
 ---
 
 ## Milestone Feature Tracking
 
-| Feature ID | Module | Description | Priority | Dependencies | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **M1-F01** | Admin / Brands | Dynamic Brand Management (CRUD, logo, active toggle) | P1 | Prisma Brand | **VERIFIED** |
-| **M1-F02** | Admin / Models | Dynamic Phone Model Management (CRUD, specs, variants) | P1 | M1-F01, Prisma PhoneModel | **VERIFIED** |
-| **M1-F03** | Marketplace | Dynamic Specs/Variants in Dropdowns (Sell, Filters) | P1 | M1-F01, M1-F02 | **VERIFIED** |
-| **M1-F04** | Listings | Listing Approval Workflow (Pending, Approve, Reject with Reason) | P1 | Admin Actions, Listing Schema | **VERIFIED** |
-| **M1-F05** | Locations | Location Taxonomy (Country → City → Area) | P1 | Prisma Schema | **IN PROGRESS** |
-| **M1-F06** | Dashboard | Admin Dashboard Visual Analytics & Approval Counts | P1 | M1-F04 | **PLANNED** |
-| **M2-F01** | Dealers | Dealer Registration & Profile Management | P2 | Better Auth, Dealer Model | **PLANNED** |
-| **M2-F02** | Dealers | Dealer Verification & Document Review Queue | P2 | M2-F01 | **PLANNED** |
-| **M2-F03** | Dealers | Branch & Inventory Management | P2 | M2-F01 | **PLANNED** |
-| **M3-F01** | Monetization | Promotion Packages (Silver, Gold, Platinum) Management | P2 | Promotion Models | **PLANNED** |
-| **M3-F02** | Monetization | Payment Gateway Aggregator (PayFast/Safepay) | P2 | M3-F01 | **PLANNED** |
-| **M4-F01** | Discovery | Dynamic Multi-Attribute Mobile Filter System | P2 | M1-F02, M1-F03 | **PLANNED** |
-| **M4-F02** | Communication| Buyer-Seller Real-time Chat & WhatsApp Lead Link | P2 | Conversation Model | **PLANNED** |
-| **M5-F01** | Trust | Automated Phone Valuation Algorithm | P3 | PhoneModel, Listing Repos | **VERIFIED** |
-| **M5-F02** | Trust | IMEI Check & PTA Status Verification | P3 | ImeiVerification Model | **VERIFIED** |
-| **M5-F03** | Trust | Side-by-Side Mobile Spec Comparison | P3 | PhoneModel Repository | **VERIFIED** |
+| Feature ID | Module         | Description                                                      | Priority | Dependencies                  | Status                                                                     |
+| :--------- | :------------- | :--------------------------------------------------------------- | :------- | :---------------------------- | :------------------------------------------------------------------------- |
+| **M1-F01** | Admin / Brands | Dynamic Brand Management (CRUD, logo, active toggle)             | P1       | Prisma Brand                  | **VERIFIED**                                                               |
+| **M1-F02** | Admin / Models | Dynamic Phone Model Management (CRUD, specs, variants)           | P1       | M1-F01, Prisma PhoneModel     | **VERIFIED**                                                               |
+| **M1-F03** | Marketplace    | Dynamic Specs/Variants in Dropdowns (Sell, Filters)              | P1       | M1-F01, M1-F02                | **VERIFIED**                                                               |
+| **M1-F04** | Listings       | Listing Approval Workflow (Pending, Approve, Reject with Reason) | P1       | Admin Actions, Listing Schema | **VERIFIED**                                                               |
+| **M1-F05** | Locations      | Location Taxonomy (Country → City → Area)                        | P1       | Prisma Schema                 | **VERIFIED**                                                               |
+| **M1-F06** | Dashboard      | Admin Dashboard Visual Analytics & Approval Counts               | P1       | M1-F04                        | **VERIFIED**                                                               |
+| **M2-F01** | Dealers        | Dealer Registration & Profile Management                         | P2       | Better Auth, Dealer Model     | **VERIFIED**                                                               |
+| **M2-F02** | Dealers        | Dealer Verification Queue (private document uploads deferred)    | P2       | M2-F01                        | **VERIFIED**                                                               |
+| **M2-F03** | Dealers        | Branch & Inventory Management                                    | P2       | M2-F01, M2-F02                | **VERIFIED**                                                               |
+| **M3-F01** | Monetization   | Promotion Package Management                                     | P2       | Promotion Models              | **VERIFIED**                                                               |
+| **M3-F02** | Monetization   | Payment Gateway Aggregator (PayFast direct API)                  | P2       | M3-F01                        | **PAUSED — sandbox/compliance verification required; promotions disabled** |
+| **M4-F01** | Discovery      | Dynamic Multi-Attribute Mobile Filter System                     | P2       | M1-F02, M1-F03                | **VERIFIED**                                                               |
+| **M4-F02** | Communication  | Buyer-Seller Messaging & WhatsApp Lead Link                      | P2       | Conversation Model            | **VERIFIED**                                                               |
+| **M4-F03** | Engagement     | Persistent Favorites & Saved Search Alerts                       | P2       | Favorite, SavedSearch Models  | **VERIFIED**                                                               |
+| **M5-F01** | Trust          | Automated Phone Valuation Algorithm                              | P3       | PhoneModel, Listing Repos     | **VERIFIED**                                                               |
+| **M5-F02** | Trust          | IMEI Check & PTA Status Verification                             | P3       | ImeiVerification Model        | **VERIFIED**                                                               |
+| **M5-F03** | Trust          | Side-by-Side Mobile Spec Comparison                              | P3       | PhoneModel Repository         | **VERIFIED**                                                               |
+| **M5-F04** | Trust          | Inspection Scheduling & Graded Trust Reports                     | P3       | Inspection Models             | **PLANNED**                                                                |
 
 ---
 
 ## Technical Health Metrics
-- **Tests Passing:** 31 / 31
+
+- **Auth API Origin:** Browser auth uses the current origin; Vercel production/preview origins are detected automatically without URL environment variables.
+- **Tests Passing:** 64 / 64
 - **TypeScript Errors:** 0
 - **Production Build:** Success (`cross-env SKIP_ENV_VALIDATION=1 next build`)
-- **Lint Status:** Clean
+- **M4-F01:** Dynamic filters for storage, RAM, color, battery health, PTA/CPID, warranty, inspection, verified sellers, and dealers; database query paths implemented and preview behavior covered by tests.
+- **M4-F02:** Listing-scoped chat with text/image messages, polling updates, typing indicators, and read receipts; validated WhatsApp links use seller/dealer contact numbers and prefilled listing context.
+- **M4-F03:** Favorite toggles persist per user, dashboard favorites list is available, and enabled saved searches notify once per listing activation through in-app and email channels. Saved searches can pause or resume alerts.
+- **Payments:** PayFast direct API implemented for inspection payments; live mode remains disabled pending merchant sandbox/3-D Secure and compliance verification. Promotion checkout remains disabled until verified processing is connected.
+- **M3-F02 Pause:** Work is paused at the code-complete boundary; no sandbox or live transactions were performed. Resume after merchant sandbox access and compliance review are available.
+- **Admin UI:** Responsive layouts, route context, loading/error states, and clearer catalog/moderation workflows verified.
+- **Lint Status:** 0 errors; two Next.js image optimization advisories remain in catalog manager views.

@@ -9,11 +9,7 @@ import {
   cancelPromotion,
   getActivePlans,
   getListingPromotionInfo,
-  markPaymentCompleted,
-  markPaymentFailed,
   pausePromotion,
-  promoteListing,
-  recordPayment,
 } from "../services/promotion.service";
 import {
   createListingPromotionSchema,
@@ -27,6 +23,8 @@ type ActionResult<T = void> = ({ ok: true } & T) | { ok: false; error: string };
 
 const SIGN_IN_REQUIRED = "Sign in to access promotion features.";
 const GENERIC_ERROR = "Something went wrong. Please try again.";
+const PROMOTION_CHECKOUT_UNAVAILABLE =
+  "Paid promotion checkout is unavailable until verified payment processing is enabled.";
 
 /** Gets all active promotion plans. */
 export async function getActivePromotionPlansAction(): Promise<ActionResult<{ plans: PromotionPlanDto[] }>> {
@@ -62,25 +60,7 @@ export async function promoteListingAction(
 
   const parsed = createListingPromotionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid promotion data." };
-
-  try {
-    // Verify ownership before promoting
-    const listing = await prisma.listing.findUnique({
-      where: { id: parsed.data.listingId },
-      select: { sellerId: true },
-    });
-    
-    if (!listing || listing.sellerId !== user.id) {
-      return { ok: false, error: "You can only promote your own listings." };
-    }
-    
-    const promotionId = await promoteListing(parsed.data);
-    revalidatePath(`${ROUTES.marketplace}`);
-    return { ok: true, promotionId };
-  } catch (error) {
-    console.error("[promotions] promoteListing failed:", error);
-    return { ok: false, error: error instanceof Error ? error.message : GENERIC_ERROR };
-  }
+  return { ok: false, error: PROMOTION_CHECKOUT_UNAVAILABLE };
 }
 
 /** Pauses an active promotion. User must own the listing. */
@@ -150,93 +130,21 @@ export async function recordPromotionPaymentAction(
 
   const parsed = createPromotionPaymentSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid payment data." };
-
-  try {
-    // Verify ownership before recording payment
-    const promotion = await prisma.listingPromotion.findUnique({
-      where: { id: parsed.data.promotionId },
-      include: {
-        listing: {
-          select: { sellerId: true },
-        },
-      },
-    });
-    
-    if (!promotion) return { ok: false, error: "Promotion not found." };
-    if (promotion.listing.sellerId !== user.id) {
-      return { ok: false, error: "You can only record payments for your own promotions." };
-    }
-    
-    const paymentId = await recordPayment(parsed.data);
-    return { ok: true, paymentId };
-  } catch (error) {
-    console.error("[promotions] recordPayment failed:", error);
-    return { ok: false, error: GENERIC_ERROR };
-  }
+  return { ok: false, error: PROMOTION_CHECKOUT_UNAVAILABLE };
 }
 
-/** Marks a payment as completed. User must own the listing. */
-export async function markPaymentCompletedAction(paymentId: string) {
+/** Seller-submitted outcomes are never accepted as payment verification. */
+export async function markPaymentCompletedAction(_paymentId: string) {
+  void _paymentId;
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
-
-  try {
-    // Verify ownership before marking payment completed
-    const payment = await prisma.promotionPayment.findUnique({
-      where: { id: paymentId },
-      include: {
-        promotion: {
-          include: {
-            listing: {
-              select: { sellerId: true },
-            },
-          },
-        },
-      },
-    });
-    
-    if (!payment) return { ok: false, error: "Payment not found." };
-    if (payment.promotion.listing.sellerId !== user.id) {
-      return { ok: false, error: "You can only mark your own payments as completed." };
-    }
-    
-    await markPaymentCompleted(paymentId);
-    return { ok: true };
-  } catch (error) {
-    console.error("[promotions] markPaymentCompleted failed:", error);
-    return { ok: false, error: GENERIC_ERROR };
-  }
+  return { ok: false, error: PROMOTION_CHECKOUT_UNAVAILABLE };
 }
 
-/** Marks a payment as failed. User must own the listing. */
-export async function markPaymentFailedAction(paymentId: string) {
+/** Payment failures are set only by server-verified provider responses. */
+export async function markPaymentFailedAction(_paymentId: string) {
+  void _paymentId;
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
-
-  try {
-    // Verify ownership before marking payment failed
-    const payment = await prisma.promotionPayment.findUnique({
-      where: { id: paymentId },
-      include: {
-        promotion: {
-          include: {
-            listing: {
-              select: { sellerId: true },
-            },
-          },
-        },
-      },
-    });
-    
-    if (!payment) return { ok: false, error: "Payment not found." };
-    if (payment.promotion.listing.sellerId !== user.id) {
-      return { ok: false, error: "You can only mark your own payments as failed." };
-    }
-    
-    await markPaymentFailed(paymentId);
-    return { ok: true };
-  } catch (error) {
-    console.error("[promotions] markPaymentFailed failed:", error);
-    return { ok: false, error: GENERIC_ERROR };
-  }
+  return { ok: false, error: PROMOTION_CHECKOUT_UNAVAILABLE };
 }

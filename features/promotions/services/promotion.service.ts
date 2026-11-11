@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import {
   createListingPromotion,
+  createPromotionPlan,
   createPromotionPayment,
   getActivePromotedListings,
   getListingPromotion,
@@ -12,11 +13,13 @@ import {
   listAllPromotionPlans,
   markExpiredPromotions,
   updateListingPromotionStatus,
+  updatePromotionPlan,
   updatePromotionPaymentStatus,
 } from "../repositories/promotion.repository";
 import type {
   CreateListingPromotionInput,
   CreatePromotionPaymentInput,
+  CreatePromotionPlanInput,
   ListingPromotionDto,
   PromotionPaymentDto,
   PromotionPlanDto,
@@ -40,12 +43,7 @@ export async function getActivePlans(): Promise<PromotionPlanDto[]> {
 }
 
 export async function getAllPlans(): Promise<PromotionPlanDto[]> {
-  try {
-    return await listAllPromotionPlans();
-  } catch (error) {
-    warn("failed to load all plans", error);
-    return [];
-  }
+  return listAllPromotionPlans();
 }
 
 export async function getPlan(id: string): Promise<PromotionPlanDto | null> {
@@ -57,13 +55,35 @@ export async function getPlan(id: string): Promise<PromotionPlanDto | null> {
   }
 }
 
+export async function createPlan(input: CreatePromotionPlanInput): Promise<PromotionPlanDto> {
+  try {
+    const id = await createPromotionPlan(input);
+    const plan = await getPromotionPlan(id);
+    if (!plan) throw new Error("Created promotion plan could not be loaded.");
+    return plan;
+  } catch (error) {
+    warn("failed to create plan", error);
+    throw new Error("Could not create promotion plan.");
+  }
+}
+
+export async function updatePlan(
+  id: string,
+  input: Partial<CreatePromotionPlanInput>,
+): Promise<PromotionPlanDto> {
+  try {
+    return await updatePromotionPlan(id, input);
+  } catch (error) {
+    warn("failed to update plan", error);
+    throw new Error("Could not update promotion plan.");
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Listing Promotions
 // ---------------------------------------------------------------------------
 
-export async function promoteListing(
-  input: CreateListingPromotionInput,
-): Promise<string> {
+export async function promoteListing(input: CreateListingPromotionInput): Promise<string> {
   try {
     return await createListingPromotion(input);
   } catch (error) {
@@ -136,7 +156,10 @@ export async function getUserActivePromotions(userId: string): Promise<
       status: p.status,
       startedAt: p.startedAt.toISOString(),
       expiresAt: p.expiresAt.toISOString(),
-      amountPaid: p.payments.length > 0 && p.payments[0] ? Number(p.payments[0].amount) : Number(p.plan.price),
+      amountPaid:
+        p.payments.length > 0 && p.payments[0]
+          ? Number(p.payments[0].amount)
+          : Number(p.plan.price),
     }));
   } catch (error) {
     warn("failed to get user active promotions", error);
@@ -166,9 +189,7 @@ export async function cancelPromotion(id: string): Promise<void> {
 // Payments
 // ---------------------------------------------------------------------------
 
-export async function recordPayment(
-  input: CreatePromotionPaymentInput,
-): Promise<string> {
+export async function recordPayment(input: CreatePromotionPaymentInput): Promise<string> {
   try {
     return await createPromotionPayment(input);
   } catch (error) {

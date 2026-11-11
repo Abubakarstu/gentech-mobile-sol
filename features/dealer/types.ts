@@ -21,12 +21,17 @@ export interface DealerDto {
   featuredUntil: string | null;
   isVerified: boolean;
   verifiedAt: string | null;
+  reviewNote: string | null;
   listingCount: number;
   soldCount: number;
   rating: number | null;
   reviewCount: number;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface DealerApplicationDto extends DealerDto {
+  owner: { name: string; email: string } | null;
 }
 
 export interface DealerBranchDto {

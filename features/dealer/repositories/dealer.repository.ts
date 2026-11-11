@@ -7,6 +7,7 @@ import type {
   CreateBranchInput,
   CreateDealerInput,
   DealerBranchDto,
+  DealerApplicationDto,
   DealerDto,
   DealerInventoryDto,
   DealerUserDto,
@@ -40,12 +41,22 @@ const dealerSelect = {
   featuredUntil: true,
   isVerified: true,
   verifiedAt: true,
+  reviewNote: true,
   listingCount: true,
   soldCount: true,
   rating: true,
   reviewCount: true,
   createdAt: true,
   updatedAt: true,
+} satisfies Prisma.DealerSelect;
+
+const adminDealerSelect = {
+  ...dealerSelect,
+  users: {
+    where: { role: "owner", isActive: true },
+    take: 1,
+    select: { user: { select: { name: true, email: true } } },
+  },
 } satisfies Prisma.DealerSelect;
 
 const branchSelect = {
@@ -119,6 +130,7 @@ function toDealerDto(row: Prisma.DealerGetPayload<{ select: typeof dealerSelect 
     featuredUntil: row.featuredUntil?.toISOString() ?? null,
     isVerified: row.isVerified,
     verifiedAt: row.verifiedAt?.toISOString() ?? null,
+    reviewNote: row.reviewNote,
     listingCount: row.listingCount,
     soldCount: row.soldCount,
     rating: row.rating,
@@ -128,7 +140,9 @@ function toDealerDto(row: Prisma.DealerGetPayload<{ select: typeof dealerSelect 
   };
 }
 
-function toBranchDto(row: Prisma.DealerBranchGetPayload<{ select: typeof branchSelect }>): DealerBranchDto {
+function toBranchDto(
+  row: Prisma.DealerBranchGetPayload<{ select: typeof branchSelect }>,
+): DealerBranchDto {
   return {
     id: row.id,
     dealerId: row.dealerId,
@@ -145,7 +159,9 @@ function toBranchDto(row: Prisma.DealerBranchGetPayload<{ select: typeof branchS
   };
 }
 
-function toInventoryDto(row: Prisma.DealerInventoryGetPayload<{ select: typeof inventorySelect }>): DealerInventoryDto {
+function toInventoryDto(
+  row: Prisma.DealerInventoryGetPayload<{ select: typeof inventorySelect }>,
+): DealerInventoryDto {
   return {
     id: row.id,
     dealerId: row.dealerId,
@@ -160,7 +176,9 @@ function toInventoryDto(row: Prisma.DealerInventoryGetPayload<{ select: typeof i
   };
 }
 
-function toDealerUserDto(row: Prisma.DealerUserGetPayload<{ select: typeof dealerUserSelect }>): DealerUserDto {
+function toDealerUserDto(
+  row: Prisma.DealerUserGetPayload<{ select: typeof dealerUserSelect }>,
+): DealerUserDto {
   return {
     id: row.id,
     dealerId: row.dealerId,
@@ -189,7 +207,7 @@ async function uniqueDealerSlug(name: string): Promise<string> {
 
 export async function createDealer(input: CreateDealerInput, ownerId: string): Promise<string> {
   const slug = await uniqueDealerSlug(input.name);
-  
+
   const dealer = await prisma.dealer.create({
     data: {
       name: input.name,
@@ -214,7 +232,7 @@ export async function createDealer(input: CreateDealerInput, ownerId: string): P
     },
     select: { id: true },
   });
-  
+
   return dealer.id;
 }
 
@@ -242,7 +260,23 @@ export async function getDealerByUserId(userId: string): Promise<DealerDto | nul
   return dealerUser?.dealer ? toDealerDto(dealerUser.dealer) : null;
 }
 
-export async function updateDealer(id: string, input: UpdateDealerInput): Promise<void> {
+export async function getDealerMembershipByUserId(userId: string): Promise<{
+  dealer: DealerDto;
+  role: string;
+} | null> {
+  const membership = await prisma.dealerUser.findFirst({
+    where: { userId, isActive: true },
+    select: { role: true, dealer: { select: dealerSelect } },
+  });
+  if (!membership) return null;
+  return { dealer: toDealerDto(membership.dealer), role: membership.role };
+}
+
+export async function updateDealer(
+  id: string,
+  input: UpdateDealerInput,
+  resubmit = false,
+): Promise<void> {
   await prisma.dealer.update({
     where: { id },
     data: {
@@ -260,8 +294,74 @@ export async function updateDealer(id: string, input: UpdateDealerInput): Promis
       ...(input.address !== undefined && { address: input.address }),
       ...(input.latitude !== undefined && { latitude: input.latitude }),
       ...(input.longitude !== undefined && { longitude: input.longitude }),
+      ...(resubmit && {
+        status: "PENDING",
+        isVerified: false,
+        verifiedAt: null,
+        reviewNote: null,
+      }),
     },
   });
+}
+
+export async function getDealerReviewQueue(params: {
+  status?: DealerDto["status"];
+  q?: string;
+}): Promise<DealerApplicationDto[]> {
+  const query = params.q?.trim().slice(0, 100);
+  const rows = await prisma.dealer.findMany({
+    where: {
+      ...(params.status ? { status: params.status } : {}),
+      ...(query
+        ? {
+            OR: [
+              { name: { contains: query, mode: "insensitive" } },
+              { businessName: { contains: query, mode: "insensitive" } },
+              { email: { contains: query, mode: "insensitive" } },
+              { city: { contains: query, mode: "insensitive" } },
+            ],
+          }
+        : {}),
+    },
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    take: 100,
+    select: adminDealerSelect,
+  });
+
+  return rows.map((row) => ({
+    ...toDealerDto(row),
+    owner: row.users[0]?.user ?? null,
+  }));
+}
+
+export async function getDealerStatusCounts(): Promise<Record<DealerDto["status"], number>> {
+  const groups = await prisma.dealer.groupBy({
+    by: ["status"],
+    _count: { _all: true },
+  });
+  return {
+    ACTIVE: groups.find((group) => group.status === "ACTIVE")?._count._all ?? 0,
+    SUSPENDED: groups.find((group) => group.status === "SUSPENDED")?._count._all ?? 0,
+    PENDING: groups.find((group) => group.status === "PENDING")?._count._all ?? 0,
+    REJECTED: groups.find((group) => group.status === "REJECTED")?._count._all ?? 0,
+  };
+}
+
+export async function reviewDealerApplication(input: {
+  dealerId: string;
+  status: "ACTIVE" | "REJECTED";
+  reason?: string;
+}): Promise<boolean> {
+  const result = await prisma.dealer.updateMany({
+    where: { id: input.dealerId, status: "PENDING" },
+    data: {
+      status: input.status,
+      isVerified: input.status === "ACTIVE",
+      verifiedAt: input.status === "ACTIVE" ? new Date() : null,
+      reviewNote: input.status === "REJECTED" ? input.reason : null,
+    },
+  });
+  return result.count === 1;
 }
 
 export async function listActiveDealers(limit = 20): Promise<DealerDto[]> {
@@ -297,11 +397,23 @@ export async function createBranch(input: CreateBranchInput): Promise<string> {
 
 export async function getBranchesByDealer(dealerId: string): Promise<DealerBranchDto[]> {
   const rows = await prisma.dealerBranch.findMany({
-    where: { dealerId, isActive: true },
-    orderBy: { name: "asc" },
+    where: { dealerId },
+    orderBy: [{ isActive: "desc" }, { name: "asc" }],
     select: branchSelect,
   });
   return rows.map(toBranchDto);
+}
+
+export async function setDealerBranchActive(input: {
+  dealerId: string;
+  branchId: string;
+  isActive: boolean;
+}): Promise<boolean> {
+  const result = await prisma.dealerBranch.updateMany({
+    where: { id: input.branchId, dealerId: input.dealerId },
+    data: { isActive: input.isActive },
+  });
+  return result.count === 1;
 }
 
 // ---------------------------------------------------------------------------
@@ -316,19 +428,55 @@ export async function addInventoryToDealer(input: {
   location?: string;
   costPrice?: number;
 }): Promise<string> {
+  if (input.listingId) {
+    const listing = await prisma.listing.findFirst({
+      where: { id: input.listingId, dealerId: input.dealerId, deletedAt: null },
+      select: { id: true },
+    });
+    if (!listing) {
+      throw new Error("Choose a listing that belongs to your dealer account.");
+    }
+  }
+
   const inventory = await prisma.dealerInventory.create({
     data: {
       dealerId: input.dealerId,
-      listingId: input.listingId,
-      sku: input.sku,
+      listingId: input.listingId || undefined,
+      sku: input.sku || undefined,
       stockCount: input.stockCount,
-      location: input.location,
-      costPrice: input.costPrice ? new Prisma.Decimal(input.costPrice) : undefined,
+      location: input.location || undefined,
+      costPrice: input.costPrice !== undefined ? new Prisma.Decimal(input.costPrice) : undefined,
       acquiredAt: new Date(),
     },
     select: { id: true },
   });
   return inventory.id;
+}
+
+export async function updateDealerInventory(input: {
+  dealerId: string;
+  inventoryId: string;
+  stockCount: number;
+  location?: string;
+}): Promise<boolean> {
+  const result = await prisma.dealerInventory.updateMany({
+    where: { id: input.inventoryId, dealerId: input.dealerId },
+    data: {
+      stockCount: input.stockCount,
+      ...(input.location !== undefined ? { location: input.location || null } : {}),
+    },
+  });
+  return result.count === 1;
+}
+
+export async function removeDealerInventory(input: {
+  dealerId: string;
+  inventoryId: string;
+}): Promise<boolean> {
+  const result = await prisma.dealerInventory.deleteMany({
+    where: { id: input.inventoryId, dealerId: input.dealerId },
+  });
+  return result.count === 1;
 }
 
 export async function getDealerInventory(dealerId: string): Promise<DealerInventoryDto[]> {
@@ -344,7 +492,11 @@ export async function getDealerInventory(dealerId: string): Promise<DealerInvent
 // Dealer Users
 // ---------------------------------------------------------------------------
 
-export async function addUserToDealer(dealerId: string, userId: string, role: string = "staff"): Promise<void> {
+export async function addUserToDealer(
+  dealerId: string,
+  userId: string,
+  role: string = "staff",
+): Promise<void> {
   await prisma.dealerUser.create({
     data: {
       dealerId,

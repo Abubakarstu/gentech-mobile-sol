@@ -3,14 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import {
-  LISTING_STATUSES,
-  REPORT_STATUSES,
-  ROUTES,
-  USER_ROLES,
-} from "@/lib/constants";
+import { LISTING_STATUSES, REPORT_STATUSES, ROUTES, USER_ROLES } from "@/lib/constants";
 import { requireAdmin } from "@/features/admin/lib/require-admin";
 import { logAudit } from "@/features/audit";
+import { notifySavedSearchMatches } from "@/features/saved-searches/services/saved-search.service";
 import {
   adminApproveListing,
   adminRejectListing,
@@ -67,7 +63,7 @@ export async function setUserBannedAction(input: {
     if (parsed.data.userId === adminId) return { ok: false, error: "You can't ban yourself." };
 
     await setUserBanned(parsed.data.userId, parsed.data.banned, parsed.data.reason);
-    
+
     // Audit log
     await logAudit({
       actorId: adminId,
@@ -77,7 +73,7 @@ export async function setUserBannedAction(input: {
       before: { banned: !parsed.data.banned },
       after: { banned: parsed.data.banned, reason: parsed.data.reason },
     });
-    
+
     revalidatePath(ROUTES.adminUsers);
   });
 }
@@ -105,7 +101,7 @@ export async function setUserRoleAction(input: {
     }
 
     await setUserRole(parsed.data.userId, parsed.data.role);
-    
+
     // Audit log
     await logAudit({
       actorId: adminId,
@@ -114,7 +110,7 @@ export async function setUserRoleAction(input: {
       resourceId: parsed.data.userId,
       after: { role: parsed.data.role },
     });
-    
+
     revalidatePath(ROUTES.adminUsers);
   });
 }
@@ -141,8 +137,9 @@ export async function adminSetListingStatusAction(input: {
   return adminAction(async (adminId) => {
     const parsed = listingStatusSchema.safeParse(input);
     if (!parsed.success) return { ok: false, error: "Invalid request." };
-    await adminSetListingStatus(parsed.data.listingId, parsed.data.status);
-    
+    const activated = await adminSetListingStatus(parsed.data.listingId, parsed.data.status);
+    if (activated) await notifySavedSearchMatches(parsed.data.listingId);
+
     // Audit log
     await logAudit({
       actorId: adminId,
@@ -151,8 +148,9 @@ export async function adminSetListingStatusAction(input: {
       resourceId: parsed.data.listingId,
       after: { status: parsed.data.status },
     });
-    
+
     revalidatePath(ROUTES.adminListings);
+    if (activated) revalidatePath(ROUTES.marketplace);
   });
 }
 
@@ -168,13 +166,12 @@ export async function adminDeleteListingAction(input: {
 
 const approveListingSchema = z.object({ listingId: z.string().min(1) });
 
-export async function approveListingAction(input: {
-  listingId: string;
-}): Promise<ActionResult> {
+export async function approveListingAction(input: { listingId: string }): Promise<ActionResult> {
   return adminAction(async (adminId) => {
     const parsed = approveListingSchema.safeParse(input);
     if (!parsed.success) return { ok: false, error: "Invalid request." };
-    await adminApproveListing(parsed.data.listingId, adminId);
+    const activated = await adminApproveListing(parsed.data.listingId, adminId);
+    if (activated) await notifySavedSearchMatches(parsed.data.listingId);
     await logAudit({
       actorId: adminId,
       action: "LISTING_APPROVED",
@@ -183,12 +180,17 @@ export async function approveListingAction(input: {
       after: { status: "ACTIVE" },
     });
     revalidatePath(ROUTES.adminListings);
+    if (activated) revalidatePath(ROUTES.marketplace);
   });
 }
 
 const rejectListingSchema = z.object({
   listingId: z.string().min(1),
-  reason: z.string().trim().min(5, "Please provide a rejection reason (min 5 characters).").max(500),
+  reason: z
+    .string()
+    .trim()
+    .min(5, "Please provide a rejection reason (min 5 characters).")
+    .max(500),
 });
 
 export async function rejectListingAction(input: {
@@ -290,9 +292,7 @@ export async function setCategoryActiveAction(input: {
   });
 }
 
-export async function deleteCategoryAction(input: {
-  categoryId: string;
-}): Promise<ActionResult> {
+export async function deleteCategoryAction(input: { categoryId: string }): Promise<ActionResult> {
   return adminAction(async () => {
     if (!input.categoryId) return { ok: false, error: "Invalid request." };
     const deleted = await deleteCategory(input.categoryId);

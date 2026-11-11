@@ -390,7 +390,7 @@ const CONTENT: Record<
 
 export function AdminFinanceWorkspace({ section }: { section: string }) {
   if (section === "integrations") {
-    return <PaymentIntegrations activeProvider={getPaymentProvider().id} />;
+    return <PaymentIntegrations activeProvider={getPaymentProvider()?.id ?? "unavailable"} />;
   }
   const content = CONTENT[section];
   if (!content) return null;
@@ -531,10 +531,14 @@ function PaymentIntegrations({ activeProvider }: { activeProvider: string }) {
   const providers = [
     {
       name: "PayFast Pakistan",
-      type: "Existing adapter scaffold · live checkout and verification are not implemented",
+      type: "Direct API · sandbox, 3-D Secure, and compliance verification required",
       icon: CreditCard,
       status:
-        activeProvider === "payfast" ? "Selected · adapter unfinished" : "Scaffold · not selected",
+        activeProvider === "payfast"
+          ? "Configured · live mode gated"
+          : activeProvider === "sandbox"
+            ? "Sandbox active · no real charges"
+            : "Unavailable · fail closed",
     },
     {
       name: "JazzCash",
@@ -595,7 +599,9 @@ function PaymentIntegrations({ activeProvider }: { activeProvider: string }) {
         <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-300">
           {activeProvider === "sandbox"
             ? "Sandbox active · no real charges"
-            : "PayFast selected · adapter unfinished"}
+            : activeProvider === "payfast"
+              ? "PayFast configured · live mode gated"
+              : "Payments unavailable · fail closed"}
         </span>
       </header>
       <FinanceNav active="integrations" />
@@ -604,8 +610,9 @@ function PaymentIntegrations({ activeProvider }: { activeProvider: string }) {
         <p className="text-sm font-semibold text-emerald-200">Credential-safe integration rule</p>
         <p className="mt-1 text-xs leading-5 text-slate-300">
           Provider secrets belong in server-side secret storage, never in this page, source control,
-          browser storage, or a public environment variable. Use provider-hosted
-          checkout/tokenization; this UI never collects or stores PAN, CVV, PIN, or OTP.
+          browser storage, or a public environment variable. Inspection payment details are sent
+          directly to PayFast over HTTPS and are not persisted by GenTech. Live processing remains
+          gated on merchant sandbox and compliance review.
         </p>
       </div>
 
@@ -625,8 +632,8 @@ function PaymentIntegrations({ activeProvider }: { activeProvider: string }) {
             {name === "PayFast Pakistan" && (
               <p className="mt-2 text-[11px] leading-4 text-amber-300">
                 {activeProvider === "payfast"
-                  ? "PayFast credentials are present but the live adapter is incomplete. Checkout must not be used until signed verification is implemented and tested."
-                  : "Sandbox is active. Do not configure production credentials until checkout and signed callback verification are implemented and tested."}
+                  ? "Inspection payments use the direct API. Keep live mode disabled until merchant sandbox, OTP/3-D Secure, and compliance review are complete. Promotion checkout is not enabled."
+                  : "No live payment is accepted. Promotion checkout remains disabled until verified provider processing is connected."}
               </p>
             )}
             <button
@@ -647,7 +654,7 @@ function PaymentIntegrations({ activeProvider }: { activeProvider: string }) {
           <ul className="mt-4 space-y-3 text-xs leading-5 text-slate-400">
             {[
               "Create payment intents on the server; verify amount, currency, ownership, and order state.",
-              "Verify signed webhooks against provider documentation; enforce idempotency and replay protection.",
+              "Verify provider callbacks and status responses against documented references; enforce idempotency.",
               "Keep an append-only transaction/event ledger; never treat a browser redirect as proof of payment.",
               "Separate sandbox and production credentials; rotate secrets and restrict staff access.",
               "Require dual approval for manual-transfer verification, refunds, and payout account changes.",

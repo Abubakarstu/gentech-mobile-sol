@@ -8,6 +8,7 @@ import {
   getMarketplaceBrands,
   getMarketplaceCategories,
 } from "@/features/marketplace/services/catalog.service";
+import { getActiveLocationTree } from "@/features/locations/services/location.service";
 
 export const metadata: Metadata = { title: "Post your ad" };
 
@@ -28,9 +29,10 @@ export default async function SellPage() {
     );
   }
 
-  const [categories, brands] = await Promise.all([
+  const [categories, brands, locations] = await Promise.all([
     getMarketplaceCategories(),
     getMarketplaceBrands(),
+    getActiveLocationTree(),
   ]);
 
   return (
@@ -68,7 +70,7 @@ export default async function SellPage() {
         </Link>
       </div>
 
-      <CreateListingForm categories={categories} brands={brands} />
+      <CreateListingForm categories={categories} brands={brands} locations={locations} />
     </div>
   );
 }

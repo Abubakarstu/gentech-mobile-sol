@@ -2,9 +2,16 @@ import Link from "next/link";
 
 import { ROUTES } from "@/lib/constants";
 import type { CategoryItem } from "@/types/marketplace";
+import type { LocationTree } from "@/features/locations/services/location.service";
 import { SearchBar } from "./search-bar";
 
-export function HomeHero({ popularCategories }: { popularCategories: CategoryItem[] }) {
+export function HomeHero({
+  popularCategories,
+  locations,
+}: {
+  popularCategories: CategoryItem[];
+  locations: LocationTree;
+}) {
   return (
     <section className="relative overflow-hidden border-b">
       <div className="bg-primary/5 pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(70%_60%_at_50%_0%,black,transparent)]" />
@@ -17,7 +24,7 @@ export function HomeHero({ popularCategories }: { popularCategories: CategoryIte
         </p>
 
         <div className="mx-auto mt-8 max-w-2xl">
-          <SearchBar variant="hero" />
+          <SearchBar variant="hero" locations={locations} />
         </div>
 
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">

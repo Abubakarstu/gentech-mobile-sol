@@ -6,17 +6,14 @@
 import { env } from "@/lib/env";
 
 /**
- * Fallbacks mirror the defaults in `lib/env.ts`. They matter only when env
- * validation is skipped (e.g. `SKIP_ENV_VALIDATION=1` during a CI build), where
- * Zod defaults are not applied and the raw value may be `undefined`.
+ * The fallback matters only when env validation is skipped (e.g.
+ * `SKIP_ENV_VALIDATION=1` during a CI build), where Zod defaults are not applied.
  */
 const DEFAULT_APP_NAME = "GenTech";
-const DEFAULT_APP_URL = "http://localhost:3000";
 
 /** Application-level metadata. */
 export const APP = {
   name: env.NEXT_PUBLIC_APP_NAME ?? DEFAULT_APP_NAME,
-  url: env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL,
   description: "Buy and sell mobile phones near you — fast, safe, and simple.",
   locale: "en-PK",
   defaultCurrency: "PKR",
@@ -49,6 +46,7 @@ export const ROUTES = {
   // Account
   dashboard: "/dashboard",
   myListings: "/dashboard/listings",
+  favorites: "/dashboard/favorites",
   savedSearches: "/dashboard/saved-searches",
   messages: "/dashboard/messages",
   notifications: "/dashboard/notifications",
@@ -60,11 +58,18 @@ export const ROUTES = {
   inspector: "/inspector",
   // Dealers
   dealers: "/dealers",
+  dealerDashboard: "/dashboard/dealer",
+  dealerApply: "/dashboard/dealer/apply",
+  dealerProfile: "/dashboard/dealer/profile",
+  dealerBranches: "/dashboard/dealer/branches",
+  dealerInventory: "/dashboard/dealer/inventory",
   // Admin
   admin: "/admin",
   adminUsers: "/admin/users",
   adminListings: "/admin/listings",
   adminReports: "/admin/reports",
+  adminDealers: "/admin/dealers",
+  adminPromotions: "/admin/promotions",
   adminCategories: "/admin/categories",
   adminInspections: "/admin/inspections",
 } as const;
@@ -138,6 +143,7 @@ export const NOTIFICATION_TYPES = {
   LISTING_EXPIRED: "LISTING_EXPIRED",
   NEW_REVIEW: "NEW_REVIEW",
   PRICE_DROP: "PRICE_DROP",
+  SAVED_SEARCH_MATCH: "SAVED_SEARCH_MATCH",
   SYSTEM: "SYSTEM",
   INSPECTION_REQUESTED: "INSPECTION_REQUESTED",
   INSPECTION_SCHEDULED: "INSPECTION_SCHEDULED",
@@ -174,24 +180,6 @@ export const REPORT_REASON_LABELS: Record<string, string> = {
   OTHER: "Other",
 };
 
-/** Major Pakistani cities for the location selector. */
-export const PK_CITIES = [
-  "Karachi",
-  "Lahore",
-  "Islamabad",
-  "Rawalpindi",
-  "Faisalabad",
-  "Multan",
-  "Peshawar",
-  "Quetta",
-  "Gujranwala",
-  "Sialkot",
-  "Hyderabad",
-  "Bahawalpur",
-] as const;
-
-export type PkCity = (typeof PK_CITIES)[number];
-
 // ---------------------------------------------------------------------------
 // Inspection service — kept in sync with the Prisma inspection enums.
 // ---------------------------------------------------------------------------
@@ -222,6 +210,9 @@ export const INSPECTION_STATUS_LABELS: Record<InspectionStatus, string> = {
 /** Payment state of an inspection fee — Prisma `InspectionPaymentStatus` enum. */
 export const INSPECTION_PAYMENT_STATUSES = {
   UNPAID: "UNPAID",
+  AWAITING_CUSTOMER: "AWAITING_CUSTOMER",
+  PENDING: "PENDING",
+  PROCESSING: "PROCESSING",
   PAID: "PAID",
   REFUNDED: "REFUNDED",
   FAILED: "FAILED",
@@ -232,6 +223,9 @@ export type InspectionPaymentStatus =
 
 export const INSPECTION_PAYMENT_STATUS_LABELS: Record<InspectionPaymentStatus, string> = {
   UNPAID: "Unpaid",
+  AWAITING_CUSTOMER: "Awaiting payment confirmation",
+  PENDING: "Payment pending",
+  PROCESSING: "Processing payment",
   PAID: "Paid",
   REFUNDED: "Refunded",
   FAILED: "Failed",

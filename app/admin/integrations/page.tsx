@@ -10,7 +10,8 @@ export const metadata: Metadata = {
 const integrations = [
   {
     title: "Payment gateway",
-    detail: "PayFast adapter is unfinished; sandbox only unless live implementation is completed.",
+    detail:
+      "PayFast direct API is implemented for inspection payments; live mode is gated on sandbox and compliance review. Promotion checkout remains disabled.",
     icon: CreditCard,
     href: "/admin/finance/integrations",
     state: "Review required",
@@ -85,8 +86,8 @@ export default function AdminIntegrationsPage() {
       </section>
       <p className="text-xs leading-5 text-slate-500">
         Verify each provider using its official current documentation. Use sandbox credentials
-        first, restrict production secrets to server-side runtime, and test webhook authenticity and
-        duplicate-event handling before launch.
+        first, restrict production secrets to server-side runtime, and test provider callbacks,
+        status polling, and duplicate-submission handling before launch.
       </p>
     </div>
   );

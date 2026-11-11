@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, ShieldCheck, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
-import { PK_CITIES, ROUTES } from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/utils/format";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -15,19 +15,27 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { bookInspectionAction } from "@/features/inspections/actions/inspection.actions";
 import type { InspectionPlanDto } from "@/features/inspections/types";
+import type { LocationTree } from "@/features/locations/services/location.service";
+import { LocationPicker, type LocationSelection } from "@/features/locations/components/location-picker";
 
 interface Props {
   plans: InspectionPlanDto[];
   isAuthenticated: boolean;
+  locations: LocationTree;
   /** Optional pre-selected package (e.g. clicked from a pricing card). */
   initialPlanId?: string;
 }
 
 /** PakWheels-style booking form — describe the phone + your details, pick a package. */
-export function BookInspectionForm({ plans, isAuthenticated, initialPlanId }: Props) {
+export function BookInspectionForm({ plans, isAuthenticated, initialPlanId, locations }: Props) {
   const router = useRouter();
   const [planId, setPlanId] = React.useState(initialPlanId ?? plans[0]?.id ?? "");
   const [pending, setPending] = React.useState(false);
+  const [location, setLocation] = React.useState<LocationSelection>({
+    countryId: "",
+    cityId: "",
+    areaId: "",
+  });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,8 +46,9 @@ export function BookInspectionForm({ plans, isAuthenticated, initialPlanId }: Pr
       deviceInfo: String(form.get("deviceInfo") ?? ""),
       contactName: String(form.get("contactName") ?? ""),
       contactPhone: String(form.get("contactPhone") ?? ""),
-      city: String(form.get("city") ?? ""),
-      area: String(form.get("area") ?? "") || undefined,
+      countryId: location.countryId,
+      cityId: location.cityId,
+      areaId: location.areaId || undefined,
       address: String(form.get("address") ?? "") || undefined,
       preferredAt: String(form.get("preferredAt") ?? "") || undefined,
       notes: String(form.get("notes") ?? "") || undefined,
@@ -157,28 +166,21 @@ export function BookInspectionForm({ plans, isAuthenticated, initialPlanId }: Pr
               maxLength={20}
             />
           </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="city">City</Label>
-            <select
-              id="city"
-              name="city"
-              required
-              defaultValue=""
-              className="border-input bg-background h-9 w-full rounded-lg border px-3 text-sm"
-            >
-              <option value="" disabled>
-                Select a city
-              </option>
-              {PK_CITIES.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="area">Area (optional)</Label>
-            <Input id="area" name="area" maxLength={120} placeholder="e.g. Gulberg, DHA" />
+          <div className="grid gap-4 sm:col-span-2 sm:grid-cols-3">
+            <LocationPicker
+              locations={locations}
+              prefix="inspection-booking-location"
+              value={location}
+              onChange={setLocation}
+            />
+            <input type="hidden" name="countryId" value={location.countryId} />
+            <input type="hidden" name="cityId" value={location.cityId} />
+            <input type="hidden" name="areaId" value={location.areaId} />
+            {locations.length === 0 ? (
+              <p className="text-muted-foreground text-sm sm:col-span-3">
+                Locations are temporarily unavailable. Please try again later.
+              </p>
+            ) : null}
           </div>
         </div>
         <div className="space-y-1.5">

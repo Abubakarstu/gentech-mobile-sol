@@ -46,11 +46,7 @@ export type PromotionPlacement =
   | "CATEGORY_FEATURED"
   | "HOMEPAGE_FEATURED";
 
-export type PromotionStatus =
-  | "ACTIVE"
-  | "PAUSED"
-  | "EXPIRED"
-  | "CANCELLED";
+export type PromotionStatus = "ACTIVE" | "PAUSED" | "EXPIRED" | "CANCELLED";
 
 export interface CreatePromotionPlanInput {
   name: string;
@@ -58,7 +54,7 @@ export interface CreatePromotionPlanInput {
   placement: PromotionPlacement;
   price: number;
   durationDays: number;
-  maxSlots?: number;
+  maxSlots?: number | null;
   isActive?: boolean;
 }
 

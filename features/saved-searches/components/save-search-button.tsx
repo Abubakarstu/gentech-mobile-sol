@@ -29,11 +29,19 @@ export function SaveSearchButton({ isAuthenticated }: { isAuthenticated: boolean
       return;
     }
     trackSaveSearch(query);
-    toast.success("Search saved", { description: "Find it under Saved Searches." });
+    toast.success("Search saved", {
+      description: "You’ll get alerts when matching listings are approved.",
+    });
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={save} disabled={pending}>
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={save}
+      disabled={pending}
+      title="Save this search and get alerts for new matching listings"
+    >
       {pending ? <Loader2 className="size-4 animate-spin" /> : <Bookmark className="size-4" />}
       <span className="hidden sm:inline">Save search</span>
     </Button>

@@ -110,7 +110,7 @@ export default function AdminSecurityPage() {
           {
             icon: Banknote,
             title: "Payments",
-            text: "Hosted payment fields; never collect PAN, CVV, PIN, or OTP here.",
+            text: "Direct PayFast API; details are transient and never persisted by GenTech.",
             href: "/admin/finance/integrations",
           },
           {
@@ -142,8 +142,9 @@ export default function AdminSecurityPage() {
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-400" />
         <p className="text-xs leading-5 text-slate-400">
           Never paste production credentials into tickets, chat, source code, browser forms, or this
-          admin UI. Rotate any secret that was exposed. Prefer provider-hosted checkout and signed
-          server-to-server webhooks; validate against the provider’s official integration
+          admin UI. Rotate any secret that was exposed. Prefer provider-hosted checkout where
+          available; for approved direct APIs, minimize transient handling and never persist payment
+          credentials. Validate callbacks and status responses against official provider
           documentation.
         </p>
       </div>

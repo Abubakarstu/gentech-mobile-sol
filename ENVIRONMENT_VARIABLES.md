@@ -10,7 +10,8 @@
 | `DEMO_MODE`                       | OPTIONAL  | NO          | YES      | NO              | NO      | `true` enables demo behavior and local fallback DB/auth values                          |
 | `DEMO_READ_ONLY`                  | OPTIONAL  | NO          | YES      | NO              | NO      | `true` disables database access and restricts production demo login to the preview user |
 | `DEMO_SEED_USERS`                 | OPTIONAL  | NO          | YES      | NO              | NO      | `true` with `DEMO_MODE=true` opts into seeding the documented demo login accounts       |
-| `BETTER_AUTH_URL`                 | OPTIONAL  | NO          | YES      | NO              | NO      | Better Auth base URL (callbacks/redirects)                                              |
+| `BETTER_AUTH_URL`                 | OPTIONAL  | NO          | YES      | NO              | NO      | Better Auth base URL override (Vercel origin is detected automatically)                 |
+| `APP_URL`                         | OPTIONAL  | YES         | YES      | NO              | NO      | Application base URL override for metadata and generated links                          |
 | `AUTH_SKIP_EMAIL_VERIFICATION`    | OPTIONAL  | NO          | YES      | NO              | NO      | Dev-only: skip email verification (ignored in production)                               |
 | `GOOGLE_CLIENT_ID`                | OPTIONAL  | NO          | YES      | NO              | YES     | Google OAuth client ID                                                                  |
 | `GOOGLE_CLIENT_SECRET`            | OPTIONAL  | NO          | YES      | NO              | YES     | Google OAuth client secret                                                              |
@@ -24,7 +25,14 @@
 | `PAYFAST_MERCHANT_ID`             | OPTIONAL  | NO          | YES      | NO              | YES     | PayFast merchant ID                                                                     |
 | `PAYFAST_SECURED_KEY`             | OPTIONAL  | NO          | YES      | NO              | YES     | PayFast secured key                                                                     |
 | `PAYFAST_API_BASE`                | OPTIONAL  | NO          | YES      | NO              | NO      | PayFast API base URL                                                                    |
-| `NEXT_PUBLIC_APP_URL`             | YES       | YES         | YES      | YES             | NO      | Application base URL (client)                                                           |
+| `PAYFAST_MERCHANT_CATEGORY_CODE`  | OPTIONAL  | NO          | YES      | NO              | NO      | Merchant category code assigned by PayFast                                               |
+| `PAYFAST_CARD_ACCOUNT_TYPE`       | OPTIONAL  | NO          | YES      | NO              | NO      | PayFast account type for card transactions                                               |
+| `PAYFAST_JAZZCASH_BANK_CODE`      | OPTIONAL  | NO          | YES      | NO              | NO      | Merchant-configured JazzCash bank code                                                  |
+| `PAYFAST_JAZZCASH_ACCOUNT_TYPE`   | OPTIONAL  | NO          | YES      | NO              | NO      | Merchant-configured JazzCash account type                                              |
+| `PAYFAST_EASYPAISA_BANK_CODE`     | OPTIONAL  | NO          | YES      | NO              | NO      | Merchant-configured Easypaisa bank code                                                |
+| `PAYFAST_EASYPAISA_ACCOUNT_TYPE`  | OPTIONAL  | NO          | YES      | NO              | NO      | Merchant-configured Easypaisa account type                                             |
+| `PAYFAST_MODE`                    | OPTIONAL  | NO          | YES      | NO              | NO      | `disabled`, `sandbox`, or `live` (defaults to `disabled`)                              |
+| `PAYFAST_LIVE_ENABLED`             | OPTIONAL  | NO          | YES      | NO              | NO      | Explicit live-mode opt-in; defaults to `false`                                         |
 | `NEXT_PUBLIC_APP_NAME`            | YES       | YES         | YES      | YES             | NO      | Application name (client)                                                               |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | OPTIONAL  | YES         | YES      | YES             | NO      | Google Maps API key                                                                     |
 | `NEXT_PUBLIC_GTM_ID`              | OPTIONAL  | YES         | YES      | YES             | NO      | Google Tag Manager container ID                                                         |
@@ -58,18 +66,12 @@ read-only demo mode and disables database access.
    - Used to sign and verify session cookies
    - **Rotate this if compromised**
 
-4. **`BETTER_AUTH_URL`** - Auth base URL
-   - Must match production domain
-   - Used for OAuth callbacks and redirects
-   - Example: `https://gentech.example.com`
-   - **Critical for OAuth and email links**
+4. **`BETTER_AUTH_URL`** / **`APP_URL`** - Optional server-side origin overrides
+   - Vercel's production or preview URL is detected automatically and takes precedence
+   - Set them only for non-Vercel deployments that require a fixed canonical origin
+   - `APP_URL` does not need the `NEXT_PUBLIC_` prefix because it is not read by browser code
 
-5. **`NEXT_PUBLIC_APP_URL`** - Client base URL
-   - Must match production domain
-   - Used by client-side code for navigation
-   - Example: `https://gentech.example.com`
-
-6. **`NEXT_PUBLIC_APP_NAME`** - Application name
+5. **`NEXT_PUBLIC_APP_NAME`** - Application name
    - Displayed in UI and metadata
    - Example: `GenTech`
 
@@ -94,14 +96,17 @@ read-only demo mode and disables database access.
 
 ### Payments
 
-- **PayFast**: `PAYFAST_MERCHANT_ID`, `PAYFAST_SECURED_KEY`, `PAYFAST_API_BASE`
-- The current PayFast adapter is an **unfinished scaffold**; checkout creation and provider verification are not implemented.
-- When PayFast credentials are absent, inspection checkout uses the built-in sandbox. Sandbox outcomes are simulated and must never be treated as real payments.
-- If PayFast credentials are present, the provider resolver selects the unfinished PayFast adapter; inspection checkout will fail until the adapter is completed. Do not configure production credentials yet.
+- **PayFast direct API**: Configure the merchant ID/key, HTTPS API base, merchant category code, and the account-type/bank-code values supplied for each enabled method. Keep all values server-side.
+- `PAYFAST_MODE` defaults to `disabled`. Use `sandbox` only with PayFast-issued sandbox credentials; `live` is additionally gated by `PAYFAST_LIVE_ENABLED=true`.
+- Inspection checkout processes payment details in memory and sends them to PayFast over HTTPS. GenTech does not persist PAN, CVV, PIN, or OTP. A short-lived authenticated continuation contains only the provider's temporary instrument token and transaction context.
+- The integration uses PayFast's direct token/tokenized-transaction/status API; it is not a hosted checkout and does not rely on a webhook. The server verifies transaction and basket references before changing payment state.
+- Without PayFast configuration, non-production inspection checkout may use the built-in sandbox; it never represents a real charge. Production fails closed instead of falling back to simulated success.
+- Promotion checkout is not yet connected to verified payment processing. Promotion creation and seller-submitted payment outcomes are disabled; do not activate or account for a promotion as paid based on client input.
+- Do not enable live processing until merchant sandbox testing (including OTP and 3-D Secure), PCI/compliance review, and production-secret configuration are complete. A database migration for payment states is additive and must be applied through the normal reviewed deployment process.
 - Do not add JazzCash, Easypaisa, NayaPay, Visa, Mastercard, or bank-transfer secrets as `NEXT_PUBLIC_*` variables. Use a server-side provider adapter and managed secret storage.
 - Visa and Mastercard acceptance must be enabled through an acquiring bank or supported payment gateway; they are card networks, not wallet adapters.
-- Before accepting real payments, implement hosted checkout/tokenization, signed webhook verification, amount/currency/order validation, idempotency, append-only transaction records, refunds, and settlement reconciliation.
-- Never store or request full card numbers, CVV, PINs, or OTPs in application forms or admin settings.
+- The merchant must confirm the PayFast API contract, account configuration, PCI responsibilities, refunds, and settlement reconciliation before live use.
+- Never persist full card numbers, CVV, PINs, or OTPs. Do not place payment details or secrets in client-visible environment variables, logs, analytics, or support tooling.
 
 ### Maps
 
@@ -148,7 +153,7 @@ read-only demo mode and disables database access.
 ## Default Values
 
 - `NODE_ENV`: `development`
-- `NEXT_PUBLIC_APP_URL`: `http://localhost:3000`
+- `APP_URL`: `http://localhost:3000`
 - `NEXT_PUBLIC_APP_NAME`: `GenTech`
 - `DEMO_MODE`: `false` (required DB and auth values remain enforced unless explicitly enabled)
 - `DEMO_READ_ONLY`: `false` (automatically enabled for production when database/auth values are absent)

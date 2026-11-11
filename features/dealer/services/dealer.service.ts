@@ -8,13 +8,20 @@ import {
   createDealer,
   getBranchesByDealer,
   getDealerById,
+  getDealerMembershipByUserId,
   getDealerBySlug,
   getDealerByUserId,
+  getDealerReviewQueue as getDealerReviewQueueRecords,
+  getDealerStatusCounts as getDealerStatusCountRecords,
   getDealerInventory,
+  removeDealerInventory as removeDealerInventoryRecord,
   getDealerUsers,
   listActiveDealers,
   removeUserFromDealer,
+  reviewDealerApplication as reviewDealerApplicationRecord,
   updateDealer,
+  setDealerBranchActive,
+  updateDealerInventory as updateDealerInventoryRecord,
 } from "../repositories/dealer.repository";
 import type {
   CreateBranchInput,
@@ -81,15 +88,52 @@ export async function getUserDealer(userId: string): Promise<DealerDto | null> {
   }
 }
 
+export async function getUserDealerMembership(userId: string) {
+  try {
+    return await getDealerMembershipByUserId(userId);
+  } catch (error) {
+    warn("failed to get dealer membership", error);
+    throw new Error("Could not verify dealer access.");
+  }
+}
+
 /**
  * Updates dealer information.
  */
-export async function updateDealerProfile(id: string, input: UpdateDealerInput): Promise<void> {
+export async function updateDealerProfile(
+  id: string,
+  input: UpdateDealerInput,
+  resubmit = false,
+): Promise<void> {
   try {
-    await updateDealer(id, input);
+    await updateDealer(id, input, resubmit);
   } catch (error) {
     warn("failed to update dealer", error);
     throw new Error("Could not update dealer profile.");
+  }
+}
+
+export async function getDealerReviewQueueData(params: {
+  status?: DealerDto["status"];
+  q?: string;
+}) {
+  const [items, counts] = await Promise.all([
+    getDealerReviewQueueRecords(params),
+    getDealerStatusCountRecords(),
+  ]);
+  return { items, counts };
+}
+
+export async function reviewDealerApplicationStatus(input: {
+  dealerId: string;
+  status: "ACTIVE" | "REJECTED";
+  reason?: string;
+}): Promise<boolean> {
+  try {
+    return await reviewDealerApplicationRecord(input);
+  } catch (error) {
+    warn("failed to review dealer application", error);
+    throw new Error("Could not update dealer application.");
   }
 }
 
@@ -129,6 +173,19 @@ export async function getDealerBranches(dealerId: string): Promise<DealerBranchD
   }
 }
 
+export async function setDealerBranchStatus(input: {
+  dealerId: string;
+  branchId: string;
+  isActive: boolean;
+}): Promise<boolean> {
+  try {
+    return await setDealerBranchActive(input);
+  } catch (error) {
+    warn("failed to update branch status", error);
+    throw new Error("Could not update branch status.");
+  }
+}
+
 /**
  * Gets dealer inventory.
  */
@@ -141,10 +198,40 @@ export async function getInventory(dealerId: string): Promise<DealerInventoryDto
   }
 }
 
+export async function updateInventory(input: {
+  dealerId: string;
+  inventoryId: string;
+  stockCount: number;
+  location?: string;
+}): Promise<boolean> {
+  try {
+    return await updateDealerInventoryRecord(input);
+  } catch (error) {
+    warn("failed to update dealer inventory", error);
+    throw new Error("Could not update inventory.");
+  }
+}
+
+export async function removeInventory(input: {
+  dealerId: string;
+  inventoryId: string;
+}): Promise<boolean> {
+  try {
+    return await removeDealerInventoryRecord(input);
+  } catch (error) {
+    warn("failed to remove dealer inventory", error);
+    throw new Error("Could not remove inventory.");
+  }
+}
+
 /**
  * Adds a user to a dealer with a specific role.
  */
-export async function addStaffMember(dealerId: string, userId: string, role: string = "staff"): Promise<void> {
+export async function addStaffMember(
+  dealerId: string,
+  userId: string,
+  role: string = "staff",
+): Promise<void> {
   try {
     await addUserToDealer(dealerId, userId, role);
   } catch (error) {

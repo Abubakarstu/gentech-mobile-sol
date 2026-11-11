@@ -16,6 +16,21 @@ export function searchDemoListings(filters: ListingFilters): ListingSearchResult
     if (filters.city && l.city.toLowerCase() !== filters.city.toLowerCase()) return false;
     if (filters.minPrice !== undefined && l.price < filters.minPrice) return false;
     if (filters.maxPrice !== undefined && l.price > filters.maxPrice) return false;
+    if (filters.storage && l.storage !== filters.storage) return false;
+    if (filters.ram && l.ram !== filters.ram) return false;
+    if (filters.color && l.color !== filters.color) return false;
+    if (
+      filters.batteryHealthMin !== undefined &&
+      (l.batteryHealth === undefined || l.batteryHealth < filters.batteryHealthMin)
+    )
+      return false;
+    if (filters.ptaStatus && l.ptaStatus !== filters.ptaStatus) return false;
+    if (filters.cpidStatus && l.cpidStatus !== filters.cpidStatus) return false;
+    if (filters.warranty && l.warranty !== filters.warranty) return false;
+    if (filters.isInspected !== undefined && l.isInspected !== filters.isInspected) return false;
+    if (filters.isVerifiedSeller !== undefined && l.isVerifiedSeller !== filters.isVerifiedSeller)
+      return false;
+    if (filters.isDealer !== undefined && l.isDealer !== filters.isDealer) return false;
     return true;
   });
 

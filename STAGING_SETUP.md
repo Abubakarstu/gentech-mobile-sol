@@ -235,7 +235,7 @@ BETTER_AUTH_URL="https://staging.gentech.example.com"
 AUTH_SKIP_EMAIL_VERIFICATION="false"
 
 # Application
-NEXT_PUBLIC_APP_URL="https://staging.gentech.example.com"
+APP_URL="https://staging.gentech.example.com"
 NEXT_PUBLIC_APP_NAME="GenTech Staging"
 NODE_ENV="production"
 

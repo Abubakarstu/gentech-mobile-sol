@@ -23,7 +23,15 @@ function gradientFor(id: string): string {
   return GRADIENTS[sum % GRADIENTS.length]!;
 }
 
-export function ListingCard({ listing }: { listing: ListingCardData }) {
+export function ListingCard({
+  listing,
+  isFavorite = false,
+  isAuthenticated,
+}: {
+  listing: ListingCardData;
+  isFavorite?: boolean;
+  isAuthenticated: boolean;
+}) {
   const href = `/listings/${listing.slug}`;
 
   return (
@@ -51,30 +59,40 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
 
           <div className="absolute top-2 left-2 flex gap-1">
             {listing.isFeatured && (
-              <Badge className="bg-amber-500 text-white hover:bg-amber-500">
-                Featured
-              </Badge>
+              <Badge className="bg-amber-500 text-white hover:bg-amber-500">Featured</Badge>
             )}
             {listing.ptaStatus === "PTA_APPROVED" && (
-              <Badge variant="outline" className="border-green-500 text-green-700 bg-green-50/90 backdrop-blur text-xs">
+              <Badge
+                variant="outline"
+                className="border-green-500 bg-green-50/90 text-xs text-green-700 backdrop-blur"
+              >
                 <CheckCircle2 className="mr-0.5 size-3" />
                 PTA
               </Badge>
             )}
             {listing.cpidStatus === "CPID_APPROVED" && (
-              <Badge variant="outline" className="border-blue-500 text-blue-700 bg-blue-50/90 backdrop-blur text-xs">
+              <Badge
+                variant="outline"
+                className="border-blue-500 bg-blue-50/90 text-xs text-blue-700 backdrop-blur"
+              >
                 <CheckCircle2 className="mr-0.5 size-3" />
                 CPID
               </Badge>
             )}
             {listing.isInspected && (
-              <Badge variant="outline" className="border-purple-500 text-purple-700 bg-purple-50/90 backdrop-blur text-xs">
+              <Badge
+                variant="outline"
+                className="border-purple-500 bg-purple-50/90 text-xs text-purple-700 backdrop-blur"
+              >
                 <ShieldCheck className="mr-0.5 size-3" />
                 Inspected
               </Badge>
             )}
             {listing.isVerifiedSeller && (
-              <Badge variant="outline" className="border-sky-500 text-sky-700 bg-sky-50/90 backdrop-blur text-xs">
+              <Badge
+                variant="outline"
+                className="border-sky-500 bg-sky-50/90 text-xs text-sky-700 backdrop-blur"
+              >
                 <ShieldCheck className="mr-0.5 size-3" />
                 Verified
               </Badge>
@@ -109,7 +127,12 @@ export function ListingCard({ listing }: { listing: ListingCardData }) {
         </div>
       </Link>
 
-      <FavoriteButton className="absolute top-2 right-2" />
+      <FavoriteButton
+        listingId={listing.id}
+        initialIsFavorite={isFavorite}
+        isAuthenticated={isAuthenticated}
+        className="absolute top-2 right-2"
+      />
     </article>
   );
 }

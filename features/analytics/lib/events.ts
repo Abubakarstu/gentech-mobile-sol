@@ -37,3 +37,7 @@ export function trackCreateListing(input: { id: string; price: number }): void {
 export function trackSaveSearch(query: string): void {
   track(ANALYTICS_EVENTS.SAVE_SEARCH, { query });
 }
+
+export function trackToggleFavorite(listingId: string, favorite: boolean): void {
+  track(ANALYTICS_EVENTS.TOGGLE_FAVORITE, { listingId, favorite });
+}
