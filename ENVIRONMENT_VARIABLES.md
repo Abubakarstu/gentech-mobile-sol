@@ -9,7 +9,7 @@
 | `BETTER_AUTH_SECRET`              | YES       | NO          | YES      | NO              | YES     | Better Auth session signing key                                                         |
 | `DEMO_MODE`                       | OPTIONAL  | NO          | YES      | NO              | NO      | `true` enables demo behavior and local fallback DB/auth values                          |
 | `DEMO_READ_ONLY`                  | OPTIONAL  | NO          | YES      | NO              | NO      | `true` disables database access and restricts production demo login to the preview user |
-| `DEMO_SEED_USERS`                 | OPTIONAL  | NO          | YES      | NO              | NO      | `true` with `DEMO_MODE=true` opts into seeding the documented demo login accounts       |
+| `DEMO_SEED_USERS`                 | OPTIONAL  | NO          | YES      | NO              | NO      | `true` opts into seeding verified demo accounts (use protected Vercel Preview only)     |
 | `BETTER_AUTH_URL`                 | OPTIONAL  | NO          | YES      | NO              | NO      | Auth base URL override (Vercel origin is detected automatically)                        |
 | `APP_URL`                         | OPTIONAL  | YES         | YES      | NO              | NO      | Server-side app URL override for non-Vercel deployments                                 |
 | `AUTH_SKIP_EMAIL_VERIFICATION`    | OPTIONAL  | NO          | YES      | NO              | NO      | Dev-only: skip email verification (ignored in production)                               |

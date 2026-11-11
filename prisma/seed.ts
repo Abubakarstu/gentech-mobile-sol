@@ -89,9 +89,6 @@ const DEMO_ACCOUNTS = [
 
 async function seedDemoAccounts(prisma: PrismaClient) {
   if (process.env.DEMO_SEED_USERS !== "true") return;
-  if (process.env.DEMO_MODE !== "true") {
-    throw new Error("DEMO_SEED_USERS requires DEMO_MODE=true.");
-  }
 
   for (const demoAccount of DEMO_ACCOUNTS) {
     const password = await hashPassword(demoAccount.password);
