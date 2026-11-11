@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { Check, Filter, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import { Check, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -35,11 +35,11 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
   const [launchPrice, setLaunchPrice] = React.useState<number | undefined>();
   const [displaySize, setDisplaySize] = React.useState("");
   const [processor, setProcessor] = React.useState("");
-  const [ramOptionsStr, setRamOptionsStr] = React.useState("6GB, 8GB, 12GB");
-  const [storageOptionsStr, setStorageOptionsStr] = React.useState("128GB, 256GB, 512GB");
+  const [ramOptionsStr, setRamOptionsStr] = React.useState("");
+  const [storageOptionsStr, setStorageOptionsStr] = React.useState("");
   const [batteryCapacity, setBatteryCapacity] = React.useState("");
   const [mainCamera, setMainCamera] = React.useState("");
-  const [colorsStr, setColorsStr] = React.useState("Black, Silver, Blue");
+  const [colorsStr, setColorsStr] = React.useState("");
   const [imageUrl, setImageUrl] = React.useState("");
 
   // Edit Model State
@@ -74,9 +74,18 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
     }
 
     setCreating(true);
-    const ramOptions = ramOptionsStr.split(",").map((s) => s.trim()).filter(Boolean);
-    const storageOptions = storageOptionsStr.split(",").map((s) => s.trim()).filter(Boolean);
-    const colors = colorsStr.split(",").map((s) => s.trim()).filter(Boolean);
+    const ramOptions = ramOptionsStr
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const storageOptions = storageOptionsStr
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const colors = colorsStr
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
 
     const res = await createModelAction({
       name: name.trim(),
@@ -166,30 +175,39 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
   return (
     <div className="space-y-6">
       {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Phone Model Catalog</h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs font-semibold tracking-[0.16em] text-emerald-300 uppercase">
+            Marketplace catalog
+          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Phone model catalog
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
             Define dynamic specifications, RAM variants, storage options, and colors.
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative w-56">
-            <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+        <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-[minmax(12rem,14rem)_auto_auto]">
+          <div className="relative min-w-0">
+            <Search className="absolute top-2.5 left-3 size-4 text-slate-400" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search models…"
-              className="pl-9 bg-[#141519] border-white/10 text-white placeholder:text-slate-500"
+              aria-label="Search phone models"
+              className="border-white/10 bg-[#141519] pl-9 text-white placeholder:text-slate-500"
             />
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <Filter className="size-4 text-slate-400" />
+          <div className="relative">
+            <label htmlFor="model-brand-filter" className="sr-only">
+              Filter by brand
+            </label>
             <select
+              id="model-brand-filter"
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value)}
-              className="h-9 rounded-md bg-[#141519] border border-white/10 px-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-emerald-400"
+              className="h-10 w-full rounded-lg border border-white/10 bg-[#141519] px-3 text-xs text-white focus:ring-2 focus:ring-emerald-400 focus:outline-none"
             >
               <option value="">All Brands ({models.length})</option>
               {brands.map((b) => (
@@ -202,32 +220,64 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
 
           <Button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+            disabled={brands.length === 0}
+            className="min-h-10 bg-emerald-400 font-semibold text-slate-950 hover:bg-emerald-300"
+            title={brands.length === 0 ? "Create a brand before adding a phone model" : undefined}
           >
-            <Plus className="size-4 mr-1.5" />
+            <Plus className="mr-1.5 size-4" />
             {showAddForm ? "Cancel" : "Add Model"}
           </Button>
         </div>
+      </header>
+
+      <div
+        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/[0.07] bg-[#141519] px-4 py-3 text-xs"
+        aria-live="polite"
+      >
+        <p className="text-slate-400">
+          Showing <span className="font-semibold text-slate-100">{filteredModels.length}</span> of{" "}
+          <span className="font-semibold text-slate-100">{models.length}</span> models
+        </p>
+        <p className="text-slate-500">
+          {models.filter((model) => model.isActive).length} active ·{" "}
+          {models.length - models.filter((model) => model.isActive).length} inactive
+        </p>
       </div>
+
+      {brands.length === 0 && (
+        <div className="rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-4 py-3 text-xs leading-5 text-amber-100/80">
+          Add and activate a brand before creating phone models.
+        </div>
+      )}
 
       {/* Add Model Form */}
       {showAddForm && (
         <form
           onSubmit={handleCreate}
-          className="rounded-xl border border-white/10 bg-[#141519] p-6 shadow-lg space-y-5"
+          className="space-y-5 rounded-xl border border-white/10 bg-[#141519] p-6 shadow-lg"
         >
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h3 className="text-sm font-semibold text-white">Create New Phone Model & Specifications</h3>
-            <span className="text-xs text-slate-400">Values populate dynamic marketplace filters</span>
+            <h3 className="text-sm font-semibold text-white">
+              Create New Phone Model & Specifications
+            </h3>
+            <span className="text-xs text-slate-400">
+              Values populate dynamic marketplace filters
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Brand *</label>
+              <label
+                htmlFor="model-create-brand"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Brand *
+              </label>
               <select
+                id="model-create-brand"
                 value={brandId}
                 onChange={(e) => setBrandId(e.target.value)}
-                className="w-full h-9 rounded-md bg-[#0e0f12] border border-white/10 px-3 text-xs text-white"
+                className="h-9 w-full rounded-md border border-white/10 bg-[#0e0f12] px-3 text-xs text-white"
                 required
               >
                 {brands.map((b) => (
@@ -238,120 +288,182 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Model Name *</label>
+              <label
+                htmlFor="model-create-name"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Model Name *
+              </label>
               <Input
+                id="model-create-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. iPhone 16 Pro Max, Galaxy S25 Ultra"
+                placeholder="Official model name"
                 required
-                className="bg-[#0e0f12] border-white/10 text-white"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Model Number (optional)</label>
+              <label
+                htmlFor="model-create-number"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Model Number (optional)
+              </label>
               <Input
+                id="model-create-number"
                 value={modelNumber}
                 onChange={(e) => setModelNumber(e.target.value)}
-                placeholder="e.g. A3296, SM-S938B"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Manufacturer model number"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Launch Price (PKR)</label>
+              <label
+                htmlFor="model-create-price"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Launch Price (PKR)
+              </label>
               <Input
+                id="model-create-price"
                 type="number"
                 value={launchPrice ?? ""}
-                onChange={(e) => setLaunchPrice(e.target.value ? Number(e.target.value) : undefined)}
+                onChange={(e) =>
+                  setLaunchPrice(e.target.value ? Number(e.target.value) : undefined)
+                }
                 placeholder="e.g. 450000"
                 min={0}
-                className="bg-[#0e0f12] border-white/10 text-white"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Display Size</label>
+              <label
+                htmlFor="model-create-display"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Display Size
+              </label>
               <Input
+                id="model-create-display"
                 value={displaySize}
                 onChange={(e) => setDisplaySize(e.target.value)}
-                placeholder="e.g. 6.9 inches OLED 120Hz"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Screen size and panel details"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Processor (Chipset)</label>
+              <label
+                htmlFor="model-create-processor"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Processor (Chipset)
+              </label>
               <Input
+                id="model-create-processor"
                 value={processor}
                 onChange={(e) => setProcessor(e.target.value)}
-                placeholder="e.g. Apple A18 Pro, Snapdragon 8 Elite"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Processor name"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Battery Capacity</label>
+              <label
+                htmlFor="model-create-battery"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Battery Capacity
+              </label>
               <Input
+                id="model-create-battery"
                 value={batteryCapacity}
                 onChange={(e) => setBatteryCapacity(e.target.value)}
-                placeholder="e.g. 4685mAh, 45W"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Battery capacity and charging details"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">
+              <label
+                htmlFor="model-create-ram"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
                 RAM Variants (comma separated)
               </label>
               <Input
+                id="model-create-ram"
                 value={ramOptionsStr}
                 onChange={(e) => setRamOptionsStr(e.target.value)}
-                placeholder="6GB, 8GB, 12GB, 16GB"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Comma-separated supported RAM options"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">
+              <label
+                htmlFor="model-create-storage"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
                 Storage Variants (comma separated)
               </label>
               <Input
+                id="model-create-storage"
                 value={storageOptionsStr}
                 onChange={(e) => setStorageOptionsStr(e.target.value)}
-                placeholder="128GB, 256GB, 512GB, 1TB"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Comma-separated supported storage options"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">
+              <label
+                htmlFor="model-create-colors"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
                 Available Colors (comma separated)
               </label>
               <Input
+                id="model-create-colors"
                 value={colorsStr}
                 onChange={(e) => setColorsStr(e.target.value)}
-                placeholder="Desert Titanium, Black, White"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Comma-separated official color names"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Main Camera Specs</label>
+              <label
+                htmlFor="model-create-camera"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Main Camera Specs
+              </label>
               <Input
+                id="model-create-camera"
                 value={mainCamera}
                 onChange={(e) => setMainCamera(e.target.value)}
-                placeholder="e.g. 48MP Wide + 48MP Ultra-Wide + 12MP 5x Telephoto"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Camera configuration"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Official Image URL</label>
+              <label
+                htmlFor="model-create-image-url"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Official Image URL
+              </label>
               <Input
+                id="model-create-image-url"
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://.../iphone16promax.png"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Model image URL"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
           </div>
@@ -368,9 +480,9 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
             <Button
               type="submit"
               disabled={creating}
-              className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+              className="bg-emerald-400 font-semibold text-slate-950 hover:bg-emerald-300"
             >
-              {creating ? <Loader2 className="size-4 animate-spin mr-1.5" /> : null}
+              {creating ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
               Save Phone Model
             </Button>
           </div>
@@ -378,10 +490,13 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
       )}
 
       {/* Models Table */}
-      <div className="rounded-xl border border-white/10 bg-[#141519] overflow-hidden">
+      <section
+        aria-label="Phone model catalog"
+        className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]"
+      >
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-[#08090b] text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-white/10">
+          <table className="w-full min-w-[840px] text-left text-sm text-slate-300">
+            <thead className="border-b border-white/10 bg-[#08090b] text-xs font-semibold tracking-wider text-slate-400 uppercase">
               <tr>
                 <th className="px-6 py-4">Phone Model</th>
                 <th className="px-4 py-4">Brand</th>
@@ -396,28 +511,31 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
               {filteredModels.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
-                    No phone models found matching the criteria. Click "Add Model" to register one.
+                    No phone models found matching the criteria. Click &quot;Add Model&quot; to
+                    register one.
                   </td>
                 </tr>
               ) : (
                 filteredModels.map((model) => {
                   const isEditing = editingId === model.id;
                   return (
-                    <tr key={model.id} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={model.id} className="transition-colors hover:bg-white/[0.02]">
                       <td className="px-6 py-4 whitespace-nowrap">
                         {isEditing ? (
                           <div className="space-y-1">
                             <Input
                               value={editName}
                               onChange={(e) => setEditName(e.target.value)}
-                              className="bg-[#0e0f12] border-white/20 text-white h-8 text-xs"
+                              className="h-8 border-white/20 bg-[#0e0f12] text-xs text-white"
                             />
                             <Input
                               type="number"
                               value={editPrice ?? ""}
-                              onChange={(e) => setEditPrice(e.target.value ? Number(e.target.value) : undefined)}
+                              onChange={(e) =>
+                                setEditPrice(e.target.value ? Number(e.target.value) : undefined)
+                              }
                               placeholder="Launch Price PKR"
-                              className="bg-[#0e0f12] border-white/20 text-white h-7 text-[11px]"
+                              className="h-7 border-white/20 bg-[#0e0f12] text-[11px] text-white"
                             />
                           </div>
                         ) : (
@@ -426,10 +544,10 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
                               <img
                                 src={model.imageUrl}
                                 alt={model.name}
-                                className="size-8 rounded object-contain bg-white/10 p-0.5"
+                                className="size-8 rounded bg-white/10 object-contain p-0.5"
                               />
                             ) : (
-                              <div className="size-8 rounded bg-emerald-500/10 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                              <div className="flex size-8 items-center justify-center rounded bg-emerald-500/10 text-xs font-bold text-emerald-400">
                                 📱
                               </div>
                             )}
@@ -450,54 +568,57 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
                         </Badge>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                        <div className="flex max-w-[200px] flex-wrap gap-1">
                           {model.storageOptions.length > 0 ? (
                             model.storageOptions.map((s) => (
                               <span
                                 key={s}
-                                className="rounded bg-white/5 border border-white/10 px-1.5 py-0.5 text-[10px] text-slate-300 font-mono"
+                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-300"
                               >
                                 {s}
                               </span>
                             ))
                           ) : (
-                            <span className="text-slate-500 text-xs">—</span>
+                            <span className="text-xs text-slate-500">—</span>
                           )}
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <div className="flex flex-wrap gap-1 max-w-[150px]">
+                        <div className="flex max-w-[150px] flex-wrap gap-1">
                           {model.ramOptions.length > 0 ? (
                             model.ramOptions.map((r) => (
                               <span
                                 key={r}
-                                className="rounded bg-white/5 border border-white/10 px-1.5 py-0.5 text-[10px] text-slate-300 font-mono"
+                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-300"
                               >
                                 {r}
                               </span>
                             ))
                           ) : (
-                            <span className="text-slate-500 text-xs">—</span>
+                            <span className="text-xs text-slate-500">—</span>
                           )}
                         </div>
                       </td>
-                      <td className="px-4 py-4 text-xs text-slate-400 max-w-[220px] truncate">
+                      <td className="max-w-[220px] truncate px-4 py-4 text-xs text-slate-400">
                         {[model.displaySize, model.processor, model.batteryCapacity]
                           .filter(Boolean)
                           .join(" • ") || "No specs entered"}
                       </td>
                       <td className="px-4 py-4 text-center whitespace-nowrap">
                         <button
+                          type="button"
                           onClick={() => handleToggleActive(model)}
-                          className="cursor-pointer"
-                          title="Click to toggle active status"
+                          className="cursor-pointer rounded-full focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
+                          title={`${model.isActive ? "Deactivate" : "Activate"} ${model.name}`}
+                          aria-label={`${model.isActive ? "Deactivate" : "Activate"} ${model.name}`}
+                          aria-pressed={model.isActive}
                         >
                           {model.isActive ? (
-                            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[11px]">
+                            <Badge className="border-emerald-500/30 bg-emerald-500/20 text-[11px] text-emerald-300">
                               Active
                             </Badge>
                           ) : (
-                            <Badge className="bg-slate-800 text-slate-400 border-white/10 text-[11px]">
+                            <Badge className="border-white/10 bg-slate-800 text-[11px] text-slate-400">
                               Inactive
                             </Badge>
                           )}
@@ -510,7 +631,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
                               size="sm"
                               onClick={() => saveEdit(model.id)}
                               disabled={updating}
-                              className="size-8 p-0 bg-emerald-500 hover:bg-emerald-600 text-slate-950"
+                              className="size-8 bg-emerald-500 p-0 text-slate-950 hover:bg-emerald-600"
                             >
                               <Check className="size-4" />
                             </Button>
@@ -538,7 +659,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
                               size="sm"
                               variant="ghost"
                               onClick={() => handleDelete(model.id, model.name)}
-                              className="size-8 p-0 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                              className="size-8 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
                               title="Delete Model"
                             >
                               <Trash2 className="size-3.5" />
@@ -553,8 +674,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
-

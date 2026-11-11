@@ -42,9 +42,7 @@ export function BrandManager({ brands }: BrandManagerProps) {
     const q = search.trim().toLowerCase();
     if (!q) return brands;
     return brands.filter(
-      (b) =>
-        b.name.toLowerCase().includes(q) ||
-        b.slug.toLowerCase().includes(q),
+      (b) => b.name.toLowerCase().includes(q) || b.slug.toLowerCase().includes(q),
     );
   }, [brands, search]);
 
@@ -119,7 +117,9 @@ export function BrandManager({ brands }: BrandManagerProps) {
   }
 
   async function handleDelete(id: string, name: string) {
-    if (!confirm(`Are you sure you want to delete ${name}? This will affect all associated models.`)) {
+    if (
+      !confirm(`Are you sure you want to delete ${name}? This will affect all associated models.`)
+    ) {
       return;
     }
 
@@ -135,78 +135,120 @@ export function BrandManager({ brands }: BrandManagerProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Brand Management</h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs font-semibold tracking-[0.16em] text-emerald-300 uppercase">
+            Marketplace catalog
+          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Brand management
+          </h1>
+          <p className="mt-1 text-sm text-slate-400">
             Create and organize smartphone and electronics brands dynamically.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="relative w-64">
-            <Search className="absolute left-3 top-2.5 size-4 text-slate-400" />
+        <div className="grid w-full grid-cols-1 gap-2 sm:w-auto sm:grid-cols-[minmax(12rem,16rem)_auto]">
+          <div className="relative min-w-0">
+            <Search className="absolute top-2.5 left-3 size-4 text-slate-400" />
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search brands…"
-              className="pl-9 bg-[#141519] border-white/10 text-white placeholder:text-slate-500"
+              aria-label="Search brands"
+              className="border-white/10 bg-[#141519] pl-9 text-white placeholder:text-slate-500"
             />
           </div>
           <Button
             onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+            className="min-h-10 bg-emerald-400 font-semibold text-slate-950 hover:bg-emerald-300"
           >
-            <Plus className="size-4 mr-1.5" />
+            <Plus className="mr-1.5 size-4" />
             {showAddForm ? "Cancel" : "Add Brand"}
           </Button>
         </div>
+      </header>
+
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-white/[0.07] bg-[#141519] px-4 py-3 text-xs">
+        <span className="font-semibold text-slate-100">{brands.length.toLocaleString()}</span>
+        <span className="text-slate-500">total brands</span>
+        <span className="hidden h-4 w-px bg-white/10 sm:block" aria-hidden="true" />
+        <span className="font-semibold text-emerald-300">
+          {brands.filter((brand) => brand.isActive).length.toLocaleString()}
+        </span>
+        <span className="text-slate-500">active</span>
+        <span className="ml-auto text-slate-500">
+          Showing {filteredBrands.length.toLocaleString()} matching results
+        </span>
       </div>
 
       {/* Add Brand Inline Form */}
       {showAddForm && (
         <form
           onSubmit={handleCreate}
-          className="rounded-xl border border-white/10 bg-[#141519] p-5 shadow-lg space-y-4"
+          className="space-y-4 rounded-xl border border-white/10 bg-[#141519] p-5 shadow-lg"
         >
           <h3 className="text-sm font-semibold text-white">Create New Mobile Brand</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Brand Name *</label>
+              <label
+                htmlFor="brand-create-name"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Brand Name *
+              </label>
               <Input
+                id="brand-create-name"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
-                placeholder="e.g. Apple, Samsung"
+                placeholder="Official brand name"
                 required
-                className="bg-[#0e0f12] border-white/10 text-white"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Custom Slug (optional)</label>
+              <label
+                htmlFor="brand-create-slug"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Custom Slug (optional)
+              </label>
               <Input
+                id="brand-create-slug"
                 value={newSlug}
                 onChange={(e) => setNewSlug(e.target.value)}
-                placeholder="e.g. apple, samsung"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="URL-friendly identifier"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Logo Image URL</label>
+              <label
+                htmlFor="brand-create-logo"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Logo Image URL
+              </label>
               <Input
+                id="brand-create-logo"
                 value={newLogo}
                 onChange={(e) => setNewLogo(e.target.value)}
-                placeholder="https://.../apple-logo.png"
-                className="bg-[#0e0f12] border-white/10 text-white"
+                placeholder="Logo image URL"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-slate-400 mb-1 block">Display Order</label>
+              <label
+                htmlFor="brand-create-position"
+                className="mb-1 block text-xs font-medium text-slate-400"
+              >
+                Display Order
+              </label>
               <Input
+                id="brand-create-position"
                 type="number"
                 value={newPosition}
                 onChange={(e) => setNewPosition(Number(e.target.value))}
                 min={0}
-                className="bg-[#0e0f12] border-white/10 text-white"
+                className="border-white/10 bg-[#0e0f12] text-white"
               />
             </div>
           </div>
@@ -222,9 +264,9 @@ export function BrandManager({ brands }: BrandManagerProps) {
             <Button
               type="submit"
               disabled={creating}
-              className="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold"
+              className="bg-emerald-500 font-semibold text-slate-950 hover:bg-emerald-600"
             >
-              {creating ? <Loader2 className="size-4 animate-spin mr-1.5" /> : null}
+              {creating ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
               Save Brand
             </Button>
           </div>
@@ -232,10 +274,13 @@ export function BrandManager({ brands }: BrandManagerProps) {
       )}
 
       {/* Brands Table */}
-      <div className="rounded-xl border border-white/10 bg-[#141519] overflow-hidden">
+      <section
+        aria-label="Brand catalog"
+        className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]"
+      >
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-[#08090b] text-xs font-semibold text-slate-400 uppercase tracking-wider border-b border-white/10">
+          <table className="w-full min-w-[700px] text-left text-sm text-slate-300">
+            <thead className="border-b border-white/10 bg-[#08090b] text-xs font-semibold tracking-wider text-slate-400 uppercase">
               <tr>
                 <th className="px-6 py-4">Brand</th>
                 <th className="px-4 py-4">Slug</th>
@@ -250,20 +295,20 @@ export function BrandManager({ brands }: BrandManagerProps) {
               {filteredBrands.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="px-6 py-12 text-center text-slate-500">
-                    No brands found. Click "Add Brand" to create one.
+                    No brands found. Click &quot;Add Brand&quot; to create one.
                   </td>
                 </tr>
               ) : (
                 filteredBrands.map((brand) => {
                   const isEditing = editingId === brand.id;
                   return (
-                    <tr key={brand.id} className="hover:bg-white/[0.02] transition-colors">
+                    <tr key={brand.id} className="transition-colors hover:bg-white/[0.02]">
                       <td className="px-6 py-4 whitespace-nowrap">
                         {isEditing ? (
                           <Input
                             value={editName}
                             onChange={(e) => setEditName(e.target.value)}
-                            className="bg-[#0e0f12] border-white/20 text-white h-8 text-xs"
+                            className="h-8 border-white/20 bg-[#0e0f12] text-xs text-white"
                           />
                         ) : (
                           <div className="flex items-center gap-3">
@@ -271,10 +316,10 @@ export function BrandManager({ brands }: BrandManagerProps) {
                               <img
                                 src={brand.logo}
                                 alt={brand.name}
-                                className="size-7 rounded-lg object-contain bg-white/10 p-0.5"
+                                className="size-7 rounded-lg bg-white/10 object-contain p-0.5"
                               />
                             ) : (
-                              <div className="size-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                              <div className="flex size-7 items-center justify-center rounded-lg bg-emerald-500/20 text-xs font-bold text-emerald-400">
                                 {brand.name.slice(0, 1).toUpperCase()}
                               </div>
                             )}
@@ -282,30 +327,30 @@ export function BrandManager({ brands }: BrandManagerProps) {
                           </div>
                         )}
                       </td>
-                      <td className="px-4 py-4 text-xs font-mono text-slate-400">
-                        {brand.slug}
-                      </td>
+                      <td className="px-4 py-4 font-mono text-xs text-slate-400">{brand.slug}</td>
                       <td className="px-4 py-4 text-center">
                         <button
                           onClick={() => handleToggleActive(brand)}
-                          className="cursor-pointer"
-                          title="Click to toggle active status"
+                          className="cursor-pointer rounded-full focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
+                          title={`${brand.isActive ? "Deactivate" : "Activate"} ${brand.name}`}
+                          aria-label={`${brand.isActive ? "Deactivate" : "Activate"} ${brand.name}`}
+                          aria-pressed={brand.isActive}
                         >
                           {brand.isActive ? (
-                            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/30 text-[11px]">
+                            <Badge className="border-emerald-500/30 bg-emerald-500/20 text-[11px] text-emerald-300">
                               Active
                             </Badge>
                           ) : (
-                            <Badge className="bg-slate-800 text-slate-400 border-white/10 text-[11px]">
+                            <Badge className="border-white/10 bg-slate-800 text-[11px] text-slate-400">
                               Inactive
                             </Badge>
                           )}
                         </button>
                       </td>
-                      <td className="px-4 py-4 text-center text-slate-300 font-medium">
+                      <td className="px-4 py-4 text-center font-medium text-slate-300">
                         {brand._count.phoneModels}
                       </td>
-                      <td className="px-4 py-4 text-center text-slate-300 font-medium">
+                      <td className="px-4 py-4 text-center font-medium text-slate-300">
                         {brand._count.listings}
                       </td>
                       <td className="px-4 py-4 text-center text-slate-400">
@@ -314,7 +359,7 @@ export function BrandManager({ brands }: BrandManagerProps) {
                             type="number"
                             value={editPosition}
                             onChange={(e) => setEditPosition(Number(e.target.value))}
-                            className="bg-[#0e0f12] border-white/20 text-white h-8 w-16 text-xs text-center mx-auto"
+                            className="mx-auto h-8 w-16 border-white/20 bg-[#0e0f12] text-center text-xs text-white"
                           />
                         ) : (
                           brand.position
@@ -327,7 +372,7 @@ export function BrandManager({ brands }: BrandManagerProps) {
                               size="sm"
                               onClick={() => saveEdit(brand.id)}
                               disabled={updating}
-                              className="size-8 p-0 bg-emerald-500 hover:bg-emerald-600 text-slate-950"
+                              className="size-8 bg-emerald-500 p-0 text-slate-950 hover:bg-emerald-600"
                             >
                               <Check className="size-4" />
                             </Button>
@@ -355,7 +400,7 @@ export function BrandManager({ brands }: BrandManagerProps) {
                               size="sm"
                               variant="ghost"
                               onClick={() => handleDelete(brand.id, brand.name)}
-                              className="size-8 p-0 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
+                              className="size-8 p-0 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
                               title="Delete Brand"
                             >
                               <Trash2 className="size-3.5" />
@@ -370,8 +415,7 @@ export function BrandManager({ brands }: BrandManagerProps) {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
-

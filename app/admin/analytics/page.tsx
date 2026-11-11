@@ -16,7 +16,7 @@ export default function AdminAnalyticsPage() {
       description="Measure marketplace liquidity and service quality—not just page views—using privacy-conscious, clearly defined business metrics."
       icon={BarChart3}
       metrics={[
-        { label: "Active listings", value: "—", detail: "Existing marketplace dashboard" },
+        { label: "Active listings", value: "—", detail: "Connect listing aggregates" },
         { label: "Buyer enquiries", value: "—", detail: "Connect conversation aggregates" },
         {
           label: "Listing-to-sale rate",
