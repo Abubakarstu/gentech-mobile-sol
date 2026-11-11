@@ -288,11 +288,40 @@ export async function setPlanActive(id: string, isActive: boolean): Promise<void
 // Requests
 // ---------------------------------------------------------------------------
 
+async function resolveRequestLocation(input: {
+  countryId: string;
+  cityId: string;
+  areaId?: string;
+}) {
+  const city = await prisma.city.findFirst({
+    where: {
+      id: input.cityId,
+      countryId: input.countryId,
+      isActive: true,
+      country: { isActive: true },
+    },
+    select: {
+      id: true,
+      name: true,
+      areas: {
+        where: { id: input.areaId || undefined, isActive: true },
+        select: { id: true, name: true },
+        take: 1,
+      },
+    },
+  });
+  if (!city) throw new Error("Choose an active city in the selected country.");
+  const area = input.areaId ? city.areas[0] : undefined;
+  if (input.areaId && !area) throw new Error("Choose an active area in the selected city.");
+  return { city, area };
+}
+
 /** Creates a request, snapshotting the plan's name + price onto it. Returns the id. */
 export async function createRequest(
   input: RequestInspectionInput,
   requesterId: string,
 ): Promise<string> {
+  const { city, area } = await resolveRequestLocation(input);
   const plan = await prisma.inspectionPlan.findUnique({
     where: { id: input.planId },
     select: { id: true, name: true, price: true, currency: true, isActive: true },
@@ -314,8 +343,10 @@ export async function createRequest(
       currency: plan.currency,
       contactName: input.contactName,
       contactPhone: input.contactPhone,
-      city: input.city,
-      area: input.area,
+      city: city.name,
+      cityId: city.id,
+      area: area?.name,
+      areaId: area?.id,
       address: input.address,
       notes: input.notes,
       preferredAt: preferredAt && !Number.isNaN(preferredAt.getTime()) ? preferredAt : null,
@@ -333,6 +364,7 @@ export async function createBooking(
   input: BookInspectionInput,
   requesterId: string,
 ): Promise<string> {
+  const { city, area } = await resolveRequestLocation(input);
   const plan = await prisma.inspectionPlan.findUnique({
     where: { id: input.planId },
     select: { id: true, name: true, price: true, currency: true, isActive: true },
@@ -355,8 +387,10 @@ export async function createBooking(
       currency: plan.currency,
       contactName: input.contactName,
       contactPhone: input.contactPhone,
-      city: input.city,
-      area: input.area,
+      city: city.name,
+      cityId: city.id,
+      area: area?.name,
+      areaId: area?.id,
       address: input.address,
       notes: input.notes,
       preferredAt: preferredAt && !Number.isNaN(preferredAt.getTime()) ? preferredAt : null,
@@ -492,9 +526,12 @@ export async function getPayableRequest(
 ): Promise<{
   id: string;
   feeAmount: number;
+  feeAmountDecimal: string;
   currency: string;
   contactName: string | null;
   contactPhone: string | null;
+  paymentStatus: (typeof INSPECTION_PAYMENT_STATUSES)[keyof typeof INSPECTION_PAYMENT_STATUSES];
+  paymentRef: string | null;
 } | null> {
   const row = await prisma.inspectionRequest.findFirst({
     where: {
@@ -509,19 +546,24 @@ export async function getPayableRequest(
       currency: true,
       contactName: true,
       contactPhone: true,
+      paymentStatus: true,
+      paymentRef: true,
     },
   });
   if (!row) return null;
   return {
     id: row.id,
     feeAmount: Number(row.feeAmount),
+    feeAmountDecimal: row.feeAmount.toFixed(2),
     currency: row.currency,
     contactName: row.contactName,
     contactPhone: row.contactPhone,
+    paymentStatus: row.paymentStatus,
+    paymentRef: row.paymentRef,
   };
 }
 
-/** Records the chosen method + gateway reference when a checkout is started. */
+/** Stores only the provider transaction id while awaiting customer authentication. */
 export async function recordPaymentIntent(
   id: string,
   requesterId: string,
@@ -529,8 +571,22 @@ export async function recordPaymentIntent(
   method: PaymentMethod,
 ): Promise<boolean> {
   const result = await prisma.inspectionRequest.updateMany({
-    where: { id, requesterId, paymentStatus: { not: INSPECTION_PAYMENT_STATUSES.PAID } },
-    data: { paymentRef: reference, paymentMethod: method },
+    where: {
+      id,
+      requesterId,
+      paymentStatus: {
+        in: [
+          INSPECTION_PAYMENT_STATUSES.UNPAID,
+          INSPECTION_PAYMENT_STATUSES.FAILED,
+          INSPECTION_PAYMENT_STATUSES.AWAITING_CUSTOMER,
+        ],
+      },
+    },
+    data: {
+      paymentRef: reference,
+      paymentMethod: method,
+      paymentStatus: INSPECTION_PAYMENT_STATUSES.AWAITING_CUSTOMER,
+    },
   });
   return result.count > 0;
 }
@@ -539,10 +595,21 @@ export async function recordPaymentIntent(
 export async function markRequestPaid(
   id: string,
   requesterId: string,
+  reference: string,
   method?: PaymentMethod,
 ): Promise<boolean> {
   const result = await prisma.inspectionRequest.updateMany({
-    where: { id, requesterId, paymentStatus: { not: INSPECTION_PAYMENT_STATUSES.PAID } },
+    where: {
+      id,
+      requesterId,
+      paymentRef: reference,
+      paymentStatus: {
+        notIn: [
+          INSPECTION_PAYMENT_STATUSES.PAID,
+          INSPECTION_PAYMENT_STATUSES.REFUNDED,
+        ],
+      },
+    },
     data: {
       paymentStatus: INSPECTION_PAYMENT_STATUSES.PAID,
       paidAt: new Date(),
@@ -556,10 +623,57 @@ export async function markRequestPaid(
 export async function markRequestPaymentFailed(
   id: string,
   requesterId: string,
+  reference: string,
 ): Promise<boolean> {
   const result = await prisma.inspectionRequest.updateMany({
-    where: { id, requesterId, paymentStatus: INSPECTION_PAYMENT_STATUSES.UNPAID },
+    where: {
+      id,
+      requesterId,
+      paymentRef: reference,
+      paymentStatus: {
+        in: [
+          INSPECTION_PAYMENT_STATUSES.PENDING,
+          INSPECTION_PAYMENT_STATUSES.PROCESSING,
+        ],
+      },
+    },
     data: { paymentStatus: INSPECTION_PAYMENT_STATUSES.FAILED },
+  });
+  return result.count > 0;
+}
+
+/** Keeps an accepted PayFast attempt eligible for provider status checks. */
+export async function markRequestPaymentPending(
+  id: string,
+  requesterId: string,
+  reference: string,
+): Promise<boolean> {
+  const result = await prisma.inspectionRequest.updateMany({
+    where: {
+      id,
+      requesterId,
+      paymentRef: reference,
+      paymentStatus: INSPECTION_PAYMENT_STATUSES.PROCESSING,
+    },
+    data: { paymentStatus: INSPECTION_PAYMENT_STATUSES.PENDING },
+  });
+  return result.count > 0;
+}
+
+/** Allows a single request to submit the tokenized payment to PayFast. */
+export async function claimPaymentProcessing(
+  id: string,
+  requesterId: string,
+  reference: string,
+): Promise<boolean> {
+  const result = await prisma.inspectionRequest.updateMany({
+    where: {
+      id,
+      requesterId,
+      paymentRef: reference,
+      paymentStatus: INSPECTION_PAYMENT_STATUSES.AWAITING_CUSTOMER,
+    },
+    data: { paymentStatus: INSPECTION_PAYMENT_STATUSES.PROCESSING },
   });
   return result.count > 0;
 }

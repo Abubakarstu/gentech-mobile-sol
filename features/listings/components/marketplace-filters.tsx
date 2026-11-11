@@ -5,8 +5,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
-import { LISTING_CONDITION_LABELS, PK_CITIES, STORAGE_OPTIONS, RAM_OPTIONS, WARRANTY_TYPE, PTA_STATUS, CPID_STATUS } from "@/lib/constants";
-import type { BrandItem, CategoryItem, ListingFilters } from "@/types/marketplace";
+import { LISTING_CONDITION_LABELS, WARRANTY_TYPE, PTA_STATUS, CPID_STATUS } from "@/lib/constants";
+import type {
+  BrandItem,
+  CategoryItem,
+  ListingFilters,
+  ListingFilterOptions,
+} from "@/types/marketplace";
+import type { LocationTree } from "@/features/locations/services/location.service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +22,9 @@ interface Props {
   categories: CategoryItem[];
   brands: BrandItem[];
   filters: ListingFilters;
+  locations: LocationTree;
+  filterOptions: ListingFilterOptions;
+  onApply?: () => void;
 }
 
 function FilterGroup({ title, children }: { title: string; children: React.ReactNode }) {
@@ -27,18 +36,106 @@ function FilterGroup({ title, children }: { title: string; children: React.React
   );
 }
 
-export function MarketplaceFilters({ categories, brands, filters }: Props) {
+function PriceRangeFilter({
+  min,
+  max,
+  onApply,
+}: {
+  min?: number;
+  max?: number;
+  onApply?: () => void;
+}) {
   const router = useRouter();
   const buildHref = useListingHref();
+  const [minPrice, setMinPrice] = React.useState(min?.toString() ?? "");
+  const [maxPrice, setMaxPrice] = React.useState(max?.toString() ?? "");
 
-  const [minPrice, setMinPrice] = React.useState(filters.minPrice?.toString() ?? "");
-  const [maxPrice, setMaxPrice] = React.useState(filters.maxPrice?.toString() ?? "");
-  const [batteryHealthMin, setBatteryHealthMin] = React.useState(filters.batteryHealthMin?.toString() ?? "");
-
-  function applyPrice(e: React.FormEvent) {
-    e.preventDefault();
+  function applyPrice(event: React.FormEvent) {
+    event.preventDefault();
     router.push(buildHref({ minPrice: minPrice || null, maxPrice: maxPrice || null }));
+    onApply?.();
   }
+
+  return (
+    <form onSubmit={applyPrice} className="space-y-2">
+      <div className="flex items-center gap-2">
+        <div className="grid gap-1">
+          <Label htmlFor="minPrice" className="text-muted-foreground text-xs">
+            Min
+          </Label>
+          <Input
+            id="minPrice"
+            inputMode="numeric"
+            value={minPrice}
+            onChange={(event) => setMinPrice(event.target.value.replace(/\D/g, ""))}
+            placeholder="0"
+            className="h-9"
+          />
+        </div>
+        <div className="grid gap-1">
+          <Label htmlFor="maxPrice" className="text-muted-foreground text-xs">
+            Max
+          </Label>
+          <Input
+            id="maxPrice"
+            inputMode="numeric"
+            value={maxPrice}
+            onChange={(event) => setMaxPrice(event.target.value.replace(/\D/g, ""))}
+            placeholder="Any"
+            className="h-9"
+          />
+        </div>
+      </div>
+      <Button type="submit" variant="outline" size="sm" className="w-full">
+        Apply price
+      </Button>
+    </form>
+  );
+}
+
+function BatteryHealthFilter({
+  value,
+  onApply,
+}: {
+  value?: number;
+  onApply?: () => void;
+}) {
+  const router = useRouter();
+  const buildHref = useListingHref();
+  const [batteryHealthMin, setBatteryHealthMin] = React.useState(value?.toString() ?? "");
+
+  function applyBatteryHealth() {
+    router.push(buildHref({ batteryHealthMin: batteryHealthMin || null }));
+    onApply?.();
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <Input
+        inputMode="numeric"
+        value={batteryHealthMin}
+        onChange={(event) => setBatteryHealthMin(event.target.value.replace(/\D/g, "").slice(0, 3))}
+        placeholder="Min %"
+        aria-label="Minimum battery health"
+        className="h-9"
+      />
+      <Button type="button" variant="outline" size="sm" onClick={applyBatteryHealth}>
+        Apply
+      </Button>
+    </div>
+  );
+}
+
+export function MarketplaceFilters({
+  categories,
+  brands,
+  filters,
+  locations,
+  filterOptions,
+  onApply,
+}: Props) {
+  const router = useRouter();
+  const buildHref = useListingHref();
 
   const conditionEntries = Object.entries(LISTING_CONDITION_LABELS);
 
@@ -110,116 +207,113 @@ export function MarketplaceFilters({ categories, brands, filters }: Props) {
       </FilterGroup>
 
       <FilterGroup title="Price (PKR)">
-        <form onSubmit={applyPrice} className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="grid gap-1">
-              <Label htmlFor="minPrice" className="text-muted-foreground text-xs">
-                Min
-              </Label>
-              <Input
-                id="minPrice"
-                inputMode="numeric"
-                value={minPrice}
-                onChange={(e) => setMinPrice(e.target.value.replace(/\D/g, ""))}
-                placeholder="0"
-                className="h-9"
-              />
-            </div>
-            <div className="grid gap-1">
-              <Label htmlFor="maxPrice" className="text-muted-foreground text-xs">
-                Max
-              </Label>
-              <Input
-                id="maxPrice"
-                inputMode="numeric"
-                value={maxPrice}
-                onChange={(e) => setMaxPrice(e.target.value.replace(/\D/g, ""))}
-                placeholder="Any"
-                className="h-9"
-              />
-            </div>
-          </div>
-          <Button type="submit" variant="outline" size="sm" className="w-full">
-            Apply price
-          </Button>
-        </form>
+        <PriceRangeFilter
+          key={`${filters.minPrice ?? ""}-${filters.maxPrice ?? ""}`}
+          min={filters.minPrice}
+          max={filters.maxPrice}
+          onApply={onApply}
+        />
       </FilterGroup>
 
       <FilterGroup title="City">
         <select
           value={filters.city ?? ""}
-          onChange={(e) => router.push(buildHref({ city: e.target.value || null }))}
+          onChange={(e) => {
+            router.push(buildHref({ city: e.target.value || null }));
+            onApply?.();
+          }}
           aria-label="Filter by city"
           className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
         >
           <option value="">All cities</option>
-          {PK_CITIES.map((city) => (
-            <option key={city} value={city}>
-              {city}
-            </option>
-          ))}
+          {locations.flatMap((country) =>
+            country.cities.map((city) => (
+              <option key={city.id} value={city.name}>
+                {city.name} · {country.name}
+              </option>
+            )),
+          )}
         </select>
       </FilterGroup>
 
-      <FilterGroup title="Storage">
-        <div className="flex flex-wrap gap-1.5">
-          {STORAGE_OPTIONS.map((storage) => {
-            const active = filters.storage === storage;
-            return (
-              <Link
-                key={storage}
-                href={buildHref({ storage: active ? null : storage })}
-                className={cn(
-                  "rounded-full border px-2.5 py-1 text-xs transition-colors",
-                  active ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent",
-                )}
-              >
-                {storage}GB
-              </Link>
-            );
-          })}
-        </div>
-      </FilterGroup>
+      {filterOptions.storage.length > 0 ? (
+        <FilterGroup title="Storage">
+          <div className="flex flex-wrap gap-1.5">
+            {filterOptions.storage.map((storage) => {
+              const active = filters.storage === storage;
+              return (
+                <Link
+                  key={storage}
+                  href={buildHref({ storage: active ? null : storage })}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "hover:bg-accent",
+                  )}
+                >
+                  {storage.match(/^(?:\d+(?:\.\d+)?)$/) ? `${storage}GB` : storage}
+                </Link>
+              );
+            })}
+          </div>
+        </FilterGroup>
+      ) : null}
 
-      <FilterGroup title="RAM">
-        <div className="flex flex-wrap gap-1.5">
-          {RAM_OPTIONS.map((ram) => {
-            const active = filters.ram === ram;
-            return (
-              <Link
-                key={ram}
-                href={buildHref({ ram: active ? null : ram })}
-                className={cn(
-                  "rounded-full border px-2.5 py-1 text-xs transition-colors",
-                  active ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent",
-                )}
-              >
-                {ram}GB
-              </Link>
-            );
-          })}
-        </div>
-      </FilterGroup>
+      {filterOptions.ram.length > 0 ? (
+        <FilterGroup title="RAM">
+          <div className="flex flex-wrap gap-1.5">
+            {filterOptions.ram.map((ram) => {
+              const active = filters.ram === ram;
+              return (
+                <Link
+                  key={ram}
+                  href={buildHref({ ram: active ? null : ram })}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "hover:bg-accent",
+                  )}
+                >
+                  {ram.match(/^(?:\d+(?:\.\d+)?)$/) ? `${ram}GB` : ram}
+                </Link>
+              );
+            })}
+          </div>
+        </FilterGroup>
+      ) : null}
+
+      {filterOptions.colors.length > 0 ? (
+        <FilterGroup title="Color">
+          <div className="flex flex-wrap gap-1.5">
+            {filterOptions.colors.map((color) => {
+              const active = filters.color === color;
+              return (
+                <Link
+                  key={color}
+                  href={buildHref({ color: active ? null : color })}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
+                    active
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "hover:bg-accent",
+                  )}
+                >
+                  {color}
+                </Link>
+              );
+            })}
+          </div>
+        </FilterGroup>
+      ) : null}
 
       <FilterGroup title="Battery Health">
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Input
-              inputMode="numeric"
-              value={batteryHealthMin}
-              onChange={(e) => setBatteryHealthMin(e.target.value.replace(/\D/g, ""))}
-              placeholder="Min %"
-              className="h-9"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(buildHref({ batteryHealthMin: batteryHealthMin || null }))}
-            >
-              Apply
-            </Button>
-          </div>
-        </div>
+        <BatteryHealthFilter
+          key={filters.batteryHealthMin ?? "any"}
+          value={filters.batteryHealthMin}
+          onApply={onApply}
+        />
       </FilterGroup>
 
       <FilterGroup title="PTA Status">

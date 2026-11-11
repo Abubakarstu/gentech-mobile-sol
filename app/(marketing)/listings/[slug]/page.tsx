@@ -28,6 +28,8 @@ import { SectionHeader } from "@/features/marketplace/components/section-header"
 import { ViewListingTracker } from "@/features/analytics/components/view-listing-tracker";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, ShieldCheck } from "lucide-react";
+import { getActiveLocationTree } from "@/features/locations/services/location.service";
+import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
 
 /** Shared per-request loader → metadata + page reuse one fetch (one view increment). */
 const loadListing = cache((slug: string) => getListingDetail(slug));
@@ -61,13 +63,19 @@ export default async function ListingDetailPage({ params }: PageProps) {
   if (!result) notFound();
 
   const { detail, related } = result;
+  const isAuthenticated = Boolean(user && user.id !== "demo:user");
 
   // Inspection service data (fail-soft): pricing packages + any published report.
-  const [inspectionPlans, publishedReport, phoneHistory] = await Promise.all([
-    getInspectionPlans(),
-    getListingInspectionReport(detail.id),
-    getPhoneHistory(detail.id, 10),
-  ]);
+  const [inspectionPlans, publishedReport, phoneHistory, locations, favoriteIds] =
+    await Promise.all([
+      getInspectionPlans(),
+      getListingInspectionReport(detail.id),
+      getPhoneHistory(detail.id, 10),
+      getActiveLocationTree(),
+      isAuthenticated && user
+        ? getFavoriteListingIds(user.id, [detail.id, ...related.map((listing) => listing.id)])
+        : Promise.resolve([]),
+    ]);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -125,7 +133,12 @@ export default async function ListingDetailPage({ params }: PageProps) {
             <div className="flex items-start justify-between gap-3">
               <h1 className="text-2xl font-bold tracking-tight">{detail.title}</h1>
               <div className="flex shrink-0 items-center gap-2">
-                <FavoriteButton className="border" />
+                <FavoriteButton
+                  listingId={detail.id}
+                  initialIsFavorite={favoriteIds.includes(detail.id)}
+                  isAuthenticated={isAuthenticated}
+                  className="border"
+                />
                 <ShareButton title={detail.title} />
               </div>
             </div>
@@ -150,26 +163,30 @@ export default async function ListingDetailPage({ params }: PageProps) {
 
           {/* Trust Badges */}
           <section className="flex flex-wrap gap-2">
-            {detail.attributes.find((a) => a.label === "PTA Status" && a.value === "PTA_APPROVED") && (
-              <Badge variant="outline" className="border-green-500 text-green-700 bg-green-50">
+            {detail.attributes.find(
+              (a) => a.label === "PTA Status" && a.value === "PTA_APPROVED",
+            ) && (
+              <Badge variant="outline" className="border-green-500 bg-green-50 text-green-700">
                 <CheckCircle2 className="mr-1 size-3" />
                 PTA Approved
               </Badge>
             )}
-            {detail.attributes.find((a) => a.label === "CPID Status" && a.value === "CPID_APPROVED") && (
-              <Badge variant="outline" className="border-blue-500 text-blue-700 bg-blue-50">
+            {detail.attributes.find(
+              (a) => a.label === "CPID Status" && a.value === "CPID_APPROVED",
+            ) && (
+              <Badge variant="outline" className="border-blue-500 bg-blue-50 text-blue-700">
                 <CheckCircle2 className="mr-1 size-3" />
                 CPID Verified
               </Badge>
             )}
             {publishedReport && (
-              <Badge variant="outline" className="border-purple-500 text-purple-700 bg-purple-50">
+              <Badge variant="outline" className="border-purple-500 bg-purple-50 text-purple-700">
                 <ShieldCheck className="mr-1 size-3" />
                 Inspected
               </Badge>
             )}
             {detail.attributes.find((a) => a.label === "Warranty" && a.value !== "NO_WARRANTY") && (
-              <Badge variant="outline" className="border-orange-500 text-orange-700 bg-orange-50">
+              <Badge variant="outline" className="border-orange-500 bg-orange-50 text-orange-700">
                 <CheckCircle2 className="mr-1 size-3" />
                 Warranty
               </Badge>
@@ -192,12 +209,14 @@ export default async function ListingDetailPage({ params }: PageProps) {
                 {phoneHistory.map((event: PhoneHistoryEvent) => (
                   <div key={event.id} className="border-b pb-2 last:border-b-0">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-sm">{event.eventType}</span>
+                      <span className="text-sm font-medium">{event.eventType}</span>
                       <span className="text-muted-foreground text-xs">
                         {new Date(event.occurredAt).toLocaleDateString()}
                       </span>
                     </div>
-                    {event.title && <p className="text-muted-foreground text-sm mt-1">{event.title}</p>}
+                    {event.title && (
+                      <p className="text-muted-foreground mt-1 text-sm">{event.title}</p>
+                    )}
                   </div>
                 ))}
               </div>
@@ -230,6 +249,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
           <SellerCard
             seller={detail.seller}
             listingId={detail.id}
+            listingTitle={detail.title}
             isAuthenticated={Boolean(user)}
           />
 
@@ -238,6 +258,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
             plans={inspectionPlans}
             isAuthenticated={Boolean(user)}
             defaultCity={detail.city}
+            locations={locations}
           />
         </aside>
       </div>
@@ -245,7 +266,11 @@ export default async function ListingDetailPage({ params }: PageProps) {
       {related.length > 0 ? (
         <section className="mt-12">
           <SectionHeader title="Related listings" />
-          <ListingsGrid listings={related} />
+          <ListingsGrid
+            listings={related}
+            favoriteIds={favoriteIds}
+            isAuthenticated={isAuthenticated}
+          />
         </section>
       ) : null}
 

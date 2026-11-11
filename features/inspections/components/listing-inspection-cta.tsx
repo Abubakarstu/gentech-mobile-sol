@@ -9,16 +9,24 @@ import { formatPrice } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { RequestInspectionForm } from "@/features/inspections/components/request-inspection-form";
 import type { InspectionPlanDto } from "@/features/inspections/types";
+import type { LocationTree } from "@/features/locations/services/location.service";
 
 interface Props {
   listingId: string;
   plans: InspectionPlanDto[];
   isAuthenticated: boolean;
   defaultCity?: string;
+  locations: LocationTree;
 }
 
 /** Sidebar card on the listing detail page — the buyer's entry point to inspections. */
-export function ListingInspectionCta({ listingId, plans, isAuthenticated, defaultCity }: Props) {
+export function ListingInspectionCta({
+  listingId,
+  plans,
+  isAuthenticated,
+  defaultCity,
+  locations,
+}: Props) {
   const [open, setOpen] = React.useState(false);
   const fromPrice = plans.length > 0 ? Math.min(...plans.map((p) => p.price)) : null;
   const currency = plans[0]?.currency ?? "PKR";
@@ -50,7 +58,12 @@ export function ListingInspectionCta({ listingId, plans, isAuthenticated, defaul
         </Button>
       ) : open ? (
         <div className="mt-4">
-          <RequestInspectionForm listingId={listingId} plans={plans} defaultCity={defaultCity} />
+          <RequestInspectionForm
+            listingId={listingId}
+            plans={plans}
+            defaultCity={defaultCity}
+            locations={locations}
+          />
         </div>
       ) : (
         <Button className="mt-3 w-full" onClick={() => setOpen(true)}>

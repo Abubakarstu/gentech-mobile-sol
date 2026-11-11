@@ -38,6 +38,7 @@ export interface ListingCardData {
   /** Phone-specific attributes for marketplace cards */
   storage?: string;
   ram?: string;
+  color?: string;
   batteryHealth?: number;
   ptaStatus?: string;
   cpidStatus?: string;
@@ -65,6 +66,7 @@ export interface ListingFilters {
   // Phone-specific filters
   storage?: string;
   ram?: string;
+  color?: string;
   batteryHealthMin?: number;
   ptaStatus?: string;
   cpidStatus?: string;
@@ -72,6 +74,13 @@ export interface ListingFilters {
   isInspected?: boolean;
   isVerifiedSeller?: boolean;
   isDealer?: boolean;
+}
+
+/** Values available in active listings, so filters never offer stale choices. */
+export interface ListingFilterOptions {
+  storage: string[];
+  ram: string[];
+  colors: string[];
 }
 
 /** A page of listings plus metadata for pagination UI. */
@@ -101,6 +110,7 @@ export interface ListingSeller {
   id?: string;
   name: string;
   image?: string | null;
+  phone?: string;
   city?: string;
   /** ISO timestamp of account creation. */
   memberSince?: string;

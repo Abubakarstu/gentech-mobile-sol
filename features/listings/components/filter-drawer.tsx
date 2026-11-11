@@ -4,7 +4,13 @@ import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SlidersHorizontal, X } from "lucide-react";
 
-import type { BrandItem, CategoryItem, ListingFilters } from "@/types/marketplace";
+import type {
+  BrandItem,
+  CategoryItem,
+  ListingFilters,
+  ListingFilterOptions,
+} from "@/types/marketplace";
+import type { LocationTree } from "@/features/locations/services/location.service";
 import { Button } from "@/components/ui/button";
 import { MarketplaceFilters } from "./marketplace-filters";
 
@@ -13,6 +19,8 @@ export function FilterDrawer(props: {
   categories: CategoryItem[];
   brands: BrandItem[];
   filters: ListingFilters;
+  locations: LocationTree;
+  filterOptions: ListingFilterOptions;
 }) {
   const [open, setOpen] = React.useState(false);
 
@@ -65,7 +73,7 @@ export function FilterDrawer(props: {
                 </Button>
               </div>
               <div className="flex-1 overflow-y-auto p-4">
-                <MarketplaceFilters {...props} />
+                <MarketplaceFilters {...props} onApply={() => setOpen(false)} />
               </div>
             </motion.aside>
           </motion.div>

@@ -3,12 +3,14 @@
 ## Deployment Target Analysis
 
 **Repository Configuration:**
+
 - `wrangler.jsonc` present → Cloudflare Workers target
 - `open-next.config.ts` present → OpenNext for Cloudflare
 - Package scripts: `cf:build`, `preview`, `deploy` for Cloudflare
 - No `vercel.json` present
 
 **Current User Deployment:**
+
 - User has been deploying to Vercel (per Phase 6 audit)
 - Build script uses `SKIP_ENV_VALIDATION=1` for Vercel compatibility
 
@@ -17,6 +19,7 @@
 ## Phase 8 Preparation Status
 
 **Completed Without Staging Infrastructure:**
+
 - ✅ Repository state verified (commit 912ffd4, main branch, clean working tree)
 - ✅ Deployment target identified (Cloudflare Workers via OpenNext, Vercel also supported)
 - ✅ Environment variable audit completed (ENVIRONMENT_VARIABLES.md created)
@@ -26,6 +29,7 @@
 - ✅ Seed mechanism confirmed (prisma/seed.ts with categories, brands, listings, inspection plans)
 
 **Requires Staging Infrastructure:**
+
 - ❌ Staging database creation and connection
 - ❌ Runtime environment variable configuration
 - ❌ Staging deployment (Vercel or Cloudflare Workers)
@@ -38,6 +42,7 @@
 ## Pre-Deployment Checklist
 
 ### 1. Code Verification
+
 - [ ] All tests passing: `pnpm test`
 - [ ] Typecheck passing: `pnpm typecheck`
 - [ ] Lint passing: `pnpm lint`
@@ -50,6 +55,7 @@
 ### 2. Environment Variables
 
 #### Required (Mandatory for Operation)
+
 - [ ] `DATABASE_URL` - PostgreSQL connection string (pooled for app)
 - [ ] `DIRECT_URL` - PostgreSQL direct connection (for migrations)
 - [ ] `BETTER_AUTH_SECRET` - Random 32+ character secret (`openssl rand -base64 32`)
@@ -61,15 +67,18 @@ deployments.
 - [ ] `NEXT_PUBLIC_APP_NAME` - Application name
 
 #### Optional (Feature-Specific)
+
 - [ ] `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` - Google OAuth
 - [ ] `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET` - Facebook OAuth
 - [ ] `RESEND_API_KEY` / `EMAIL_FROM` - Transactional email
 - [ ] `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` - Media uploads
-- [ ] `PAYFAST_MERCHANT_ID` / `PAYFAST_SECURED_KEY` / `PAYFAST_API_BASE` - Payment processing
+- [ ] PayFast merchant ID/key, HTTPS API base, merchant category code, and merchant-issued account/bank configuration (optional)
+- [ ] Keep `PAYFAST_MODE=disabled` and `PAYFAST_LIVE_ENABLED=false` until sandbox, 3-D Secure, and compliance checks are complete
 - [ ] `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` - Maps integration
 - [ ] `NEXT_PUBLIC_GTM_ID` / `NEXT_PUBLIC_GA4_ID` / `NEXT_PUBLIC_META_PIXEL_ID` / `NEXT_PUBLIC_MIXPANEL_TOKEN` - Analytics
 
 ### 3. Database Preparation
+
 - [ ] Production database created (Neon PostgreSQL recommended)
 - [ ] `DATABASE_URL` configured with pooled connection
 - [ ] `DIRECT_URL` configured with direct connection
@@ -79,9 +88,18 @@ deployments.
 - [ ] Create admin user: Set `role = 'ADMIN'` in `user` table
 - [ ] Verify indexes exist for critical queries
 
+### Payment Go-Live Gate
+
+- [ ] Verify PayFast sandbox card and wallet flows, OTP, 3-D Secure, failure, pending, and status polling
+- [ ] Confirm payment details are never persisted or logged
+- [ ] Complete merchant and PCI/compliance review before enabling live mode
+- [ ] Confirm the additive inspection payment-state migration is applied in the target environment
+- [ ] Keep promotion checkout disabled until its flow uses server-verified payment results
+
 ### 4. Build Configuration
 
 #### For Vercel Deployment
+
 - [ ] Add environment variables in Vercel dashboard
 - [ ] Set build command: `pnpm build` (uses cross-env SKIP_ENV_VALIDATION=1)
 - [ ] Set output directory: `.next`
@@ -90,6 +108,7 @@ deployments.
 - [ ] Framework preset: Next.js
 
 #### For Cloudflare Workers Deployment
+
 - [ ] Install Wrangler CLI: `pnpm add -g wrangler`
 - [ ] Login to Cloudflare: `wrangler login`
 - [ ] Configure environment variables in `wrangler.jsonc` or via dashboard
@@ -102,6 +121,7 @@ deployments.
 ## Post-Deployment Verification
 
 ### 5. Runtime Verification
+
 - [ ] Application loads at production URL
 - [ ] No 500 errors on homepage
 - [ ] No console errors in browser
@@ -109,6 +129,7 @@ deployments.
 - [ ] Better Auth base URL configured correctly
 
 ### 6. Authentication Flow
+
 - [ ] User registration works
 - [ ] User login works
 - [ ] Session persistence works
@@ -119,6 +140,7 @@ deployments.
 - [ ] OAuth providers (if configured) work
 
 ### 7. Buyer Flow
+
 - [ ] Homepage loads
 - [ ] Search functionality works
 - [ ] Filters work (price, brand, storage, RAM, PTA, CPID, etc.)
@@ -131,6 +153,7 @@ deployments.
 - [ ] Messaging interface works
 
 ### 8. Seller Flow
+
 - [ ] Create listing form loads
 - [ ] Image upload works (if Cloudinary configured)
 - [ ] Phone-specific fields validate correctly
@@ -141,6 +164,7 @@ deployments.
 - [ ] Mark as sold works
 
 ### 9. Dealer Flow
+
 - [ ] Dealer registration works
 - [ ] Dealer dashboard loads
 - [ ] Create branch works
@@ -151,6 +175,7 @@ deployments.
 - [ ] Dealer A cannot access Dealer B data
 
 ### 10. Admin Flow
+
 - [ ] Admin login works
 - [ ] Admin dashboard loads statistics
 - [ ] User management works
@@ -161,6 +186,7 @@ deployments.
 - [ ] Audit logs are created
 
 ### 11. Security Verification
+
 - [ ] IMEI is masked in public listing pages
 - [ ] Full IMEI only accessible to authorized users (inspector/admin)
 - [ ] IMEI access is logged in audit log
@@ -175,6 +201,7 @@ deployments.
 - [ ] HTTPS enforced in production
 
 ### 12. Data Privacy
+
 - [ ] Private routes (dashboard, admin, auth) have noindex/nofollow
 - [ ] No sensitive data in HTML page source
 - [ ] No sensitive data in serialized props
@@ -182,6 +209,7 @@ deployments.
 - [ ] No sensitive data in structured data
 
 ### 13. Upload Security
+
 - [ ] Only allowed image formats accepted (jpg, jpeg, png, webp)
 - [ ] File size limits enforced
 - [ ] Upload folder restrictions enforced
@@ -189,6 +217,7 @@ deployments.
 - [ ] Unauthorized uploads rejected
 
 ### 14. SEO Verification
+
 - [ ] Public listing pages are indexable
 - [ ] Metadata displays correctly
 - [ ] Open Graph tags work
@@ -197,6 +226,7 @@ deployments.
 - [ ] Robots.txt correct (if implemented)
 
 ### 15. Payment Status
+
 - [ ] Payment provider configured OR explicitly disabled
 - [ ] If disabled: UI communicates sandbox state clearly
 - [ ] If enabled: Webhook endpoint implemented
@@ -206,6 +236,7 @@ deployments.
 - [ ] If enabled: Promotions only activate after verified payment
 
 ### 16. Performance
+
 - [ ] Homepage loads within 3 seconds
 - [ ] Search results load within 2 seconds
 - [ ] Listing pages load within 2 seconds
@@ -214,6 +245,7 @@ deployments.
 - [ ] No console errors
 
 ### 17. Mobile Responsiveness
+
 - [ ] Homepage usable at 320px
 - [ ] Search/filter drawer works on mobile
 - [ ] Listing pages mobile-friendly
@@ -222,6 +254,7 @@ deployments.
 - [ ] Create listing works on mobile
 
 ### 18. Error Monitoring
+
 - [ ] No uncaught exceptions in logs
 - [ ] No database errors in logs
 - [ ] No auth errors in logs
@@ -234,12 +267,14 @@ deployments.
 ## Payment Integration Specific
 
 ### If Payments are DISABLED (Current State)
+
 - [ ] Promotions UI shows sandbox/disabled state
 - [ ] Users cannot initiate real payments
 - [ ] Payment flows are clearly marked as testing only
 - [ ] No real credit card processing
 
 ### If Payments are ENABLED (Future State)
+
 - [ ] Payment provider account created
 - [ ] API credentials configured securely
 - [ ] Webhook endpoint implemented and tested

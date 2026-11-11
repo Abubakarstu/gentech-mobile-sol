@@ -106,11 +106,16 @@ function toPaymentDto(row: PaymentRow): PromotionPaymentDto {
   };
 }
 
-async function uniquePlanSlug(name: string): Promise<string> {
+async function uniquePlanSlug(name: string, excludeId?: string): Promise<string> {
   const base = slugify(name) || "plan";
   let slug = base;
   let n = 1;
-  while (await prisma.promotionPlan.findUnique({ where: { slug }, select: { id: true } })) {
+  while (
+    await prisma.promotionPlan.findFirst({
+      where: { slug, ...(excludeId ? { id: { not: excludeId } } : {}) },
+      select: { id: true },
+    })
+  ) {
     slug = `${base}-${n++}`;
   }
   return slug;
@@ -162,19 +167,28 @@ export async function listAllPromotionPlans(): Promise<PromotionPlanDto[]> {
   return rows.map(toPlanDto);
 }
 
-export async function updatePromotionPlan(id: string, input: Partial<CreatePromotionPlanInput>): Promise<void> {
+export async function updatePromotionPlan(
+  id: string,
+  input: Partial<CreatePromotionPlanInput>,
+): Promise<PromotionPlanDto> {
   await prisma.promotionPlan.update({
     where: { id },
     data: {
-      ...(input.name && { name: input.name }),
+      ...(input.name && {
+        name: input.name,
+        slug: await uniquePlanSlug(input.name, id),
+      }),
       ...(input.description !== undefined && { description: input.description }),
       ...(input.placement && { placement: input.placement }),
-      ...(input.price && { price: new Prisma.Decimal(input.price) }),
-      ...(input.durationDays && { durationDays: input.durationDays }),
+      ...(input.price !== undefined && { price: new Prisma.Decimal(input.price) }),
+      ...(input.durationDays !== undefined && { durationDays: input.durationDays }),
       ...(input.maxSlots !== undefined && { maxSlots: input.maxSlots }),
       ...(input.isActive !== undefined && { isActive: input.isActive }),
     },
   });
+  const updated = await getPromotionPlan(id);
+  if (!updated) throw new Error("Updated promotion plan could not be loaded.");
+  return updated;
 }
 
 export async function deletePromotionPlan(id: string): Promise<void> {
@@ -185,9 +199,7 @@ export async function deletePromotionPlan(id: string): Promise<void> {
 // Listing Promotions
 // ---------------------------------------------------------------------------
 
-export async function createListingPromotion(
-  input: CreateListingPromotionInput,
-): Promise<string> {
+export async function createListingPromotion(input: CreateListingPromotionInput): Promise<string> {
   const plan = await prisma.promotionPlan.findUnique({
     where: { id: input.planId, isActive: true },
     select: { durationDays: true, price: true },
@@ -269,9 +281,7 @@ export async function markExpiredPromotions(): Promise<number> {
 // Payments
 // ---------------------------------------------------------------------------
 
-export async function createPromotionPayment(
-  input: CreatePromotionPaymentInput,
-): Promise<string> {
+export async function createPromotionPayment(input: CreatePromotionPaymentInput): Promise<string> {
   const payment = await prisma.promotionPayment.create({
     data: {
       promotionId: input.promotionId,
@@ -285,10 +295,7 @@ export async function createPromotionPayment(
   return payment.id;
 }
 
-export async function updatePromotionPaymentStatus(
-  id: string,
-  status: string,
-): Promise<void> {
+export async function updatePromotionPaymentStatus(id: string, status: string): Promise<void> {
   await prisma.promotionPayment.update({
     where: { id },
     data: { status },

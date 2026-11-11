@@ -3,7 +3,13 @@
 import Link from "next/link";
 import { X } from "lucide-react";
 
-import { ROUTES, LISTING_CONDITION_LABELS, PTA_STATUS, CPID_STATUS, WARRANTY_TYPE } from "@/lib/constants";
+import {
+  ROUTES,
+  LISTING_CONDITION_LABELS,
+  PTA_STATUS,
+  CPID_STATUS,
+  WARRANTY_TYPE,
+} from "@/lib/constants";
 import { formatPrice } from "@/utils/format";
 import type { BrandItem, CategoryItem, ListingFilters } from "@/types/marketplace";
 import { useListingHref } from "@/features/listings/hooks/use-listing-href";
@@ -37,23 +43,43 @@ export function ActiveFilters({ filters, categories, brands }: Props) {
     const max = filters.maxPrice !== undefined ? formatPrice(filters.maxPrice) : "Any";
     chips.push({ label: `${min} – ${max}`, patch: { minPrice: null, maxPrice: null } });
   }
-  if (filters.storage) chips.push({ label: `${filters.storage}GB Storage`, patch: { storage: null } });
-  if (filters.ram) chips.push({ label: `${filters.ram}GB RAM`, patch: { ram: null } });
-  if (filters.batteryHealthMin !== undefined) chips.push({ label: `Battery ${filters.batteryHealthMin}%+`, patch: { batteryHealthMin: null } });
+  if (filters.storage) {
+    const value = /^\d+(?:\.\d+)?$/.test(filters.storage)
+      ? `${filters.storage}GB`
+      : filters.storage;
+    chips.push({ label: `${value} Storage`, patch: { storage: null } });
+  }
+  if (filters.ram) {
+    const value = /^\d+(?:\.\d+)?$/.test(filters.ram) ? `${filters.ram}GB` : filters.ram;
+    chips.push({ label: `${value} RAM`, patch: { ram: null } });
+  }
+  if (filters.color) chips.push({ label: `Color: ${filters.color}`, patch: { color: null } });
+  if (filters.batteryHealthMin !== undefined)
+    chips.push({
+      label: `Battery ${filters.batteryHealthMin}%+`,
+      patch: { batteryHealthMin: null },
+    });
   if (filters.ptaStatus) {
-    const label = PTA_STATUS[filters.ptaStatus as keyof typeof PTA_STATUS]?.replace(/_/g, " ") ?? filters.ptaStatus;
+    const label =
+      PTA_STATUS[filters.ptaStatus as keyof typeof PTA_STATUS]?.replace(/_/g, " ") ??
+      filters.ptaStatus;
     chips.push({ label: `PTA: ${label}`, patch: { ptaStatus: null } });
   }
   if (filters.cpidStatus) {
-    const label = CPID_STATUS[filters.cpidStatus as keyof typeof CPID_STATUS]?.replace(/_/g, " ") ?? filters.cpidStatus;
+    const label =
+      CPID_STATUS[filters.cpidStatus as keyof typeof CPID_STATUS]?.replace(/_/g, " ") ??
+      filters.cpidStatus;
     chips.push({ label: `CPID: ${label}`, patch: { cpidStatus: null } });
   }
   if (filters.warranty) {
-    const label = WARRANTY_TYPE[filters.warranty as keyof typeof WARRANTY_TYPE]?.replace(/_/g, " ") ?? filters.warranty;
+    const label =
+      WARRANTY_TYPE[filters.warranty as keyof typeof WARRANTY_TYPE]?.replace(/_/g, " ") ??
+      filters.warranty;
     chips.push({ label: `Warranty: ${label}`, patch: { warranty: null } });
   }
   if (filters.isInspected) chips.push({ label: "Inspected", patch: { isInspected: null } });
-  if (filters.isVerifiedSeller) chips.push({ label: "Verified Seller", patch: { isVerifiedSeller: null } });
+  if (filters.isVerifiedSeller)
+    chips.push({ label: "Verified Seller", patch: { isVerifiedSeller: null } });
   if (filters.isDealer) chips.push({ label: "Dealer", patch: { isDealer: null } });
 
   if (chips.length === 0) return null;

@@ -87,14 +87,17 @@ read-only demo mode and disables database access.
 
 ### Payments
 
-- **PayFast**: `PAYFAST_MERCHANT_ID`, `PAYFAST_SECURED_KEY`, `PAYFAST_API_BASE`
-- The current PayFast adapter is an **unfinished scaffold**; checkout creation and provider verification are not implemented.
-- When PayFast credentials are absent, inspection checkout uses the built-in sandbox. Sandbox outcomes are simulated and must never be treated as real payments.
-- If PayFast credentials are present, the provider resolver selects the unfinished PayFast adapter; inspection checkout will fail until the adapter is completed. Do not configure production credentials yet.
+- **PayFast direct API**: Configure the merchant ID/key, HTTPS API base, merchant category code, and the account-type/bank-code values supplied for each enabled method. Keep all values server-side.
+- `PAYFAST_MODE` defaults to `disabled`. Use `sandbox` only with PayFast-issued sandbox credentials; `live` is additionally gated by `PAYFAST_LIVE_ENABLED=true`.
+- Inspection checkout processes payment details in memory and sends them to PayFast over HTTPS. GenTech does not persist PAN, CVV, PIN, or OTP. A short-lived authenticated continuation contains only the provider's temporary instrument token and transaction context.
+- The integration uses PayFast's direct token/tokenized-transaction/status API; it is not a hosted checkout and does not rely on a webhook. The server verifies transaction and basket references before changing payment state.
+- Without PayFast configuration, non-production inspection checkout may use the built-in sandbox; it never represents a real charge. Production fails closed instead of falling back to simulated success.
+- Promotion checkout is not yet connected to verified payment processing. Promotion creation and seller-submitted payment outcomes are disabled; do not activate or account for a promotion as paid based on client input.
+- Do not enable live processing until merchant sandbox testing (including OTP and 3-D Secure), PCI/compliance review, and production-secret configuration are complete. A database migration for payment states is additive and must be applied through the normal reviewed deployment process.
 - Do not add JazzCash, Easypaisa, NayaPay, Visa, Mastercard, or bank-transfer secrets as `NEXT_PUBLIC_*` variables. Use a server-side provider adapter and managed secret storage.
 - Visa and Mastercard acceptance must be enabled through an acquiring bank or supported payment gateway; they are card networks, not wallet adapters.
-- Before accepting real payments, implement hosted checkout/tokenization, signed webhook verification, amount/currency/order validation, idempotency, append-only transaction records, refunds, and settlement reconciliation.
-- Never store or request full card numbers, CVV, PINs, or OTPs in application forms or admin settings.
+- The merchant must confirm the PayFast API contract, account configuration, PCI responsibilities, refunds, and settlement reconciliation before live use.
+- Never persist full card numbers, CVV, PINs, or OTPs. Do not place payment details or secrets in client-visible environment variables, logs, analytics, or support tooling.
 
 ### Maps
 

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
-import { PK_CITIES, ROUTES } from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/utils/format";
 import { Button } from "@/components/ui/button";
@@ -14,17 +14,27 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { requestInspectionAction } from "@/features/inspections/actions/inspection.actions";
 import type { InspectionPlanDto } from "@/features/inspections/types";
+import type { LocationTree } from "@/features/locations/services/location.service";
+import { LocationPicker, type LocationSelection } from "@/features/locations/components/location-picker";
 
 interface Props {
   listingId: string;
   plans: InspectionPlanDto[];
   defaultCity?: string;
+  locations: LocationTree;
 }
 
-export function RequestInspectionForm({ listingId, plans, defaultCity }: Props) {
+export function RequestInspectionForm({ listingId, plans, defaultCity, locations }: Props) {
   const router = useRouter();
   const [planId, setPlanId] = React.useState(plans[0]?.id ?? "");
   const [pending, setPending] = React.useState(false);
+  const [location, setLocation] = React.useState<LocationSelection>(() => {
+    for (const country of locations) {
+      const city = country.cities.find((entry) => entry.name === defaultCity);
+      if (city) return { countryId: country.id, cityId: city.id, areaId: "" };
+    }
+    return { countryId: "", cityId: "", areaId: "" };
+  });
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,8 +45,9 @@ export function RequestInspectionForm({ listingId, plans, defaultCity }: Props) 
       planId,
       contactName: String(form.get("contactName") ?? ""),
       contactPhone: String(form.get("contactPhone") ?? ""),
-      city: String(form.get("city") ?? ""),
-      area: String(form.get("area") ?? "") || undefined,
+      countryId: location.countryId,
+      cityId: location.cityId,
+      areaId: location.areaId || undefined,
       address: String(form.get("address") ?? "") || undefined,
       preferredAt: String(form.get("preferredAt") ?? "") || undefined,
       notes: String(form.get("notes") ?? "") || undefined,
@@ -112,28 +123,21 @@ export function RequestInspectionForm({ listingId, plans, defaultCity }: Props) 
             maxLength={20}
           />
         </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="city">City</Label>
-          <select
-            id="city"
-            name="city"
-            required
-            defaultValue={defaultCity ?? ""}
-            className="border-input bg-background h-9 w-full rounded-lg border px-3 text-sm"
-          >
-            <option value="" disabled>
-              Select a city
-            </option>
-            {PK_CITIES.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="area">Area (optional)</Label>
-          <Input id="area" name="area" maxLength={120} placeholder="e.g. DHA Phase 5" />
+        <div className="grid gap-4 sm:col-span-2 sm:grid-cols-3">
+          <LocationPicker
+            locations={locations}
+            prefix="inspection-request-location"
+            value={location}
+            onChange={setLocation}
+          />
+          <input type="hidden" name="countryId" value={location.countryId} />
+          <input type="hidden" name="cityId" value={location.cityId} />
+          <input type="hidden" name="areaId" value={location.areaId} />
+          {locations.length === 0 ? (
+            <p className="text-muted-foreground text-sm sm:col-span-3">
+              Locations are temporarily unavailable. Please try again later.
+            </p>
+          ) : null}
         </div>
       </div>
 

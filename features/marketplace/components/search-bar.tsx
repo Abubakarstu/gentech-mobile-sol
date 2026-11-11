@@ -6,11 +6,12 @@ import { useRouter } from "next/navigation";
 import { Layers, Loader2, Search, Smartphone, Tag } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { PK_CITIES, ROUTES } from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
 import { trackSearch } from "@/features/analytics/lib/events";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { LocationTree } from "@/features/locations/services/location.service";
 
 interface Suggestions {
   listings: Array<{ title: string; slug: string }>;
@@ -23,6 +24,7 @@ interface SearchBarProps {
   className?: string;
   withCity?: boolean;
   placeholder?: string;
+  locations?: LocationTree;
 }
 
 export function SearchBar({
@@ -30,6 +32,7 @@ export function SearchBar({
   className,
   withCity = variant === "hero",
   placeholder = "Search iPhone, Samsung, Pixel…",
+  locations = [],
 }: SearchBarProps) {
   const router = useRouter();
   const [query, setQuery] = React.useState("");
@@ -131,11 +134,13 @@ export function SearchBar({
             className="border-input bg-background h-11 rounded-md border px-3 text-sm sm:border-0 sm:bg-transparent"
           >
             <option value="">All cities</option>
-            {PK_CITIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
+            {locations.flatMap((country) =>
+              country.cities.map((city) => (
+                <option key={city.id} value={city.name}>
+                  {city.name} · {country.name}
+                </option>
+              )),
+            )}
           </select>
         ) : null}
 

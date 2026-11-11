@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/session";
 import { getInspectionPlans } from "@/features/inspections/services/inspection.service";
 import { BookInspectionForm } from "@/features/inspections/components/book-inspection-form";
 import { Button } from "@/components/ui/button";
+import { getActiveLocationTree } from "@/features/locations/services/location.service";
 
 export const metadata: Metadata = {
   title: "Phone Inspection Service",
@@ -34,7 +35,11 @@ const STEPS = [
 ];
 
 export default async function InspectionServicePage() {
-  const [plans, user] = await Promise.all([getInspectionPlans(), getCurrentUser()]);
+  const [plans, user, locations] = await Promise.all([
+    getInspectionPlans(),
+    getCurrentUser(),
+    getActiveLocationTree(),
+  ]);
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -133,7 +138,7 @@ export default async function InspectionServicePage() {
           <p className="text-muted-foreground mt-2 mb-6 text-center text-sm">
             Fill in the details and we&apos;ll arrange a certified inspector.
           </p>
-          <BookInspectionForm plans={plans} isAuthenticated={Boolean(user)} />
+          <BookInspectionForm plans={plans} isAuthenticated={Boolean(user)} locations={locations} />
         </div>
       </section>
     </div>

@@ -4,17 +4,20 @@ import type {
   ListingCardData,
   ListingDetail,
   ListingFilters,
+  ListingFilterOptions,
   ListingSearchResult,
 } from "@/types/marketplace";
 import type { CreateListingInput } from "@/features/listings/schemas/create-listing";
 import {
   createListing as createListingRecord,
   getListingBySlug,
+  getListingFilterOptions as getListingFilterOptionsRecord,
   getRelatedListings,
   getSellerListings,
   searchListings,
   searchListingsRanked,
 } from "../repositories/listing.repository";
+import { DEMO_LISTINGS } from "@/features/marketplace/data/fixtures";
 import { searchDemoListings } from "../data/demo-source";
 import { getDemoListingDetail, getDemoRelated } from "../data/demo-detail";
 
@@ -39,6 +42,27 @@ export async function getListingFeed(filters: ListingFilters): Promise<ListingFe
       error instanceof Error ? error.message : error,
     );
     return { ...searchDemoListings(filters), source: "demo" };
+  }
+}
+
+export async function getListingFilterOptions(): Promise<ListingFilterOptions> {
+  try {
+    return await getListingFilterOptionsRecord();
+  } catch (error) {
+    console.warn(
+      "[listings] Could not load attribute filter options; using preview values.",
+      error instanceof Error ? error.message : error,
+    );
+    const values = (key: "storage" | "ram" | "color") =>
+      [
+        ...new Set(
+          DEMO_LISTINGS.map((listing) => listing[key]).filter(
+            (value): value is string => typeof value === "string" && value.trim().length > 0,
+          ),
+        ),
+      ].sort((a, b) => a.localeCompare(b));
+
+    return { storage: values("storage"), ram: values("ram"), colors: values("color") };
   }
 }
 
@@ -78,7 +102,11 @@ export async function getListingDetail(slug: string): Promise<ListingDetailResul
       // demo detail instead of 404ing. Unknown slugs still return null → 404.
       const demo = getDemoListingDetail(slug);
       if (demo) {
-        return { detail: demo, related: getDemoRelated(demo.categorySlug, demo.id), source: "demo" };
+        return {
+          detail: demo,
+          related: getDemoRelated(demo.categorySlug, demo.id),
+          source: "demo",
+        };
       }
       return null;
     }

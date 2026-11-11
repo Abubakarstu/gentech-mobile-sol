@@ -57,12 +57,20 @@ export const env = createEnv({
     CLOUDINARY_API_KEY: z.string().min(1).optional(),
     CLOUDINARY_API_SECRET: z.string().min(1).optional(),
 
-    // --- Payment aggregator (PayFast/Safepay — JazzCash + Easypaisa + cards) ---
+    // --- PayFast direct API (JazzCash + Easypaisa + cards) ---
     // Optional: when unset the app uses the built-in SANDBOX provider (no real
     // charges) so the whole payment flow is clickable in development.
     PAYFAST_MERCHANT_ID: z.string().min(1).optional(),
     PAYFAST_SECURED_KEY: z.string().min(1).optional(),
     PAYFAST_API_BASE: z.url().optional(),
+    PAYFAST_MERCHANT_CATEGORY_CODE: z.string().min(1).optional(),
+    PAYFAST_CARD_ACCOUNT_TYPE: z.string().min(1).optional(),
+    PAYFAST_JAZZCASH_BANK_CODE: z.string().min(1).optional(),
+    PAYFAST_JAZZCASH_ACCOUNT_TYPE: z.string().min(1).optional(),
+    PAYFAST_EASYPAISA_BANK_CODE: z.string().min(1).optional(),
+    PAYFAST_EASYPAISA_ACCOUNT_TYPE: z.string().min(1).optional(),
+    PAYFAST_MODE: z.enum(["disabled", "sandbox", "live"]).default("disabled"),
+    PAYFAST_LIVE_ENABLED: z.enum(["true", "false"]).default("false"),
   },
 
   client: {

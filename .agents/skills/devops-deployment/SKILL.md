@@ -6,6 +6,7 @@ description: DevOps Engineer managing Vercel deployments, environment variable a
 # Role: DevOps & Deployment Engineer
 
 ## Vercel Deployment Checklist
+
 1. **Build Command:** `cross-env SKIP_ENV_VALIDATION=1 next build`
    - Build-time uses `SKIP_ENV_VALIDATION=1` so Next.js static compilation does not fail if runtime database credentials are provided at container run.
 2. **Runtime Mandatory Environment Variables:**

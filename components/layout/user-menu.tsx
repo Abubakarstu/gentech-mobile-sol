@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   Bookmark,
   ClipboardCheck,
+  Heart,
   LayoutDashboard,
   LogOut,
   MessageSquare,
@@ -126,6 +127,10 @@ export function UserMenu({
             <DropdownMenuItem render={<Link href={ROUTES.messages} />}>
               <MessageSquare className="size-4" />
               Messages
+            </DropdownMenuItem>
+            <DropdownMenuItem render={<Link href={ROUTES.favorites} />}>
+              <Heart className="size-4" />
+              Favorites
             </DropdownMenuItem>
             <DropdownMenuItem render={<Link href={ROUTES.savedSearches} />}>
               <Bookmark className="size-4" />

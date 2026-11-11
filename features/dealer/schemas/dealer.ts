@@ -32,6 +32,11 @@ export const updateDealerSchema = z.object({
   longitude: z.number().min(-180).max(180).optional(),
 });
 
+export const dealerFormSchema = createDealerSchema.extend({
+  logo: updateDealerSchema.shape.logo,
+  coverImage: updateDealerSchema.shape.coverImage,
+});
+
 export const createBranchSchema = z.object({
   dealerId: z.string().min(1, "Dealer ID is required"),
   name: z.string().trim().min(2, "Branch name must be at least 2 characters").max(100),
@@ -45,11 +50,26 @@ export const createBranchSchema = z.object({
 
 export const addInventorySchema = z.object({
   dealerId: z.string().min(1, "Dealer ID is required"),
-  listingId: z.string().optional(),
-  sku: z.string().trim().max(50).optional(),
+  listingId: z.string().trim().min(1).optional().or(z.literal("")),
+  sku: z.string().trim().min(1).max(50).optional().or(z.literal("")),
   stockCount: z.number().int().min(1, "Stock count must be at least 1"),
-  location: z.string().trim().max(100).optional(),
+  location: z.string().trim().max(100).optional().or(z.literal("")),
   costPrice: z.number().positive("Cost price must be positive").optional(),
+});
+
+export const updateBranchStatusSchema = z.object({
+  branchId: z.string().trim().min(1),
+  isActive: z.boolean(),
+});
+
+export const updateInventorySchema = z.object({
+  inventoryId: z.string().trim().min(1),
+  stockCount: z.number().int().min(0).max(100000),
+  location: z.string().trim().max(100).optional().or(z.literal("")),
+});
+
+export const removeInventorySchema = z.object({
+  inventoryId: z.string().trim().min(1),
 });
 
 export const addStaffSchema = z.object({
@@ -62,4 +82,6 @@ export type CreateDealerInput = z.infer<typeof createDealerSchema>;
 export type UpdateDealerInput = z.infer<typeof updateDealerSchema>;
 export type CreateBranchInput = z.infer<typeof createBranchSchema>;
 export type AddInventoryInput = z.infer<typeof addInventorySchema>;
+export type UpdateBranchStatusInput = z.infer<typeof updateBranchStatusSchema>;
+export type UpdateInventoryInput = z.infer<typeof updateInventorySchema>;
 export type AddStaffInput = z.infer<typeof addStaffSchema>;

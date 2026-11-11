@@ -39,8 +39,9 @@ export const requestInspectionSchema = z.object({
     .trim()
     .min(7, "Enter a valid phone number")
     .max(20),
-  city: z.string().min(1, "Select a city"),
-  area: z.string().trim().max(120).optional(),
+  countryId: z.string().min(1, "Select a country"),
+  cityId: z.string().min(1, "Select a city"),
+  areaId: z.string().optional().or(z.literal("")),
   address: z.string().trim().max(300).optional(),
   /** ISO date/datetime string for the buyer's preferred slot. */
   preferredAt: z.string().trim().max(40).optional().or(z.literal("")),
@@ -64,8 +65,9 @@ export const bookInspectionSchema = z.object({
   listingId: z.string().optional(),
   contactName: z.string().trim().min(2, "Enter your name").max(80),
   contactPhone: z.string().trim().min(7, "Enter a valid phone number").max(20),
-  city: z.string().min(1, "Select a city"),
-  area: z.string().trim().max(120).optional(),
+  countryId: z.string().min(1, "Select a country"),
+  cityId: z.string().min(1, "Select a city"),
+  areaId: z.string().optional().or(z.literal("")),
   address: z.string().trim().max(300).optional(),
   preferredAt: z.string().trim().max(40).optional().or(z.literal("")),
   notes: z.string().trim().max(1000).optional(),

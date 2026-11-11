@@ -15,8 +15,7 @@ export default async function AdminLocationsPage() {
   const admin = await requireAdmin();
   if (!admin) redirect(ROUTES.dashboard);
 
-  const cities = await getAdminLocations();
+  const countries = await getAdminLocations();
 
-  return <LocationManager cities={cities} />;
+  return <LocationManager countries={countries} />;
 }
-

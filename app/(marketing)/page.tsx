@@ -13,6 +13,9 @@ import { ListingsGrid } from "@/features/marketplace/components/listings-grid";
 import { SectionHeader } from "@/features/marketplace/components/section-header";
 import { HowItWorks } from "@/features/marketplace/components/how-it-works";
 import { CtaBand } from "@/features/marketplace/components/cta-band";
+import { getActiveLocationTree } from "@/features/locations/services/location.service";
+import { getCurrentUser } from "@/lib/session";
+import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
 
 /**
  * Real listings first, then demo fixtures fill the remaining slots so the grid
@@ -31,9 +34,11 @@ function withDemoFill(
 
 export default async function HomePage() {
   // Real listings + real category counts from the DB (both fail-soft).
-  const [feed, categories] = await Promise.all([
+  const [feed, categories, locations, user] = await Promise.all([
     getListingFeed({ sort: "recent", page: 1, pageSize: 8 }),
     getCategoriesWithCounts(8),
+    getActiveLocationTree(),
+    getCurrentUser(),
   ]);
 
   const featuredReal = feed.items.filter((item) => item.isFeatured);
@@ -42,10 +47,17 @@ export default async function HomePage() {
     DEMO_FEATURED_LISTINGS,
   );
   const latest = withDemoFill(feed.items, DEMO_LATEST_LISTINGS);
+  const isAuthenticated = Boolean(user && user.id !== "demo:user");
+  const favoriteIds =
+    isAuthenticated && user
+      ? await getFavoriteListingIds(user.id, [
+          ...new Set([...featured, ...latest].map((listing) => listing.id)),
+        ])
+      : [];
 
   return (
     <>
-      <HomeHero popularCategories={DEMO_CATEGORIES} />
+      <HomeHero popularCategories={DEMO_CATEGORIES} locations={locations} />
 
       <section className="mx-auto max-w-6xl px-4 py-12">
         <SectionHeader title="Browse categories" href={ROUTES.marketplace} />
@@ -58,7 +70,11 @@ export default async function HomePage() {
           description="Hand-picked deals from trusted sellers"
           href={`${ROUTES.marketplace}?featured=1`}
         />
-        <ListingsGrid listings={featured} />
+        <ListingsGrid
+          listings={featured}
+          favoriteIds={favoriteIds}
+          isAuthenticated={isAuthenticated}
+        />
       </section>
 
       <HowItWorks />
@@ -69,7 +85,11 @@ export default async function HomePage() {
           description="Fresh ads posted near you"
           href={ROUTES.marketplace}
         />
-        <ListingsGrid listings={latest} />
+        <ListingsGrid
+          listings={latest}
+          favoriteIds={favoriteIds}
+          isAuthenticated={isAuthenticated}
+        />
       </section>
 
       <CtaBand />

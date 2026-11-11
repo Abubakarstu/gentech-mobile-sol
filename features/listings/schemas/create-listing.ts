@@ -21,8 +21,9 @@ export const createListingSchema = z.object({
   condition: z.enum(CONDITION_VALUES, { message: "Select a condition" }),
   categorySlug: z.string().min(1, "Select a category"),
   brandSlug: z.string().optional(),
-  city: z.string().min(1, "Select a city"),
-  area: z.string().trim().max(120).optional(),
+  countryId: z.string().min(1, "Select a country"),
+  cityId: z.string().min(1, "Select a city"),
+  areaId: z.string().optional().or(z.literal("")),
   negotiable: z.boolean().optional(),
 
   // Phone-specific attributes (all optional).

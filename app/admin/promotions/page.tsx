@@ -1,48 +1,49 @@
 import type { Metadata } from "next";
-import { Tag } from "lucide-react";
+import { redirect } from "next/navigation";
+import { BadgeDollarSign } from "lucide-react";
 
-import { AdminModulePage } from "@/features/admin/components/admin-module-page";
+import { AdminPromotionPlans } from "@/features/promotions/components/admin-promotion-plans";
+import { getAllPlans } from "@/features/promotions/services/promotion.service";
+import { requireAdmin } from "@/features/admin/lib/require-admin";
+import { ROUTES } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Promotions — Admin",
   robots: { index: false, follow: false },
 };
 
-export default function AdminPromotionsPage() {
+export default async function AdminPromotionsPage() {
+  const admin = await requireAdmin();
+  if (!admin) redirect(ROUTES.dashboard);
+
+  const plans = await getAllPlans();
+
   return (
-    <AdminModulePage
-      eyebrow="Marketplace growth"
-      title="Promotions & plans"
-      description="Manage featured listing plans, promotion eligibility, campaign windows, and provider-linked promotion purchases."
-      icon={Tag}
-      metrics={[
-        { label: "Active promotions", value: "—", detail: "Connect promotion service" },
-        { label: "Plans available", value: "—", detail: "Plan catalogue not loaded" },
-        { label: "Payments pending", value: "—", detail: "Verify via payment ledger" },
-        { label: "Expiring soon", value: "—", detail: "Promotion schedule not connected" },
-      ]}
-      workflows={[
-        {
-          title: "Promotion plan catalogue",
-          description: "Set documented duration, price, eligibility, and placement for each plan.",
-        },
-        {
-          title: "Eligibility and activation",
-          description:
-            "Activate a promotion only after verifying the linked listing and successful payment.",
-        },
-        {
-          title: "Campaign review",
-          description: "Track start/end dates, visibility, refunds, and promotion performance.",
-        },
-      ]}
-      connectedTo={[
-        "Promotion plan and listing API",
-        "Verified payment transaction ledger",
-        "Campaign analytics",
-      ]}
-      relatedHref="/admin/finance/integrations"
-      relatedLabel="Review payment integrations"
-    />
+    <div className="space-y-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="flex items-center gap-2 text-xs font-semibold tracking-[0.16em] text-emerald-300 uppercase">
+            <BadgeDollarSign className="size-4" aria-hidden="true" />
+            Monetization
+          </p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            Promotion packages
+          </h1>
+          <p className="mt-1 max-w-2xl text-sm text-slate-400">
+            Configure the placement, duration, and PKR price available to sellers. Payment
+            processing remains a separate integration.
+          </p>
+        </div>
+        <div className="rounded-lg border border-white/[0.08] bg-[#141519] px-4 py-3">
+          <p className="text-xs text-slate-400">Active packages</p>
+          <p className="mt-1 text-xl font-semibold text-slate-100">
+            {plans.filter((plan) => plan.isActive).length}
+            <span className="ml-1 text-sm font-normal text-slate-500">/ {plans.length}</span>
+          </p>
+        </div>
+      </header>
+
+      <AdminPromotionPlans plans={plans} />
+    </div>
   );
 }

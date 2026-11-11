@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { PAGINATION, STORAGE_OPTIONS, RAM_OPTIONS, PTA_STATUS, CPID_STATUS, WARRANTY_TYPE } from "@/lib/constants";
+import { PAGINATION, PTA_STATUS, CPID_STATUS, WARRANTY_TYPE } from "@/lib/constants";
 import type { ListingFilters } from "@/types/marketplace";
 
 export const LISTING_SORTS = ["recent", "price_asc", "price_desc", "popular"] as const;
@@ -31,15 +31,37 @@ const schema = z.object({
   sort: z.enum(LISTING_SORTS).catch("recent"),
   page: z.coerce.number().int().min(1).catch(1),
   // Phone-specific filters
-  storage: z.enum(STORAGE_OPTIONS).optional().catch(undefined),
-  ram: z.enum(RAM_OPTIONS).optional().catch(undefined),
+  storage: z.string().trim().min(1).max(40).optional().catch(undefined),
+  ram: z.string().trim().min(1).max(40).optional().catch(undefined),
+  color: z.string().trim().min(1).max(40).optional().catch(undefined),
   batteryHealthMin: z.coerce.number().int().min(0).max(100).optional().catch(undefined),
-  ptaStatus: z.enum(Object.keys(PTA_STATUS) as [string, ...string[]]).optional().catch(undefined),
-  cpidStatus: z.enum(Object.keys(CPID_STATUS) as [string, ...string[]]).optional().catch(undefined),
-  warranty: z.enum(Object.keys(WARRANTY_TYPE) as [string, ...string[]]).optional().catch(undefined),
-  isInspected: z.string().optional().transform((v) => v === "true").optional().catch(undefined),
-  isVerifiedSeller: z.string().optional().transform((v) => v === "true").optional().catch(undefined),
-  isDealer: z.string().optional().transform((v) => v === "true").optional().catch(undefined),
+  ptaStatus: z
+    .enum(Object.keys(PTA_STATUS) as [string, ...string[]])
+    .optional()
+    .catch(undefined),
+  cpidStatus: z
+    .enum(Object.keys(CPID_STATUS) as [string, ...string[]])
+    .optional()
+    .catch(undefined),
+  warranty: z
+    .enum(Object.keys(WARRANTY_TYPE) as [string, ...string[]])
+    .optional()
+    .catch(undefined),
+  isInspected: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional()
+    .catch(undefined),
+  isVerifiedSeller: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional()
+    .catch(undefined),
+  isDealer: z
+    .enum(["true", "false"])
+    .transform((v) => v === "true")
+    .optional()
+    .catch(undefined),
 });
 
 type RawSearchParams = Record<string, string | string[] | undefined>;
@@ -62,6 +84,7 @@ export function parseListingFilters(raw: RawSearchParams): ListingFilters {
     page: first(raw.page),
     storage: first(raw.storage),
     ram: first(raw.ram),
+    color: first(raw.color),
     batteryHealthMin: first(raw.batteryHealthMin),
     ptaStatus: first(raw.ptaStatus),
     cpidStatus: first(raw.cpidStatus),

@@ -8,8 +8,10 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
-import { LISTING_CONDITION_LABELS, PK_CITIES, PTA_STATUS, CPID_STATUS, NETWORK_TYPE, WARRANTY_TYPE, ROUTES } from "@/lib/constants";
+import { LISTING_CONDITION_LABELS, PTA_STATUS, CPID_STATUS, NETWORK_TYPE, WARRANTY_TYPE, ROUTES } from "@/lib/constants";
 import type { BrandItem, CategoryItem } from "@/types/marketplace";
+import type { LocationTree } from "@/features/locations/services/location.service";
+import { LocationPicker, type LocationSelection } from "@/features/locations/components/location-picker";
 import {
   createListingSchema,
   type CreateListingInput,
@@ -33,9 +35,11 @@ function FieldError({ message }: { message?: string }) {
 export function CreateListingForm({
   categories,
   brands,
+  locations,
 }: {
   categories: CategoryItem[];
   brands: BrandItem[];
+  locations: LocationTree;
 }) {
   const router = useRouter();
   const {
@@ -46,10 +50,22 @@ export function CreateListingForm({
     formState: { errors, isSubmitting },
   } = useForm<CreateListingInput>({
     resolver: zodResolver(createListingSchema),
-    defaultValues: { images: [], negotiable: false, ptaApproved: false, ptaStatus: undefined, cpidStatus: undefined },
+    defaultValues: {
+      images: [],
+      negotiable: false,
+      ptaApproved: false,
+      ptaStatus: undefined,
+      cpidStatus: undefined,
+      countryId: "",
+      cityId: "",
+      areaId: "",
+    },
   });
 
   const images = useWatch({ control, name: "images" }) ?? [];
+  const countryId = useWatch({ control, name: "countryId" }) ?? "";
+  const cityId = useWatch({ control, name: "cityId" }) ?? "";
+  const areaId = useWatch({ control, name: "areaId" }) ?? "";
 
   function setImages(next: UploadedImage[]) {
     setValue("images", next, { shouldValidate: true });
@@ -168,24 +184,26 @@ export function CreateListingForm({
           <FieldError message={errors.condition?.message} />
         </div>
 
-        <div className="grid gap-2">
-          <Label htmlFor="city">City</Label>
-          <select id="city" className={selectClass} defaultValue="" {...register("city")}>
-            <option value="" disabled>
-              Select a city
-            </option>
-            {PK_CITIES.map((city) => (
-              <option key={city} value={city}>
-                {city}
-              </option>
-            ))}
-          </select>
-          <FieldError message={errors.city?.message} />
-        </div>
-
-        <div className="grid gap-2 sm:col-span-2">
-          <Label htmlFor="area">Area / neighbourhood (optional)</Label>
-          <Input id="area" placeholder="e.g. DHA Phase 6" {...register("area")} />
+        <div className="grid gap-4 sm:col-span-2 sm:grid-cols-3">
+          <LocationPicker
+            locations={locations}
+            prefix="listing-location"
+            value={{ countryId, cityId, areaId: areaId ?? "" }}
+            onChange={(selection: LocationSelection) => {
+              setValue("countryId", selection.countryId, { shouldValidate: true });
+              setValue("cityId", selection.cityId, { shouldValidate: true });
+              setValue("areaId", selection.areaId, { shouldValidate: true });
+            }}
+          />
+          <input type="hidden" {...register("countryId")} />
+          <input type="hidden" {...register("cityId")} />
+          <input type="hidden" {...register("areaId")} />
+          <FieldError message={errors.countryId?.message ?? errors.cityId?.message ?? errors.areaId?.message} />
+          {locations.length === 0 ? (
+            <p className="text-muted-foreground text-sm sm:col-span-3">
+              Locations are temporarily unavailable. Please try again later.
+            </p>
+          ) : null}
         </div>
       </section>
 

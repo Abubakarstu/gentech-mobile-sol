@@ -15,9 +15,16 @@ export const createPromotionPlanSchema = z.object({
   description: z.string().trim().max(500).optional(),
   placement: z.enum(PROMOTION_PLACEMENTS),
   price: z.number({ message: "Enter a valid price" }).positive("Price must be greater than 0"),
-  durationDays: z.number({ message: "Enter a valid duration" }).int().positive("Duration must be at least 1 day"),
-  maxSlots: z.number().int().positive().optional(),
+  durationDays: z
+    .number({ message: "Enter a valid duration" })
+    .int()
+    .positive("Duration must be at least 1 day"),
+  maxSlots: z.number().int().positive().nullable().optional(),
   isActive: z.boolean().optional(),
+});
+
+export const updatePromotionPlanSchema = createPromotionPlanSchema.partial().extend({
+  id: z.string().trim().min(1, "Plan ID is required"),
 });
 
 export const createListingPromotionSchema = z.object({

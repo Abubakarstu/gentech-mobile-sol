@@ -9,11 +9,24 @@ import {
   addInventory,
   addStaffMember,
   getDealer,
+  getUserDealerMembership,
   getUserDealer,
+  removeInventory,
   registerDealer,
   removeStaffMember,
+  setDealerBranchStatus,
+  updateInventory,
   updateDealerProfile,
 } from "../services/dealer.service";
+import {
+  addInventorySchema,
+  createBranchSchema,
+  createDealerSchema,
+  removeInventorySchema,
+  updateBranchStatusSchema,
+  updateDealerSchema,
+  updateInventorySchema,
+} from "../schemas/dealer";
 import type {
   AddInventoryInput,
   AddStaffInput,
@@ -23,10 +36,29 @@ import type {
 } from "../schemas/dealer";
 import type { DealerDto } from "../types";
 
-type ActionResult<T = void> = ({ ok: true } & T) | { ok: false; error: string };
+type ActionResult<T = object> = ({ ok: true } & T) | { ok: false; error: string };
 
 const SIGN_IN_REQUIRED = "Sign in to access dealer features.";
 const GENERIC_ERROR = "Something went wrong. Please try again.";
+
+async function getManageableDealer(
+  userId: string,
+): Promise<{ dealer: DealerDto } | { error: string }> {
+  try {
+    const membership = await getUserDealerMembership(userId);
+    if (!membership) return { error: "You don't have a dealer profile." };
+    if (membership.role !== "owner" && membership.role !== "manager") {
+      return { error: "Only dealer owners and managers can change branches or inventory." };
+    }
+    if (membership.dealer.status !== "ACTIVE" || !membership.dealer.isVerified) {
+      return { error: "Dealer operations are available after your account is verified." };
+    }
+    return { dealer: membership.dealer };
+  } catch (error) {
+    console.error("[dealer] failed to verify operations access:", error);
+    return { error: GENERIC_ERROR };
+  }
+}
 
 /** Registers a new dealer profile for the current user. */
 export async function registerDealerAction(
@@ -35,13 +67,19 @@ export async function registerDealerAction(
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
+  const parsed = createDealerSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues.map((issue) => issue.message).join(" ") };
+  }
+
   // Check if user already has a dealer
   const existing = await getUserDealer(user.id);
   if (existing) return { ok: false, error: "You already have a dealer profile." };
 
   try {
-    const dealerId = await registerDealer(input, user.id);
+    const dealerId = await registerDealer(parsed.data, user.id);
     revalidatePath(ROUTES.dealers);
+    revalidatePath(ROUTES.dealerDashboard);
     return { ok: true, dealerId };
   } catch (error) {
     console.error("[dealer] registerDealer failed:", error);
@@ -81,12 +119,22 @@ export async function updateDealerAction(input: UpdateDealerInput) {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
+  const parsed = updateDealerSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues.map((issue) => issue.message).join(" ") };
+  }
+
   const dealer = await getUserDealer(user.id);
   if (!dealer) return { ok: false, error: "You don't have a dealer profile." };
 
   try {
-    await updateDealerProfile(dealer.id, input);
+    await updateDealerProfile(dealer.id, parsed.data, dealer.status === "REJECTED");
+    if (dealer.status === "REJECTED") {
+      revalidatePath(ROUTES.adminDealers);
+    }
     revalidatePath(`${ROUTES.dealers}/${dealer.slug}`);
+    revalidatePath(ROUTES.dealerDashboard);
+    revalidatePath(ROUTES.dealerProfile);
     return { ok: true };
   } catch (error) {
     console.error("[dealer] updateDealer failed:", error);
@@ -101,20 +149,51 @@ export async function addBranchAction(
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
-  const dealer = await getUserDealer(user.id);
-  if (!dealer) return { ok: false, error: "You don't have a dealer profile." };
-
-  // Verify the dealer ID matches
-  if (input.dealerId !== dealer.id) {
-    return { ok: false, error: "You can only add branches to your own dealer profile." };
+  const parsed = createBranchSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid branch details." };
   }
 
+  const access = await getManageableDealer(user.id);
+  if ("error" in access) return { ok: false, error: access.error };
+  const { dealer } = access;
+  if (parsed.data.dealerId !== dealer.id) {
+    return { ok: false, error: "You can only add branches to your own dealer profile." };
+  }
   try {
-    const branchId = await addBranch(input);
+    const branchId = await addBranch(parsed.data);
     revalidatePath(`${ROUTES.dealers}/${dealer.slug}`);
+    revalidatePath(ROUTES.dealerBranches);
+    revalidatePath(ROUTES.dealerDashboard);
     return { ok: true, branchId };
   } catch (error) {
     console.error("[dealer] addBranch failed:", error);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+export async function setDealerBranchStatusAction(input: {
+  branchId: string;
+  isActive: boolean;
+}): Promise<ActionResult> {
+  const parsed = updateBranchStatusSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid branch status request." };
+
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
+
+  const access = await getManageableDealer(user.id);
+  if ("error" in access) return { ok: false, error: access.error };
+  const { dealer } = access;
+
+  try {
+    const updated = await setDealerBranchStatus({ ...parsed.data, dealerId: dealer.id });
+    if (!updated) return { ok: false, error: "Branch not found in your dealer account." };
+    revalidatePath(ROUTES.dealerBranches);
+    revalidatePath(ROUTES.dealerDashboard);
+    return { ok: true };
+  } catch (error) {
+    console.error("[dealer] set branch status failed:", error);
     return { ok: false, error: GENERIC_ERROR };
   }
 }
@@ -126,20 +205,78 @@ export async function addInventoryAction(
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
 
-  const dealer = await getUserDealer(user.id);
-  if (!dealer) return { ok: false, error: "You don't have a dealer profile." };
-
-  // Verify the dealer ID matches
-  if (input.dealerId !== dealer.id) {
-    return { ok: false, error: "You can only add inventory to your own dealer profile." };
+  const parsed = addInventorySchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid inventory details." };
   }
 
+  const access = await getManageableDealer(user.id);
+  if ("error" in access) return { ok: false, error: access.error };
+  const { dealer } = access;
+
+  if (parsed.data.dealerId !== dealer.id) {
+    return { ok: false, error: "You can only add inventory to your own dealer profile." };
+  }
   try {
-    const inventoryId = await addInventory(input);
+    const inventoryId = await addInventory(parsed.data);
     revalidatePath(`${ROUTES.dealers}/${dealer.slug}`);
+    revalidatePath(ROUTES.dealerInventory);
+    revalidatePath(ROUTES.dealerDashboard);
     return { ok: true, inventoryId };
   } catch (error) {
     console.error("[dealer] addInventory failed:", error);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+export async function updateDealerInventoryAction(input: {
+  inventoryId: string;
+  stockCount: number;
+  location?: string;
+}): Promise<ActionResult> {
+  const parsed = updateInventorySchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid inventory details." };
+  }
+
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
+  const access = await getManageableDealer(user.id);
+  if ("error" in access) return { ok: false, error: access.error };
+  const { dealer } = access;
+
+  try {
+    const updated = await updateInventory({ ...parsed.data, dealerId: dealer.id });
+    if (!updated) return { ok: false, error: "Inventory item not found in your dealer account." };
+    revalidatePath(ROUTES.dealerInventory);
+    revalidatePath(ROUTES.dealerDashboard);
+    return { ok: true };
+  } catch (error) {
+    console.error("[dealer] update inventory failed:", error);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+export async function removeDealerInventoryAction(input: {
+  inventoryId: string;
+}): Promise<ActionResult> {
+  const parsed = removeInventorySchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Invalid inventory item." };
+
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
+  const access = await getManageableDealer(user.id);
+  if ("error" in access) return { ok: false, error: access.error };
+  const { dealer } = access;
+
+  try {
+    const removed = await removeInventory({ ...parsed.data, dealerId: dealer.id });
+    if (!removed) return { ok: false, error: "Inventory item not found in your dealer account." };
+    revalidatePath(ROUTES.dealerInventory);
+    revalidatePath(ROUTES.dealerDashboard);
+    return { ok: true };
+  } catch (error) {
+    console.error("[dealer] remove inventory failed:", error);
     return { ok: false, error: GENERIC_ERROR };
   }
 }

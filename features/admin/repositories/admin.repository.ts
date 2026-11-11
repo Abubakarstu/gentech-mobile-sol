@@ -40,20 +40,27 @@ function paginate<T>(items: T[], total: number, page: number): Paginated<T> {
 export async function getPlatformStats(): Promise<PlatformStats> {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-  const [totalUsers, newUsers7d, statusGroups, openReports, totalBrands, totalModels, totalDealers] =
-    await Promise.all([
-      prisma.user.count({ where: { deletedAt: null } }),
-      prisma.user.count({ where: { deletedAt: null, createdAt: { gte: sevenDaysAgo } } }),
-      prisma.listing.groupBy({
-        by: ["status"],
-        where: { deletedAt: null },
-        _count: { _all: true },
-      }),
-      prisma.report.count({ where: { status: REPORT_STATUSES.OPEN } }),
-      prisma.brand.count({ where: { isActive: true } }),
-      prisma.phoneModel.count({ where: { isActive: true } }),
-      prisma.dealer.count(),
-    ]);
+  const [
+    totalUsers,
+    newUsers7d,
+    statusGroups,
+    openReports,
+    totalBrands,
+    totalModels,
+    totalDealers,
+  ] = await Promise.all([
+    prisma.user.count({ where: { deletedAt: null } }),
+    prisma.user.count({ where: { deletedAt: null, createdAt: { gte: sevenDaysAgo } } }),
+    prisma.listing.groupBy({
+      by: ["status"],
+      where: { deletedAt: null },
+      _count: { _all: true },
+    }),
+    prisma.report.count({ where: { status: REPORT_STATUSES.OPEN } }),
+    prisma.brand.count({ where: { isActive: true } }),
+    prisma.phoneModel.count({ where: { isActive: true } }),
+    prisma.dealer.count(),
+  ]);
 
   const countByStatus = new Map<ListingStatus, number>(
     statusGroups.map((g) => [g.status, g._count._all]),
@@ -79,9 +86,10 @@ export async function getPlatformStats(): Promise<PlatformStats> {
 // Users
 // --------------------------------------------------------------------------
 
-export async function listUsers(params: { q?: string; page: number }): Promise<
-  Paginated<AdminUserRow>
-> {
+export async function listUsers(params: {
+  q?: string;
+  page: number;
+}): Promise<Paginated<AdminUserRow>> {
   const where: Prisma.UserWhereInput = {
     deletedAt: null,
     ...(params.q
@@ -209,8 +217,17 @@ export async function listListings(params: {
 export async function adminSetListingStatus(
   listingId: string,
   status: ListingStatus,
-): Promise<void> {
+): Promise<boolean> {
+  if (status === LISTING_STATUSES.ACTIVE) {
+    const result = await prisma.listing.updateMany({
+      where: { id: listingId, status: { not: LISTING_STATUSES.ACTIVE } },
+      data: { status },
+    });
+    return result.count > 0;
+  }
+
   await prisma.listing.update({ where: { id: listingId }, data: { status } });
+  return false;
 }
 
 export async function adminRemoveListing(listingId: string): Promise<void> {
@@ -220,12 +237,9 @@ export async function adminRemoveListing(listingId: string): Promise<void> {
   });
 }
 
-export async function adminApproveListing(
-  listingId: string,
-  adminId: string,
-): Promise<void> {
-  await prisma.listing.update({
-    where: { id: listingId },
+export async function adminApproveListing(listingId: string, adminId: string): Promise<boolean> {
+  const result = await prisma.listing.updateMany({
+    where: { id: listingId, status: LISTING_STATUSES.PENDING_APPROVAL, deletedAt: null },
     data: {
       status: LISTING_STATUSES.ACTIVE,
       reviewedAt: new Date(),
@@ -233,6 +247,7 @@ export async function adminApproveListing(
       rejectionReason: null,
     },
   });
+  return result.count > 0;
 }
 
 export async function adminRejectListing(
@@ -328,14 +343,15 @@ export async function listCategories(): Promise<AdminCategoryRow[]> {
 }
 
 /** Creates a category with a unique slug derived from its name. */
-export async function createCategory(input: {
-  name: string;
-  parentId?: string;
-}): Promise<void> {
+export async function createCategory(input: { name: string; parentId?: string }): Promise<void> {
   const base = slugify(input.name) || "category";
   // Ensure slug uniqueness without a random suffix (categories want clean URLs).
   let slug = base;
-  for (let i = 2; await prisma.category.findUnique({ where: { slug }, select: { id: true } }); i++) {
+  for (
+    let i = 2;
+    await prisma.category.findUnique({ where: { slug }, select: { id: true } });
+    i++
+  ) {
     slug = `${base}-${i}`;
   }
   await prisma.category.create({

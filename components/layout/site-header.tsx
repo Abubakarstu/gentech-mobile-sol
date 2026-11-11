@@ -15,6 +15,7 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { SearchBar } from "@/features/marketplace/components/search-bar";
 import { DEMO_CATEGORIES } from "@/features/marketplace/data/fixtures";
+import { getActiveLocationTree } from "@/features/locations/services/location.service";
 
 /**
  * Global marketplace header. Server component — reads the session once and renders
@@ -25,10 +26,13 @@ export async function SiteHeader() {
   const user = session?.user;
   const isDemoSession = user?.id.startsWith("demo:") ?? false;
 
-  const [unreadNotifications, recentNotifications] =
+  const [unreadNotifications, recentNotifications, locations] = await Promise.all([
     user && !isDemoSession
-      ? await Promise.all([getUnreadNotificationCount(user.id), getNotifications(user.id, 6)])
-      : [0, []];
+      ? getUnreadNotificationCount(user.id)
+      : Promise.resolve(0),
+    user && !isDemoSession ? getNotifications(user.id, 6) : Promise.resolve([]),
+    getActiveLocationTree(),
+  ]);
 
   return (
     <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full border-b backdrop-blur">
@@ -51,7 +55,7 @@ export async function SiteHeader() {
 
         {/* Desktop search */}
         <div className="mx-2 hidden flex-1 md:block">
-          <SearchBar variant="compact" />
+          <SearchBar variant="compact" locations={locations} />
         </div>
 
         <nav className="ml-auto flex items-center gap-1.5 md:ml-0">
@@ -110,7 +114,7 @@ export async function SiteHeader() {
 
       {/* Mobile search row */}
       <div className="border-t px-4 py-2 md:hidden">
-        <SearchBar variant="compact" />
+        <SearchBar variant="compact" locations={locations} />
       </div>
     </header>
   );
