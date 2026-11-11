@@ -89,6 +89,9 @@ const DEMO_ACCOUNTS = [
 
 async function seedDemoAccounts(prisma: PrismaClient) {
   if (process.env.DEMO_SEED_USERS !== "true") return;
+  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview") {
+    throw new Error("DEMO_SEED_USERS is allowed only for protected Vercel Preview deployments.");
+  }
 
   for (const demoAccount of DEMO_ACCOUNTS) {
     const password = await hashPassword(demoAccount.password);
