@@ -89,6 +89,12 @@ const DEMO_ACCOUNTS = [
 
 async function seedDemoAccounts(prisma: PrismaClient) {
   if (process.env.DEMO_SEED_USERS !== "true") return;
+  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview") {
+    console.warn(
+      "Skipping demo account seeding: DEMO_SEED_USERS is only allowed for Vercel Preview deployments.",
+    );
+    return;
+  }
   if (process.env.DEMO_MODE !== "true") {
     throw new Error("DEMO_SEED_USERS requires DEMO_MODE=true.");
   }
