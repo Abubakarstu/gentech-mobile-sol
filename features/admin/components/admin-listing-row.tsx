@@ -6,11 +6,7 @@ import { useRouter } from "next/navigation";
 import { Check, Eye, Loader2, MoreVertical, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
-import {
-  LISTING_STATUSES,
-  LISTING_STATUS_LABELS,
-  type ListingStatus,
-} from "@/lib/constants";
+import { LISTING_STATUSES, LISTING_STATUS_LABELS, type ListingStatus } from "@/lib/constants";
 import { formatPrice, formatRelativeTime } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import {
@@ -77,7 +73,10 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
       return;
     }
     setRejectPending(true);
-    const result = await rejectListingAction({ listingId: listing.id, reason: rejectReason.trim() });
+    const result = await rejectListingAction({
+      listingId: listing.id,
+      reason: rejectReason.trim(),
+    });
     setRejectPending(false);
     if (!result.ok) {
       toast.error(result.error ?? "Failed to reject listing.");
@@ -91,11 +90,11 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
 
   return (
     <>
-      <div className="flex items-center gap-3 p-3">
+      <div className="flex flex-col gap-3 p-3 transition-colors hover:bg-white/[0.02] sm:flex-row sm:items-center sm:px-4">
         <div className="min-w-0 flex-1">
           <Link
             href={`/listings/${listing.slug}`}
-            className="hover:text-primary line-clamp-1 font-medium"
+            className="line-clamp-1 text-sm font-semibold text-slate-100 hover:text-emerald-300 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none"
           >
             {listing.title}
           </Link>
@@ -117,10 +116,10 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
 
         {/* Quick approve/reject buttons for pending listings */}
         {isPendingApproval && (
-          <div className="flex shrink-0 items-center gap-1.5">
+          <div className="flex w-full shrink-0 gap-1.5 sm:w-auto">
             <Button
               size="sm"
-              className="h-8 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold gap-1 px-3"
+              className="min-h-9 flex-1 gap-1 bg-emerald-400 px-3 font-semibold text-slate-950 hover:bg-emerald-300 sm:flex-none"
               onClick={handleApprove}
               disabled={pending}
               title="Approve listing"
@@ -135,7 +134,7 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
             <Button
               size="sm"
               variant="outline"
-              className="h-8 border-rose-500/40 text-rose-500 hover:bg-rose-500/10 hover:text-rose-400 gap-1 px-3"
+              className="min-h-9 flex-1 gap-1 border-rose-400/40 px-3 text-rose-300 hover:bg-rose-500/10 hover:text-rose-200 sm:flex-none"
               onClick={() => setShowRejectDialog(true)}
               disabled={pending}
               title="Reject listing"
@@ -152,7 +151,7 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-8 shrink-0"
+                className="size-9 shrink-0 self-end sm:self-auto"
                 aria-label={`Actions for ${listing.title}`}
                 disabled={pending}
               />
@@ -219,42 +218,73 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
       {/* Reject Dialog */}
       {showRejectDialog && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && !rejectPending) {
+              setShowRejectDialog(false);
+              setRejectReason("");
+            }
+          }}
           onClick={(e) => {
-            if (e.target === e.currentTarget) setShowRejectDialog(false);
+            if (e.target === e.currentTarget && !rejectPending) {
+              setShowRejectDialog(false);
+              setRejectReason("");
+            }
           }}
         >
           <form
             onSubmit={handleReject}
-            className="w-full max-w-md rounded-xl border border-white/10 bg-[#141519] p-6 shadow-2xl space-y-4"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`reject-title-${listing.id}`}
+            aria-describedby={`reject-description-${listing.id}`}
+            className="w-full max-w-md space-y-4 rounded-xl border border-white/10 bg-[#141519] p-5 shadow-2xl sm:p-6"
           >
             <div>
-              <h2 className="text-base font-semibold text-white">Reject Listing</h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <h2 id={`reject-title-${listing.id}`} className="text-base font-semibold text-white">
+                Reject listing
+              </h2>
+              <p id={`reject-description-${listing.id}`} className="mt-0.5 text-xs text-slate-400">
                 Provide a reason so the seller can improve their listing.
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-300 font-medium mb-1 truncate">
+              <p className="mb-1 truncate text-xs font-medium text-slate-300">
                 &quot;{listing.title}&quot;
               </p>
+              <label htmlFor={`reject-reason-${listing.id}`} className="sr-only">
+                Rejection reason
+              </label>
               <textarea
-                className="w-full rounded-lg border border-white/10 bg-[#0e0f12] text-sm text-white placeholder:text-slate-500 p-3 focus:outline-none focus:ring-1 focus:ring-rose-400 resize-none"
+                id={`reject-reason-${listing.id}`}
+                className="w-full resize-none rounded-lg border border-white/10 bg-[#0e0f12] p-3 text-sm text-white placeholder:text-slate-500 focus:ring-1 focus:ring-rose-400 focus:outline-none"
                 rows={4}
-                placeholder="e.g. Photos are blurry and description is incomplete. Please upload clear images and provide accurate specs."
+                placeholder="Explain what needs to be corrected"
                 value={rejectReason}
                 onChange={(e) => setRejectReason(e.target.value)}
                 autoFocus
+                minLength={5}
                 maxLength={500}
+                aria-describedby={`reject-count-${listing.id}`}
+                required
               />
-              <p className="text-[11px] text-slate-500 text-right mt-0.5">{rejectReason.length}/500</p>
+              <p
+                id={`reject-count-${listing.id}`}
+                className="mt-0.5 text-right text-[11px] text-slate-500"
+              >
+                {rejectReason.length}/500
+              </p>
             </div>
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                onClick={() => { setShowRejectDialog(false); setRejectReason(""); }}
+                onClick={() => {
+                  setShowRejectDialog(false);
+                  setRejectReason("");
+                }}
+                disabled={rejectPending}
                 className="text-slate-400 hover:text-white"
               >
                 Cancel
@@ -263,9 +293,9 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
                 type="submit"
                 size="sm"
                 disabled={rejectPending || rejectReason.trim().length < 5}
-                className="bg-rose-500 hover:bg-rose-600 text-white font-semibold"
+                className="bg-rose-500 font-semibold text-white hover:bg-rose-600"
               >
-                {rejectPending ? <Loader2 className="size-4 animate-spin mr-1.5" /> : null}
+                {rejectPending ? <Loader2 className="mr-1.5 size-4 animate-spin" /> : null}
                 Reject Listing
               </Button>
             </div>
