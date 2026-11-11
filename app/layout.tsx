@@ -4,6 +4,7 @@ import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsScripts } from "@/features/analytics/components/analytics-scripts";
 import { PageViewTracker } from "@/features/analytics/components/page-view-tracker";
+import { APP_URL } from "@/lib/app-url";
 import { APP } from "@/lib/constants";
 import "./globals.css";
 
@@ -11,7 +12,7 @@ const geistSans = { variable: "font-sans" };
 const geistMono = { variable: "font-mono" };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(APP.url),
+  metadataBase: new URL(APP_URL),
   title: {
     default: `${APP.name} — Buy & Sell Mobile Phones`,
     template: `%s · ${APP.name}`,
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
     siteName: APP.name,
     title: APP.name,
     description: APP.description,
-    url: APP.url,
+    url: APP_URL,
   },
   twitter: { card: "summary_large_image" },
   robots: { index: true, follow: true },

@@ -11,12 +11,10 @@ import { env } from "@/lib/env";
  * Zod defaults are not applied and the raw value may be `undefined`.
  */
 const DEFAULT_APP_NAME = "GenTech";
-const DEFAULT_APP_URL = "http://localhost:3000";
 
 /** Application-level metadata. */
 export const APP = {
   name: env.NEXT_PUBLIC_APP_NAME ?? DEFAULT_APP_NAME,
-  url: env.NEXT_PUBLIC_APP_URL ?? DEFAULT_APP_URL,
   description: "Buy and sell mobile phones near you — fast, safe, and simple.",
   locale: "en-PK",
   defaultCurrency: "PKR",

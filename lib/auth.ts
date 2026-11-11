@@ -2,6 +2,7 @@ import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 
+import { APP_URL, IS_VERCEL_DEPLOYMENT } from "@/lib/app-url";
 import { APP, USER_ROLES } from "@/lib/constants";
 import { sendEmail } from "@/lib/email";
 import { env } from "@/lib/env";
@@ -43,7 +44,7 @@ const requireEmailVerification =
 
 export const auth = betterAuth({
   appName: APP.name,
-  baseURL: env.BETTER_AUTH_URL ?? env.NEXT_PUBLIC_APP_URL,
+  baseURL: IS_VERCEL_DEPLOYMENT ? APP_URL : (env.BETTER_AUTH_URL ?? APP_URL),
   secret: env.BETTER_AUTH_SECRET || (isReadOnlyDemoEnabled() ? DEMO_LOCAL_SECRET : ""),
 
   database: prismaAdapter(prisma, { provider: "postgresql" }),

@@ -53,10 +53,11 @@
 - [ ] `DATABASE_URL` - PostgreSQL connection string (pooled for app)
 - [ ] `DIRECT_URL` - PostgreSQL direct connection (for migrations)
 - [ ] `BETTER_AUTH_SECRET` - Random 32+ character secret (`openssl rand -base64 32`)
-- [ ] `BETTER_AUTH_URL` - Production domain URL
+Vercel automatically supplies production and preview origins; no app URL environment
+variables are required. `APP_URL` and `BETTER_AUTH_URL` are optional for non-Vercel
+deployments.
 
 #### Required (Client-Side)
-- [ ] `NEXT_PUBLIC_APP_URL` - Production domain URL
 - [ ] `NEXT_PUBLIC_APP_NAME` - Application name
 
 #### Optional (Feature-Specific)

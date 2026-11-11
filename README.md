@@ -50,6 +50,13 @@ Minimum required to run auth locally:
 | `DIRECT_URL`         | Neon dashboard → **Direct** connection (used by migrations) |
 | `BETTER_AUTH_SECRET` | `openssl rand -base64 32`                                   |
 
+Vercel automatically detects the origin for production and preview deployments.
+Browser sign-in always uses the current page's origin, so no URL environment
+variables are required. The current production origin is
+`https://gentech-mauve.vercel.app`; staging uses its Vercel Preview URL, and local
+development uses `http://localhost:3000`. Set `APP_URL` or `BETTER_AUTH_URL` only
+for non-Vercel deployments that need a fixed canonical origin.
+
 Optional (features degrade gracefully until set):
 
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google sign-in
@@ -61,6 +68,8 @@ OAuth redirect URIs (add in each provider's console):
 
 - Google: `http://localhost:3000/api/auth/callback/google`
 - Facebook: `http://localhost:3000/api/auth/callback/facebook`
+
+For production OAuth, also register `https://gentech-mauve.vercel.app/api/auth/callback/<provider>`.
 
 ## 3. Create the database schema
 

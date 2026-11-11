@@ -4,7 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Clock, Eye, MapPin } from "lucide-react";
 
-import { APP, LISTING_CONDITION_LABELS, ROUTES } from "@/lib/constants";
+import { APP_URL } from "@/lib/app-url";
+import { LISTING_CONDITION_LABELS, ROUTES } from "@/lib/constants";
 import { formatPrice, formatRelativeTime } from "@/utils/format";
 import { getCurrentUser } from "@/lib/session";
 import { getListingDetail } from "@/features/listings/services/listing.service";
@@ -80,7 +81,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
       price: detail.price,
       priceCurrency: detail.currency,
       availability: "https://schema.org/InStock",
-      url: `${APP.url}/listings/${detail.slug}`,
+      url: `${APP_URL}/listings/${detail.slug}`,
     },
   };
 

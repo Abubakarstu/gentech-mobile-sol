@@ -1,6 +1,7 @@
 import "server-only";
 
-import { APP, NOTIFICATION_TYPES, ROUTES, type PaymentMethod } from "@/lib/constants";
+import { APP_URL } from "@/lib/app-url";
+import { NOTIFICATION_TYPES, ROUTES, type PaymentMethod } from "@/lib/constants";
 import { dispatchNotification } from "@/features/notifications/services/notification.service";
 import { getPaymentProvider } from "@/features/inspections/payments";
 import {
@@ -39,7 +40,7 @@ export async function startInspectionPayment(
     method,
     customerName: request.contactName ?? undefined,
     customerPhone: request.contactPhone ?? undefined,
-    returnUrl: `${APP.url}${ROUTES.inspections}`,
+    returnUrl: `${APP_URL}${ROUTES.inspections}`,
   });
 
   await recordPaymentIntent(request.id, requesterId, session.reference, method);

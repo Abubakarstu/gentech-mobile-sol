@@ -10,7 +10,8 @@
 | `DEMO_MODE`                       | OPTIONAL  | NO          | YES      | NO              | NO      | `true` enables demo behavior and local fallback DB/auth values                          |
 | `DEMO_READ_ONLY`                  | OPTIONAL  | NO          | YES      | NO              | NO      | `true` disables database access and restricts production demo login to the preview user |
 | `DEMO_SEED_USERS`                 | OPTIONAL  | NO          | YES      | NO              | NO      | `true` with `DEMO_MODE=true` opts into seeding the documented demo login accounts       |
-| `BETTER_AUTH_URL`                 | OPTIONAL  | NO          | YES      | NO              | NO      | Better Auth base URL (callbacks/redirects)                                              |
+| `BETTER_AUTH_URL`                 | OPTIONAL  | NO          | YES      | NO              | NO      | Auth base URL override (Vercel origin is detected automatically)                        |
+| `APP_URL`                         | OPTIONAL  | YES         | YES      | NO              | NO      | Server-side app URL override for non-Vercel deployments                                 |
 | `AUTH_SKIP_EMAIL_VERIFICATION`    | OPTIONAL  | NO          | YES      | NO              | NO      | Dev-only: skip email verification (ignored in production)                               |
 | `GOOGLE_CLIENT_ID`                | OPTIONAL  | NO          | YES      | NO              | YES     | Google OAuth client ID                                                                  |
 | `GOOGLE_CLIENT_SECRET`            | OPTIONAL  | NO          | YES      | NO              | YES     | Google OAuth client secret                                                              |
@@ -24,7 +25,6 @@
 | `PAYFAST_MERCHANT_ID`             | OPTIONAL  | NO          | YES      | NO              | YES     | PayFast merchant ID                                                                     |
 | `PAYFAST_SECURED_KEY`             | OPTIONAL  | NO          | YES      | NO              | YES     | PayFast secured key                                                                     |
 | `PAYFAST_API_BASE`                | OPTIONAL  | NO          | YES      | NO              | NO      | PayFast API base URL                                                                    |
-| `NEXT_PUBLIC_APP_URL`             | YES       | YES         | YES      | YES             | NO      | Application base URL (client)                                                           |
 | `NEXT_PUBLIC_APP_NAME`            | YES       | YES         | YES      | YES             | NO      | Application name (client)                                                               |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | OPTIONAL  | YES         | YES      | YES             | NO      | Google Maps API key                                                                     |
 | `NEXT_PUBLIC_GTM_ID`              | OPTIONAL  | YES         | YES      | YES             | NO      | Google Tag Manager container ID                                                         |
@@ -58,18 +58,11 @@ read-only demo mode and disables database access.
    - Used to sign and verify session cookies
    - **Rotate this if compromised**
 
-4. **`BETTER_AUTH_URL`** - Auth base URL
-   - Must match production domain
-   - Used for OAuth callbacks and redirects
-   - Example: `https://gentech.example.com`
-   - **Critical for OAuth and email links**
+4. **`BETTER_AUTH_URL`** / **`APP_URL`** - Optional URL overrides
+   - Vercel production and preview origins are detected automatically and take precedence
+   - Set only for non-Vercel deployments that need a fixed canonical origin
 
-5. **`NEXT_PUBLIC_APP_URL`** - Client base URL
-   - Must match production domain
-   - Used by client-side code for navigation
-   - Example: `https://gentech.example.com`
-
-6. **`NEXT_PUBLIC_APP_NAME`** - Application name
+5. **`NEXT_PUBLIC_APP_NAME`** - Application name
    - Displayed in UI and metadata
    - Example: `GenTech`
 
@@ -148,7 +141,7 @@ read-only demo mode and disables database access.
 ## Default Values
 
 - `NODE_ENV`: `development`
-- `NEXT_PUBLIC_APP_URL`: `http://localhost:3000`
+- `APP_URL`: `http://localhost:3000`
 - `NEXT_PUBLIC_APP_NAME`: `GenTech`
 - `DEMO_MODE`: `false` (required DB and auth values remain enforced unless explicitly enabled)
 - `DEMO_READ_ONLY`: `false` (automatically enabled for production when database/auth values are absent)
