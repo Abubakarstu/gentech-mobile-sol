@@ -50,16 +50,12 @@ Minimum required to run auth locally:
 | `DIRECT_URL`         | Neon dashboard → **Direct** connection (used by migrations) |
 | `BETTER_AUTH_SECRET` | `openssl rand -base64 32`                                   |
 
-On Vercel, the app automatically detects the production origin
-(`https://gentech-mauve.vercel.app`) and each preview deployment origin for auth
-callbacks, metadata, and generated links. The browser auth client always calls the
-current page's origin, so sign-in works on production and preview domains without
-URL environment variables. `APP_URL` and `BETTER_AUTH_URL` are optional overrides
-for non-Vercel deployments; Vercel's automatic origins take precedence.
-
-- Production: `https://gentech-mauve.vercel.app`
-- Staging: use the Vercel Preview deployment URL
-- Development: `http://localhost:3000`
+Vercel automatically detects the origin for production and preview deployments.
+Browser sign-in always uses the current page's origin, so no URL environment
+variables are required. The current production origin is
+`https://gentech-mauve.vercel.app`; staging uses its Vercel Preview URL, and local
+development uses `http://localhost:3000`. Set `APP_URL` or `BETTER_AUTH_URL` only
+for non-Vercel deployments that need a fixed canonical origin.
 
 Optional (features degrade gracefully until set):
 
@@ -73,8 +69,7 @@ OAuth redirect URIs (add in each provider's console):
 - Google: `http://localhost:3000/api/auth/callback/google`
 - Facebook: `http://localhost:3000/api/auth/callback/facebook`
 
-For OAuth on the production Vercel domain, also register
-`https://gentech-mauve.vercel.app/api/auth/callback/<provider>` with the provider.
+For production OAuth, also register `https://gentech-mauve.vercel.app/api/auth/callback/<provider>`.
 
 ## 3. Create the database schema
 
@@ -84,9 +79,12 @@ pnpm db:migrate      # creates tables in Neon + generates the client
 
 ## Demo accounts
 
-For a protected demo database only, set `DEMO_MODE="true"` and
-`DEMO_SEED_USERS="true"`, then run `pnpm db:seed`. The seed creates or resets these
-Better Auth-compatible sign-in accounts:
+For a protected Vercel Preview/staging deployment, set `DEMO_SEED_USERS="true"`
+for the Preview environment and use a separate staging database. The deployment seed
+step creates or resets these Better Auth-compatible accounts; `DEMO_MODE` can remain
+`false`. Accounts are marked email-verified, so no verification bypass is needed.
+The seed refuses to run with this flag in Vercel Production or any other production
+environment:
 
 | Panel     | Email                         | Password              |
 | --------- | ----------------------------- | --------------------- |
@@ -94,10 +92,11 @@ Better Auth-compatible sign-in accounts:
 | Inspector | `inspector@demo.gentech.test` | `DemoInspector-2026!` |
 | User      | `user@demo.gentech.test`      | `DemoUser-2026!`      |
 
-The admin account has full admin access. Do not seed these accounts on an unprotected
-public deployment; anyone with this list could sign in as admin. Keep
-`DEMO_SEED_USERS="false"` by default, and use Vercel Deployment Protection or another
-access control if the demo must be hosted publicly.
+The admin account has full admin access. Keep `DEMO_SEED_USERS="false"` in Vercel
+Production: these documented credentials must only be seeded into a protected Preview
+database, because anyone with this list could sign in as admin. The Preview deployment
+must use its own staging `DATABASE_URL` and `DIRECT_URL`; setting the flag alone does
+not create or migrate a database.
 
 ## 4. Run
 

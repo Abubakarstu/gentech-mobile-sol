@@ -13,8 +13,8 @@ description: DevOps Engineer managing Vercel deployments, environment variable a
    - `DATABASE_URL`: Pooled PostgreSQL connection string (PgBouncer for serverless).
    - `DIRECT_URL`: Direct PostgreSQL connection string (for migrations).
    - `BETTER_AUTH_SECRET`: Random 32+ character secret (`openssl rand -base64 32`).
-   - Vercel automatically supplies the production/preview origin; no app URL variables are required.
-   - `BETTER_AUTH_URL` and `APP_URL` are optional overrides for non-Vercel deployments.
+   - Vercel automatically supplies production and preview origins; no URL variables are required.
+   - `APP_URL` and `BETTER_AUTH_URL` are optional overrides for non-Vercel deployments.
    - `NEXT_PUBLIC_APP_NAME`: Application name (`GenTech`).
 3. **Database Migration Procedure:**
    - Development: `pnpm db:migrate`

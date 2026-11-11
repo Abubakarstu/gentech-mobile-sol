@@ -1,9 +1,7 @@
 import "server-only";
 
-import { randomBytes } from "node:crypto";
-
-import { NOTIFICATION_TYPES, ROUTES, type PaymentMethod } from "@/lib/constants";
 import { APP_URL } from "@/lib/app-url";
+import { NOTIFICATION_TYPES, ROUTES, type PaymentMethod } from "@/lib/constants";
 import { dispatchNotification } from "@/features/notifications/services/notification.service";
 import { getPaymentProvider } from "@/features/inspections/payments";
 import {
@@ -60,71 +58,10 @@ export async function startPayFastInspectionPayment(input: {
     basketId: request.id,
     amount: request.feeAmountDecimal,
     currency: request.currency,
-    customerIp: input.customerIp,
-    details: input.details,
-    callbackUrl,
-  });
-
-  const saved = await recordPaymentIntent(
-    request.id,
-    input.requesterId,
-    challenge.transactionId,
-    input.details.method,
-  );
-  if (!saved) throw new PayFastError("INVALID_STATE");
-  return challenge;
-}
-
-export async function completePayFastInspectionPayment(input: {
-  requestId: string;
-  requesterId: string;
-  customerIp: string;
-  continuation: string;
-  otp?: string;
-  paRes?: string;
-}): Promise<PaymentVerificationStatus> {
-  const provider = getPaymentProvider();
-  if (provider?.id !== "payfast") throw new PayFastError("NOT_CONFIGURED");
-
-  const request = await getPayableRequest(input.requestId, input.requesterId);
-  if (
-    !request?.paymentRef ||
-    !["AWAITING_CUSTOMER", "PENDING", "PROCESSING"].includes(request.paymentStatus)
-  ) {
-    throw new PayFastError("INVALID_STATE");
-  }
-  assertPayFastContinuation({
-    continuation: input.continuation,
-    userId: input.requesterId,
-    requestId: request.id,
-    expectedTransactionId: request.paymentRef,
-    expectedAmount: request.feeAmountDecimal,
-    expectedCurrency: request.currency,
-  });
-
-  const claimed = await claimPaymentProcessing(
-    request.id,
-    input.requesterId,
-    request.paymentRef,
-  );
-  if (!claimed) {
-    return checkPayFastInspectionPayment({
-      requestId: input.requestId,
-      requesterId: input.requesterId,
-      customerIp: input.customerIp,
-    });
-  }
-
-  const result = await completePayFastPayment({
-    continuation: input.continuation,
-    userId: input.requesterId,
-    requestId: request.id,
-    expectedTransactionId: request.paymentRef,
-    expectedAmount: request.feeAmountDecimal,
-    expectedCurrency: request.currency,
-    customerIp: input.customerIp,
-    otp: input.otp,
-    paRes: input.paRes,
+    method,
+    customerName: request.contactName ?? undefined,
+    customerPhone: request.contactPhone ?? undefined,
+    returnUrl: `${APP_URL}${ROUTES.inspections}`,
   });
   await applyPayFastStatus(
     request.id,

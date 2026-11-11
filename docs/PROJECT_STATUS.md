@@ -35,9 +35,8 @@ Last Updated: 2026-11-11
 ---
 
 ## Technical Health Metrics
-
-- **Auth API Origin:** Browser auth uses the current origin; Vercel production/preview origins are detected automatically without URL environment variables.
-- **Tests Passing:** 64 / 64
+- **Auth API Origin:** Browser auth uses the current origin; Vercel production/preview URLs are detected without URL environment variables.
+- **Tests Passing:** 31 / 31
 - **TypeScript Errors:** 0
 - **Production Build:** Success (`cross-env SKIP_ENV_VALIDATION=1 next build`)
 - **M4-F01:** Dynamic filters for storage, RAM, color, battery health, PTA/CPID, warranty, inspection, verified sellers, and dealers; database query paths implemented and preview behavior covered by tests.

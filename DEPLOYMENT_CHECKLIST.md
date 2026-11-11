@@ -64,7 +64,6 @@ variables are required. `APP_URL` and `BETTER_AUTH_URL` are optional for non-Ver
 deployments.
 
 #### Required (Client-Side)
-
 - [ ] `NEXT_PUBLIC_APP_NAME` - Application name
 
 #### Optional (Feature-Specific)
