@@ -37,6 +37,7 @@ export const env = createEnv({
       ? z.string().min(1).default("local-demo-secret-change-before-deploy-000000000000")
       : z.string().min(1, "BETTER_AUTH_SECRET is required"),
     BETTER_AUTH_URL: z.url().optional(),
+    APP_URL: z.url().optional(),
     // DEV-ONLY escape hatch: set to "true" to skip the email-verification gate when no
     // email provider is configured. Ignored in production (see lib/auth.ts).
     AUTH_SKIP_EMAIL_VERIFICATION: z.string().optional(),
@@ -65,7 +66,6 @@ export const env = createEnv({
   },
 
   client: {
-    NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
     NEXT_PUBLIC_APP_NAME: z.string().min(1).default("GenTech"),
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().min(1).optional(),
 
@@ -82,7 +82,6 @@ export const env = createEnv({
    */
   experimental__runtimeEnv: {
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
     NEXT_PUBLIC_GA4_ID: process.env.NEXT_PUBLIC_GA4_ID,
