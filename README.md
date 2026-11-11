@@ -79,9 +79,10 @@ pnpm db:migrate      # creates tables in Neon + generates the client
 
 ## Demo accounts
 
-For a protected demo database only, set `DEMO_MODE="true"` and
-`DEMO_SEED_USERS="true"`, then run `pnpm db:seed`. The seed creates or resets these
-Better Auth-compatible sign-in accounts:
+For a protected Vercel Preview/staging database, set `DEMO_SEED_USERS="true"` in
+the Preview environment. The deployment seed step creates or resets these Better
+Auth-compatible sign-in accounts; `DEMO_MODE` can remain `false`. The seed marks
+these accounts as email-verified, so no email-verification bypass is needed:
 
 | Panel     | Email                         | Password              |
 | --------- | ----------------------------- | --------------------- |
@@ -89,10 +90,11 @@ Better Auth-compatible sign-in accounts:
 | Inspector | `inspector@demo.gentech.test` | `DemoInspector-2026!` |
 | User      | `user@demo.gentech.test`      | `DemoUser-2026!`      |
 
-The admin account has full admin access. Do not seed these accounts on an unprotected
-public deployment; anyone with this list could sign in as admin. Keep
-`DEMO_SEED_USERS="false"` by default, and use Vercel Deployment Protection or another
-access control if the demo must be hosted publicly.
+The admin account has full admin access. Keep `DEMO_SEED_USERS="false"` in Vercel
+Production: these documented credentials must only be seeded into a protected Preview
+database, because anyone with this list could sign in as admin. The Preview deployment
+must use its own staging `DATABASE_URL` and `DIRECT_URL`; setting the flag alone does
+not create or migrate a database.
 
 ## 4. Run
 
