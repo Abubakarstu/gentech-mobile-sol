@@ -79,10 +79,12 @@ pnpm db:migrate      # creates tables in Neon + generates the client
 
 ## Demo accounts
 
-For a protected Vercel Preview/staging database, set `DEMO_SEED_USERS="true"` in
-the Preview environment. The deployment seed step creates or resets these Better
-Auth-compatible sign-in accounts; `DEMO_MODE` can remain `false`. The seed marks
-these accounts as email-verified, so no email-verification bypass is needed:
+For a protected Vercel Preview/staging deployment, set `DEMO_SEED_USERS="true"`
+for the Preview environment and use a separate staging database. The deployment seed
+step creates or resets these Better Auth-compatible accounts; `DEMO_MODE` can remain
+`false`. Accounts are marked email-verified, so no verification bypass is needed.
+The seed refuses to run with this flag in Vercel Production or any other production
+environment:
 
 | Panel     | Email                         | Password              |
 | --------- | ----------------------------- | --------------------- |
