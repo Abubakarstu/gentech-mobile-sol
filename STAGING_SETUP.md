@@ -231,11 +231,12 @@ DIRECT_URL="postgresql://user:password@host:port/database"
 
 # Authentication
 BETTER_AUTH_SECRET="your-staging-secret-min-32-characters"
-BETTER_AUTH_URL="https://staging.gentech.example.com"
 AUTH_SKIP_EMAIL_VERIFICATION="false"
 
+# Vercel Preview automatically provides the staging origin; URL variables are not needed.
+# For a non-Vercel staging deployment, optionally set APP_URL and BETTER_AUTH_URL.
+
 # Application
-NEXT_PUBLIC_APP_URL="https://staging.gentech.example.com"
 NEXT_PUBLIC_APP_NAME="GenTech Staging"
 NODE_ENV="production"
 

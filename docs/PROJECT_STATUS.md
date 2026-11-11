@@ -1,6 +1,6 @@
 # GenTech Marketplace — Project Status Tracker
 
-Last Updated: 2026-11-05
+Last Updated: 2026-11-11
 
 ## Overall Status
 - **Baseline Technical Quality:** Verified (31/31 unit & integration tests passing, TypeScript 0 errors, Next.js production build clean).
@@ -32,6 +32,7 @@ Last Updated: 2026-11-05
 ---
 
 ## Technical Health Metrics
+- **Auth API Origin:** Browser auth uses the current origin; Vercel production/preview URLs are detected without URL environment variables.
 - **Tests Passing:** 31 / 31
 - **TypeScript Errors:** 0
 - **Production Build:** Success (`cross-env SKIP_ENV_VALIDATION=1 next build`)
