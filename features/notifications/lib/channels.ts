@@ -1,6 +1,5 @@
 import "server-only";
 
-import { APP_URL } from "@/lib/app-url";
 import { APP } from "@/lib/constants";
 import { APP_URL } from "@/lib/app-url";
 import type { NotificationType } from "@/lib/constants";
