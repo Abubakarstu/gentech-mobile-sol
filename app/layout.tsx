@@ -4,7 +4,6 @@ import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsScripts } from "@/features/analytics/components/analytics-scripts";
 import { PageViewTracker } from "@/features/analytics/components/page-view-tracker";
-import { APP_URL } from "@/lib/app-url";
 import { APP } from "@/lib/constants";
 import { APP_URL } from "@/lib/app-url";
 import "./globals.css";
