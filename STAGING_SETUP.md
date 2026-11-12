@@ -67,15 +67,13 @@ Navigate to the project directory and run:
 # Generate Prisma client
 pnpm db:generate
 
-# Apply migrations to staging database
-prisma migrate deploy
+# Apply committed migrations to the staging database
+pnpm db:deploy
 ```
 
-Or use the project script:
-
-```bash
-pnpm db:migrate
-```
+Use `pnpm db:migrate` only when creating a new migration during development. Vercel
+builds seed catalog data automatically, so configure the intended staging database
+connection before building. Migrations must be run separately before deployment.
 
 **Expected output:**
 ```

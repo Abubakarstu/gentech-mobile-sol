@@ -13,7 +13,7 @@ See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the layering and conven
 
 ## Prerequisites
 
-- **Node.js** ≥ 20.11 (24.x recommended)
+- **Node.js** ≥ 20.19 (22.x or newer recommended)
 - **pnpm** ≥ 10 — `npm install -g pnpm`
 - A **Neon** PostgreSQL database (free tier is fine)
 
@@ -74,16 +74,21 @@ For production OAuth, also register `https://gentech-mauve.vercel.app/api/auth/c
 ## 3. Create the database schema
 
 ```bash
-pnpm db:migrate      # creates tables in Neon + generates the client
+pnpm db:migrate      # development database: creates tables + generates the client
 ```
+
+For staging or production, apply committed migrations explicitly with
+`pnpm db:deploy` before deploying the application. Builds seed catalog data in every
+environment, but do not run migrations; configure the environment's intended database
+connection before building.
 
 ## Demo accounts
 
-For a protected Vercel Preview/staging deployment, set `DEMO_SEED_USERS="true"`
-for the Preview environment and use a separate staging database. The deployment seed
-step creates or resets these Better Auth-compatible accounts; `DEMO_MODE` can remain
-`false`. Accounts are marked email-verified, so no verification bypass is needed.
-The seed refuses to run with this flag in Vercel Production or any other production
+For a protected Vercel Preview/staging environment, use a separate staging database.
+To create these Better Auth-compatible accounts, set `DEMO_SEED_USERS="true"` and
+`DEMO_MODE="true"` in the Preview environment; the build seed step creates or resets
+them. Accounts are marked email-verified, so no verification bypass is needed. The
+seed refuses to run with this flag in Vercel Production or any other production
 environment:
 
 | Panel     | Email                         | Password              |
@@ -94,9 +99,9 @@ environment:
 
 The admin account has full admin access. Keep `DEMO_SEED_USERS="false"` in Vercel
 Production: these documented credentials must only be seeded into a protected Preview
-database, because anyone with this list could sign in as admin. The Preview deployment
-must use its own staging `DATABASE_URL` and `DIRECT_URL`; setting the flag alone does
-not create or migrate a database.
+database, because anyone with this list could sign in as admin. Use the Preview
+database's `DATABASE_URL` and `DIRECT_URL`; setting the flag alone does not create,
+migrate, or seed a database.
 
 ## 4. Run
 
