@@ -82,7 +82,8 @@ deployments.
 - [ ] Production database created (Neon PostgreSQL recommended)
 - [ ] `DATABASE_URL` configured with pooled connection
 - [ ] `DIRECT_URL` configured with direct connection
-- [ ] Run migrations: `pnpm db:migrate` (or `prisma migrate deploy` for production)
+- [ ] Run committed migrations as a separate, controlled step: `pnpm db:deploy`
+- [ ] Confirm the environment has the intended database connection; builds seed catalog data
 - [ ] Verify all migrations applied successfully
 - [ ] Check for schema errors or missing relations
 - [ ] Create admin user: Set `role = 'ADMIN'` in `user` table
@@ -101,10 +102,11 @@ deployments.
 #### For Vercel Deployment
 
 - [ ] Add environment variables in Vercel dashboard
-- [ ] Set build command: `pnpm build` (uses cross-env SKIP_ENV_VALIDATION=1)
+- [ ] Set build command: `pnpm build` (seeds catalog data, but does not migrate)
+- [ ] Run `pnpm db:deploy` separately before deployment; do not migrate in the build command
 - [ ] Set output directory: `.next`
 - [ ] Install command: `pnpm install`
-- [ ] Node version: 20.11+ (22.x recommended)
+- [ ] Node version: 20.19+ (22.x or newer recommended; required by Prisma 7)
 - [ ] Framework preset: Next.js
 
 #### For Cloudflare Workers Deployment

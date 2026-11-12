@@ -5,13 +5,13 @@
   "description": "GenTech — a production-grade, mobile-first marketplace platform (first vertical: mobile phones, Pakistan).",
   "packageManager": "pnpm@11.8.0",
   "engines": {
-    "node": ">=20.11.0",
+    "node": ">=20.19.0",
     "pnpm": ">=10"
   },
   "scripts": {
-    "vercel-build": "pnpm db:deploy && pnpm db:seed && cross-env SKIP_ENV_VALIDATION=1 next build",
+    "vercel-build": "pnpm db:seed && cross-env SKIP_ENV_VALIDATION=1 next build",
     "dev": "next dev --turbopack",
-    "build": "pnpm db:migrate && pnpm db:seed && cross-env SKIP_ENV_VALIDATION=1 next build",
+    "build": "pnpm db:seed && cross-env SKIP_ENV_VALIDATION=1 next build",
     "start": "next start",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
