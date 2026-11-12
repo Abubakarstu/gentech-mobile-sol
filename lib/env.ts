@@ -52,6 +52,18 @@ export const env = createEnv({
     PAYFAST_SECURED_KEY: z.string().min(1).optional(),
     PAYFAST_API_BASE: z.url().optional(),
 
+    // --- Vision LLM for "Sell Your Phone" AI grading ---
+    // Optional: when unset, grading falls back to a deterministic DEV grader so the
+    // whole quote flow is testable without an API key (mirrors the other providers).
+    ANTHROPIC_API_KEY: z.string().min(1).optional(),
+    /** Overridable so we can bump to a newer vision-capable model without code changes. */
+    ANTHROPIC_VISION_MODEL: z.string().min(1).optional(),
+
+    // --- Scheduled jobs ---
+    // Shared secret guarding internal cron endpoints (e.g. expiring stale quotes).
+    // A request must send `Authorization: Bearer <CRON_SECRET>`.
+    CRON_SECRET: z.string().min(1).optional(),
+
     // --- Twilio (phone OTP over WhatsApp/SMS) ---
     // Optional: when unset, phone OTP falls back to a DEV provider that logs the
     // code to the server console instead of sending it, so the flow is testable

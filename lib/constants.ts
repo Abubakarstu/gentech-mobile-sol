@@ -53,9 +53,12 @@ export const ROUTES = {
   messages: "/dashboard/messages",
   notifications: "/dashboard/notifications",
   inspections: "/dashboard/inspections",
+  quotes: "/dashboard/quotes",
   account: "/account",
   // Inspection service (public)
   inspectionService: "/inspection",
+  // Sell your phone — instant quote (public)
+  sellPhone: "/sell-phone",
   // Inspector workspace
   inspector: "/inspector",
   // Admin
@@ -65,6 +68,7 @@ export const ROUTES = {
   adminReports: "/admin/reports",
   adminCategories: "/admin/categories",
   adminInspections: "/admin/inspections",
+  adminQuotes: "/admin/quotes",
 } as const;
 
 /** Routes a signed-out user may not visit (redirected to sign-in). */
@@ -318,3 +322,92 @@ export const INSPECTION_CHECKLIST: ReadonlyArray<{ category: string; items: read
   { category: "Biometrics & Sensors", items: ["Face ID / fingerprint", "Proximity sensor", "Gyroscope", "Speakers & mics"] },
   { category: "Software & Identity", items: ["IMEI check", "PTA approval", "iCloud / account lock", "OS version"] },
 ] as const;
+
+// ---------------------------------------------------------------------------
+// Sell Your Phone — instant quote. Kept in sync with the Prisma quote enums.
+// ---------------------------------------------------------------------------
+
+/** PTA status of a device — Prisma `PtaStatus` enum. English + Urdu labels. */
+export const PTA_STATUSES = {
+  PTA: "PTA",
+  NON_PTA: "NON_PTA",
+  PATCHED: "PATCHED",
+  JV: "JV",
+} as const;
+
+export type PtaStatus = (typeof PTA_STATUSES)[keyof typeof PTA_STATUSES];
+
+export const PTA_STATUS_LABELS: Record<PtaStatus, string> = {
+  PTA: "PTA Approved",
+  NON_PTA: "Non-PTA",
+  PATCHED: "Patched",
+  JV: "JV (Factory Unlocked)",
+};
+
+/** Buy-back quote lifecycle — Prisma `QuoteStatus` enum. */
+export const QUOTE_STATUSES = {
+  ACTIVE: "ACTIVE",
+  EXPIRED: "EXPIRED",
+  ACCEPTED: "ACCEPTED",
+  INSPECTED: "INSPECTED",
+  PAID: "PAID",
+} as const;
+
+export type QuoteStatus = (typeof QUOTE_STATUSES)[keyof typeof QUOTE_STATUSES];
+
+export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
+  ACTIVE: "Active",
+  EXPIRED: "Expired",
+  ACCEPTED: "Accepted",
+  INSPECTED: "Inspected",
+  PAID: "Paid",
+};
+
+/** AI letter grades a device can receive. */
+export const QUOTE_GRADES = {
+  A: "A",
+  B: "B",
+  C: "C",
+} as const;
+
+export type QuoteGrade = (typeof QUOTE_GRADES)[keyof typeof QUOTE_GRADES];
+
+/** Physical-inspection outcome — Prisma `QuoteInspectionResult` enum. */
+export const QUOTE_INSPECTION_RESULTS = {
+  MATCH: "MATCH",
+  MISMATCH: "MISMATCH",
+} as const;
+
+export type QuoteInspectionResult =
+  (typeof QUOTE_INSPECTION_RESULTS)[keyof typeof QUOTE_INSPECTION_RESULTS];
+
+/**
+ * Pricing policy for quotes. The grade multipliers are seeded into the
+ * admin-editable `QuoteSetting` table; these are the fallback defaults used when
+ * a setting row is missing. Range + rounding are fixed product rules.
+ */
+export const QUOTE_PRICING = {
+  /** Default grade multipliers (admin can override via QuoteSetting). */
+  gradeMultipliers: { A: 1.0, B: 0.88, C: 0.75 } as Record<QuoteGrade, number>,
+  /** price_min = price × (1 − 0.03). */
+  rangeMinPct: 0.03,
+  /** price_max = price × (1 + 0.02). */
+  rangeMaxPct: 0.02,
+  /** Round every displayed figure to the nearest Rs. */
+  roundTo: 500,
+  /** Quote is honoured for this many hours from creation. */
+  validityHours: 72,
+  /** iPhones must report battery health; below this a deduction applies. */
+  batteryHealthThreshold: 85,
+  /** Grade is lowered one step when the AI reports this many+ mismatches. */
+  mismatchGradeDropThreshold: 1,
+  /** Below this AI confidence we ask the seller to retake before pricing. */
+  minConfidence: 0.6,
+} as const;
+
+/** QuoteSetting keys for the admin-editable grade multipliers. */
+export const QUOTE_SETTING_KEYS = {
+  gradeMultiplierA: "grade_multiplier_a",
+  gradeMultiplierB: "grade_multiplier_b",
+  gradeMultiplierC: "grade_multiplier_c",
+} as const;

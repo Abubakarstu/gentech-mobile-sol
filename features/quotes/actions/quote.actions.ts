@@ -1,0 +1,92 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+
+import { ROUTES } from "@/lib/constants";
+import { getCurrentUser } from "@/lib/session";
+import {
+  acceptQuoteSchema,
+  createQuoteSchema,
+  type AcceptQuoteInput,
+  type CreateQuoteInput,
+} from "@/features/quotes/schemas/quote";
+import { acceptMyQuote, createQuote, requote } from "@/features/quotes/services/quote.service";
+
+const SIGN_IN_REQUIRED = "Sign in to get an instant quote.";
+const GENERIC_ERROR = "Something went wrong. Please try again.";
+
+export type CreateQuoteActionResult =
+  | { ok: true; outcome: "quote"; id: string }
+  | { ok: true; outcome: "retake"; retakeSlots: number[]; reason: string }
+  | { ok: false; error: string };
+
+/** Submit answers + photos → AI grade → price → a saved quote (or a retake ask). */
+export async function createQuoteAction(
+  input: CreateQuoteInput,
+): Promise<CreateQuoteActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
+
+  const parsed = createQuoteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Please complete every question and all five photos." };
+  }
+
+  try {
+    const result = await createQuote(parsed.data, user.id);
+    if (result.kind === "retake") {
+      return { ok: true, outcome: "retake", retakeSlots: result.retakeSlots, reason: result.reason };
+    }
+    revalidatePath(ROUTES.quotes);
+    return { ok: true, outcome: "quote", id: result.quote.id };
+  } catch (error) {
+    console.error("[quotes] create failed:", error);
+    return { ok: false, error: error instanceof Error ? error.message : GENERIC_ERROR };
+  }
+}
+
+/** Accept an active quote with a pickup address + time slot (Step 6). */
+export async function acceptQuoteAction(
+  input: AcceptQuoteInput,
+): Promise<{ ok: boolean; error?: string }> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
+
+  const parsed = acceptQuoteSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Enter a full pickup address and choose a time slot." };
+  }
+
+  try {
+    const ok = await acceptMyQuote(parsed.data, user.id);
+    if (!ok) return { ok: false, error: "This quote can no longer be accepted." };
+    revalidatePath(ROUTES.quotes);
+    revalidatePath(`${ROUTES.sellPhone}/${parsed.data.id}`);
+    return { ok: true };
+  } catch (error) {
+    console.error("[quotes] accept failed:", error);
+    return { ok: false, error: GENERIC_ERROR };
+  }
+}
+
+/** Re-quote an expired quote at today's prices, reusing its answers + photos (Step 7). */
+export async function requoteAction(input: {
+  id: string;
+}): Promise<CreateQuoteActionResult> {
+  const user = await getCurrentUser();
+  if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
+  if (!input?.id) return { ok: false, error: GENERIC_ERROR };
+
+  try {
+    const result = await requote(input.id, user.id);
+    if (!result) return { ok: false, error: "Original quote not found." };
+    if (result.kind === "retake") {
+      return { ok: true, outcome: "retake", retakeSlots: result.retakeSlots, reason: result.reason };
+    }
+    revalidatePath(ROUTES.quotes);
+    return { ok: true, outcome: "quote", id: result.quote.id };
+  } catch (error) {
+    console.error("[quotes] requote failed:", error);
+    return { ok: false, error: error instanceof Error ? error.message : GENERIC_ERROR };
+  }
+}

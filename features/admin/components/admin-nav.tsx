@@ -2,7 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderTree, Flag, LayoutDashboard, Package, ShieldCheck, Users } from "lucide-react";
+import {
+  FolderTree,
+  Flag,
+  LayoutDashboard,
+  Package,
+  ShieldCheck,
+  Smartphone,
+  Users,
+} from "lucide-react";
 
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -14,6 +22,7 @@ const LINKS = [
   { href: ROUTES.adminReports, label: "Reports", icon: Flag, exact: false },
   { href: ROUTES.adminCategories, label: "Categories", icon: FolderTree, exact: false },
   { href: ROUTES.adminInspections, label: "Inspections", icon: ShieldCheck, exact: false },
+  { href: ROUTES.adminQuotes, label: "Quotes", icon: Smartphone, exact: false },
 ];
 
 export function AdminNav() {

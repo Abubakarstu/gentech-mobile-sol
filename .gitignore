@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# dev-only local uploads (used when Cloudinary isn't configured)
+/public/uploads
+
 # debug
 npm-debug.log*
 yarn-debug.log*

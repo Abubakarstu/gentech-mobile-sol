@@ -230,6 +230,65 @@ const SAMPLE_REPORTS: Array<{
   },
 ];
 
+/**
+ * Sell-Your-Phone price book. Prices are the grade-A PTA reference (PKR); other
+ * PTA statuses are derived by `PTA_FACTORS`. Covers 10 popular Pakistani models.
+ */
+const PHONE_MODELS: Array<{
+  brand: string;
+  model: string;
+  /** storage → grade-A PTA base price (PKR) */
+  storages: Record<string, number>;
+}> = [
+  { brand: "Apple", model: "iPhone 11", storages: { "64GB": 85000, "128GB": 95000 } },
+  { brand: "Apple", model: "iPhone 12", storages: { "64GB": 115000, "128GB": 125000 } },
+  { brand: "Apple", model: "iPhone 13", storages: { "128GB": 165000, "256GB": 185000 } },
+  { brand: "Apple", model: "iPhone 14", storages: { "128GB": 215000, "256GB": 240000 } },
+  { brand: "Apple", model: "iPhone 15", storages: { "128GB": 255000, "256GB": 285000 } },
+  { brand: "Samsung", model: "Galaxy A54", storages: { "128GB": 72000, "256GB": 80000 } },
+  { brand: "Samsung", model: "Galaxy S23", storages: { "256GB": 165000 } },
+  { brand: "Infinix", model: "Note 40", storages: { "256GB": 42000 } },
+  { brand: "Tecno", model: "Camon 30", storages: { "256GB": 46000 } },
+  { brand: "Xiaomi", model: "Redmi Note 13", storages: { "128GB": 38000, "256GB": 44000 } },
+];
+
+/** Base-price multiplier per PTA status (PTA is the reference). */
+const PTA_FACTORS: Record<string, number> = { PTA: 1, NON_PTA: 0.82, PATCHED: 0.78, JV: 0.9 };
+/** Patched/JV only make sense for iPhones in this market. */
+const APPLE_ONLY_STATUSES = new Set(["PATCHED", "JV"]);
+
+/** Admin-editable deductions. `key` must match features/quotes/lib/pricing.ts. */
+const DEDUCTION_RULES: Array<{
+  key: string;
+  label: string;
+  amountPkr?: number;
+  percent?: number;
+  position: number;
+}> = [
+  { key: "box_missing", label: "Box not available", amountPkr: 1500, position: 0 },
+  { key: "charger_missing", label: "Charger not available", amountPkr: 1000, position: 1 },
+  { key: "part_replaced_screen", label: "Screen replaced", percent: 12, position: 2 },
+  { key: "part_replaced_back_panel", label: "Back panel replaced", amountPkr: 2500, position: 3 },
+  { key: "part_replaced_battery", label: "Battery replaced", amountPkr: 3000, position: 4 },
+  { key: "biometrics_faulty", label: "Face ID / fingerprint not working", percent: 10, position: 5 },
+  { key: "display_lines", label: "Display has lines", percent: 15, position: 6 },
+  { key: "display_dots", label: "Display has dots / dead pixels", amountPkr: 2000, position: 7 },
+  { key: "display_shade", label: "Display shadow / discoloration", amountPkr: 1500, position: 8 },
+  { key: "camera_issue", label: "Camera issue", percent: 8, position: 9 },
+  { key: "water_damage", label: "Water damage", percent: 20, position: 10 },
+  { key: "battery_health_low", label: "Battery health below 85%", amountPkr: 4000, position: 11 },
+];
+
+const GRADE_MULTIPLIERS: Array<{ key: string; value: number; label: string }> = [
+  { key: "grade_multiplier_a", value: 1.0, label: "Grade A multiplier" },
+  { key: "grade_multiplier_b", value: 0.88, label: "Grade B multiplier" },
+  { key: "grade_multiplier_c", value: 0.75, label: "Grade C multiplier" },
+];
+
+function roundTo500(n: number): number {
+  return Math.round(n / 500) * 500;
+}
+
 /** Mirrors features/inspections/lib/grade.ts (inlined — seed can't import server-only). */
 function computeOverallScore(items: Array<{ result: ItemResult }>): number {
   const weights = items
@@ -472,15 +531,76 @@ async function main() {
       });
     }
 
-    const [categoryCount, brandCount, planCount, listingCount] = await Promise.all([
-      prisma.category.count(),
-      prisma.brand.count(),
-      prisma.inspectionPlan.count(),
-      prisma.listing.count(),
-    ]);
+    // Sell-Your-Phone price book (phone_model), one row per PTA status.
+    for (const entry of PHONE_MODELS) {
+      for (const [storage, ptaBase] of Object.entries(entry.storages)) {
+        for (const [ptaStatus, factor] of Object.entries(PTA_FACTORS)) {
+          if (APPLE_ONLY_STATUSES.has(ptaStatus) && entry.brand !== "Apple") continue;
+          const basePricePkr = roundTo500(ptaBase * factor);
+          await prisma.phoneModel.upsert({
+            where: {
+              brand_model_storage_ptaStatus: {
+                brand: entry.brand,
+                model: entry.model,
+                storage,
+                ptaStatus: ptaStatus as never,
+              },
+            },
+            update: { basePricePkr, isActive: true },
+            create: {
+              brand: entry.brand,
+              model: entry.model,
+              storage,
+              ptaStatus: ptaStatus as never,
+              basePricePkr,
+              isActive: true,
+            },
+          });
+        }
+      }
+    }
+
+    // Deduction rules (admin-editable).
+    for (const rule of DEDUCTION_RULES) {
+      await prisma.deductionRule.upsert({
+        where: { key: rule.key },
+        update: {
+          label: rule.label,
+          amountPkr: rule.amountPkr ?? null,
+          percent: rule.percent ?? null,
+          position: rule.position,
+        },
+        create: {
+          key: rule.key,
+          label: rule.label,
+          amountPkr: rule.amountPkr ?? null,
+          percent: rule.percent ?? null,
+          position: rule.position,
+        },
+      });
+    }
+
+    // Grade multipliers (admin-editable QuoteSetting).
+    for (const gm of GRADE_MULTIPLIERS) {
+      await prisma.quoteSetting.upsert({
+        where: { key: gm.key },
+        update: { value: gm.value, label: gm.label },
+        create: { key: gm.key, value: gm.value, label: gm.label },
+      });
+    }
+
+    const [categoryCount, brandCount, planCount, listingCount, phoneModelCount, deductionCount] =
+      await Promise.all([
+        prisma.category.count(),
+        prisma.brand.count(),
+        prisma.inspectionPlan.count(),
+        prisma.listing.count(),
+        prisma.phoneModel.count(),
+        prisma.deductionRule.count(),
+      ]);
     const reportCount = await prisma.inspectionReport.count({ where: { isPublished: true } });
     console.info(
-      `✓ Seed complete — ${categoryCount} categories, ${brandCount} brands, ${planCount} inspection plans, ${listingCount} listings, ${reportCount} published reports.`,
+      `✓ Seed complete — ${categoryCount} categories, ${brandCount} brands, ${planCount} inspection plans, ${listingCount} listings, ${reportCount} published reports, ${phoneModelCount} phone-model prices, ${deductionCount} deduction rules.`,
     );
   } finally {
     await prisma.$disconnect();
