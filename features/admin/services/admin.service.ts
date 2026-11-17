@@ -8,8 +8,10 @@ import type {
   AdminUserRow,
   Paginated,
   PlatformStats,
+  RegionAnalytics,
 } from "@/features/admin/types";
 import {
+  getRegionAnalytics as loadRegionAnalytics,
   getPlatformStats,
   listCategories,
   listCategoryOptions,
@@ -42,6 +44,15 @@ export async function getStats(): Promise<PlatformStats> {
   } catch (error) {
     console.warn("[admin] stats unavailable.", error instanceof Error ? error.message : error);
     return EMPTY_STATS;
+  }
+}
+
+export async function getRegionAnalyticsData(): Promise<RegionAnalytics> {
+  try {
+    return await loadRegionAnalytics();
+  } catch (error) {
+    console.warn("[admin] region analytics unavailable.", error instanceof Error ? error.message : error);
+    return { regions: [], generatedAt: new Date().toISOString() };
   }
 }
 

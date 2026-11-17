@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isReadOnlyDemoEnabled } from "@/lib/demo-mode";
-import { isValidCountryCode } from "@/lib/countries";
+import { getAvailableLocales, getDefaultLocale, isValidCountryCode } from "@/lib/countries";
+import type { CountryCode } from "@/lib/countries/types";
 import { DEFAULT_COUNTRY } from "@/lib/constants";
 
 /**
@@ -41,35 +42,41 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Determine country from cookie or IP
-  const countryCookie = request.cookies.get("gentech_country")?.value?.toLowerCase() ?? "";
-  let country = "pk"; // default
+  // Saved manual preference wins; otherwise use the deployment platform's
+  // geolocation header (Vercel first, Cloudflare second). Never overwrite the
+  // saved preference with an inferred country.
+  const savedCountry = request.cookies.get("gentech_country")?.value?.trim().toUpperCase() ?? "";
+  let country: CountryCode = DEFAULT_COUNTRY;
 
-  if (countryCookie && isValidCountryCode(countryCookie.toUpperCase())) {
-    country = countryCookie.toLowerCase();
+  if (savedCountry && isValidCountryCode(savedCountry)) {
+    country = savedCountry;
   } else {
-    // Try Cloudflare header
-    const cfCountry = request.headers.get("cf-ipcountry")?.toLowerCase();
-    if (cfCountry && (cfCountry === "bh" || cfCountry === "pk")) {
-      country = cfCountry;
+    const geoCountry = (
+      request.headers.get("x-vercel-ip-country") ||
+      request.headers.get("cf-ipcountry") ||
+      ""
+    )
+      .trim()
+      .toUpperCase();
+    if (geoCountry && isValidCountryCode(geoCountry)) {
+      country = geoCountry;
     }
   }
 
-  // Determine locale from cookie or country default
+  // Determine locale from cookie or the detected country's default
   const localeCookie = request.cookies.get("gentech_locale")?.value?.toLowerCase() ?? "";
-  let locale = country === "bh" ? "ar" : "ur"; // default per country
+  let locale = getDefaultLocale(country);
 
   if (localeCookie && validLocales.includes(localeCookie)) {
     // Validate locale is available for this country
-    const availableLocales = country === "bh" ? ["ar", "en"] : ["ur", "en"];
-    if (availableLocales.includes(localeCookie)) {
+    if (getAvailableLocales(country).includes(localeCookie)) {
       locale = localeCookie;
     }
   }
 
   // Build redirect URL
   const newUrl = request.nextUrl.clone();
-  newUrl.pathname = `/${country}/${locale}${pathname === "/" ? "" : pathname}`;
+  newUrl.pathname = `/${country.toLowerCase()}/${locale}${pathname === "/" ? "" : pathname}`;
 
   const blockedDemoMutation =
     isReadOnlyDemoEnabled() && !["GET", "HEAD"].includes(request.method);

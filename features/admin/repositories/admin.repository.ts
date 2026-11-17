@@ -17,8 +17,12 @@ import type {
   AdminListingRow,
   AdminReportRow,
   AdminUserRow,
+  MarketRegion,
   Paginated,
   PlatformStats,
+  RegionAnalytics,
+  RegionLocationCount,
+  RegionMetric,
 } from "@/features/admin/types";
 
 const PAGE_SIZE = PAGINATION.defaultPageSize;
@@ -80,6 +84,113 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     totalModels,
     totalDealers,
   };
+}
+
+const REGION_CONFIG: ReadonlyArray<{
+  region: MarketRegion;
+  label: string;
+  flag: string;
+  currency: string;
+  countryCodes: readonly string[];
+}> = [
+  { region: "BAHRAIN", label: "Bahrain", flag: "🇧🇭", currency: "BHD", countryCodes: ["BH"] },
+  { region: "PAKISTAN", label: "Pakistan", flag: "🇵🇰", currency: "PKR", countryCodes: ["PK"] },
+];
+
+function toLocationCounts(
+  rows: Array<{ name: string | null; count: number }>,
+): RegionLocationCount[] {
+  return rows
+    .filter((row): row is { name: string; count: number } => Boolean(row.name))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5)
+    .map(({ name, count }) => ({ name, count }));
+}
+
+/**
+ * Region-scoped marketplace metrics. Each region keeps its own currency;
+ * BHD and PKR values are never converted or aggregated into one total.
+ */
+export async function getRegionAnalytics(): Promise<RegionAnalytics> {
+  const [
+    userGroups,
+    listingGroups,
+    activeListingGroups,
+    orderGroups,
+    paymentGroups,
+    cityGroups,
+    areaGroups,
+  ] = await Promise.all([
+    prisma.user.groupBy({
+      by: ["region"],
+      where: { deletedAt: null },
+      _count: { _all: true },
+    }),
+    prisma.listing.groupBy({
+      by: ["region"],
+      where: { deletedAt: null },
+      _count: { _all: true },
+    }),
+    prisma.listing.groupBy({
+      by: ["region"],
+      where: { deletedAt: null, status: LISTING_STATUSES.ACTIVE },
+      _count: { _all: true },
+    }),
+    prisma.order.groupBy({ by: ["region"], _count: { _all: true } }),
+    prisma.payment.groupBy({
+      by: ["country", "currency"],
+      where: { status: "SUCCEEDED" },
+      _count: { _all: true },
+      _sum: { amount: true },
+    }),
+    prisma.listing.groupBy({
+      by: ["region", "city"],
+      where: { deletedAt: null, city: { not: null } },
+      _count: { _all: true },
+    }),
+    prisma.listing.groupBy({
+      by: ["region", "area"],
+      where: { deletedAt: null, area: { not: null } },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const regions: RegionMetric[] = REGION_CONFIG.map((config) => {
+    const users = userGroups.find((g) => g.region === config.region)?._count._all ?? 0;
+    const listings = listingGroups.find((g) => g.region === config.region)?._count._all ?? 0;
+    const activeListings =
+      activeListingGroups.find((g) => g.region === config.region)?._count._all ?? 0;
+    const orders = orderGroups.find((g) => g.region === config.region)?._count._all ?? 0;
+
+    const payments = paymentGroups.filter(
+      (g) => config.countryCodes.includes(g.country.toUpperCase()) && g.currency === config.currency,
+    );
+
+    return {
+      region: config.region,
+      label: config.label,
+      flag: config.flag,
+      currency: config.currency,
+      users,
+      listings,
+      activeListings,
+      orders,
+      paidPayments: payments.reduce((sum, g) => sum + g._count._all, 0),
+      paymentVolume: payments.reduce((sum, g) => sum + Number(g._sum.amount ?? 0), 0),
+      topCities: toLocationCounts(
+        cityGroups
+          .filter((g) => g.region === config.region)
+          .map((g) => ({ name: g.city, count: g._count._all })),
+      ),
+      topAreas: toLocationCounts(
+        areaGroups
+          .filter((g) => g.region === config.region)
+          .map((g) => ({ name: g.area, count: g._count._all })),
+      ),
+    };
+  });
+
+  return { regions, generatedAt: new Date().toISOString() };
 }
 
 // --------------------------------------------------------------------------

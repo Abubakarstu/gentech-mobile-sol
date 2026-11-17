@@ -79,3 +79,34 @@ export interface Paginated<T> {
   pageSize: number;
   totalPages: number;
 }
+
+/** A marketplace country as used by region-scoped analytics. */
+export type MarketRegion = "BAHRAIN" | "PAKISTAN";
+
+/** One row of the region/city/area breakdown shown in the admin dashboard. */
+export interface RegionLocationCount {
+  name: string;
+  count: number;
+}
+
+/** Region-scoped marketplace metrics, using each region's own currency. */
+export interface RegionMetric {
+  region: MarketRegion;
+  label: string;
+  flag: string;
+  currency: string;
+  users: number;
+  listings: number;
+  activeListings: number;
+  orders: number;
+  paidPayments: number;
+  /** Gross completed payment amount in the region's own currency. Never cross-converted. */
+  paymentVolume: number;
+  topCities: RegionLocationCount[];
+  topAreas: RegionLocationCount[];
+}
+
+export interface RegionAnalytics {
+  regions: RegionMetric[];
+  generatedAt: string;
+}
