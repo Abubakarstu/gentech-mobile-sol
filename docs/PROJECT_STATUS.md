@@ -4,8 +4,8 @@ Last Updated: 2026-11-17
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (145/145 unit & integration tests passing, TypeScript 0 errors, Next.js production build clean).
-- **Active Phase:** Milestone 5 — Trust & Phone Intelligence. M5-F04 is verified; M3-F02 payment checkout implemented with server-verified payment gating; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
+- **Baseline Technical Quality:** Verified (206/206 unit & integration tests passing, TypeScript 0 errors, Next.js production build clean).
+- **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management. Country detection uses saved preference → Vercel/CF geo header → configured default, routing Bahrain visitors to Arabic/BHD. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 
 ---
 
@@ -36,9 +36,11 @@ Last Updated: 2026-11-17
 
 ## Technical Health Metrics
 - **Auth API Origin:** Browser auth uses the current origin; Vercel production/preview URLs are detected without URL environment variables.
-- **Tests Passing:** 145 / 145
+- **Tests Passing:** 206 / 206
 - **TypeScript Errors:** 0
 - **Production Build:** Success (`cross-env SKIP_ENV_VALIDATION=1 next build`)
+- **Region Analytics:** Admin dashboard and analytics page report Bahrain/Pakistan users, listings, orders, payments, and city/area breakdowns. BHD (3 dp) and PKR (0 dp) stay in their own currency — no cross-conversion. Admin listings region filter restored after a bad `main` merge dropped it.
+- **Merge Integrity:** A bad merge into `feature/phase7-country-payments` left `features/admin/components/location-manager.tsx` half-converted (duplicate handlers, undefined state, unclosed brace) which broke TypeScript, and dropped the admin listings region filter. Both restored. `origin/main` is at `52a47f2` and still does not contain the multi-country work (`26305c2`, `3c668b7`) — the feature branch must be merged and redeployed before `gentech-mauve.vercel.app` shows Arabic/BHD or region analytics.
 - **M4-F01:** Dynamic filters for storage, RAM, color, battery health, PTA/CPID, warranty, inspection, verified sellers, and dealers; database query paths implemented and preview behavior covered by tests.
 - **M4-F02:** Listing-scoped chat with text/image messages, polling updates, typing indicators, and read receipts; validated WhatsApp links use seller/dealer contact numbers and prefilled listing context.
 - **M4-F03:** Favorite toggles persist per user, dashboard favorites list is available, and enabled saved searches notify once per listing activation through in-app and email channels. Saved searches can pause or resume alerts.
