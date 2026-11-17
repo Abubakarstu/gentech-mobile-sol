@@ -168,12 +168,14 @@ export async function isLastAdmin(userId: string): Promise<boolean> {
 export async function listListings(params: {
   q?: string;
   status?: ListingStatus;
+  region?: "BAHRAIN" | "PAKISTAN" | "ALL";
   page: number;
 }): Promise<Paginated<AdminListingRow>> {
   const where: Prisma.ListingWhereInput = {
     deletedAt: null,
     ...(params.status ? { status: params.status } : {}),
     ...(params.q ? { title: { contains: params.q, mode: "insensitive" } } : {}),
+    ...(params.region && params.region !== "ALL" ? { region: params.region } : {}),
   };
   const skip = (params.page - 1) * PAGE_SIZE;
 
@@ -190,6 +192,7 @@ export async function listListings(params: {
         price: true,
         currency: true,
         status: true,
+        region: true,
         city: true,
         views: true,
         createdAt: true,
@@ -206,6 +209,7 @@ export async function listListings(params: {
     price: Number(l.price),
     currency: l.currency,
     status: l.status,
+    region: l.region,
     city: l.city ?? "—",
     views: l.views,
     sellerName: l.seller.name,

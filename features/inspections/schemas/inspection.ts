@@ -101,10 +101,26 @@ export const submitReportSchema = z.object({
   requestId: z.string().min(1),
   verdict: z.enum(VERDICT_VALUES),
   summary: z.string().trim().max(2000).optional(),
-  imei: z.string().trim().max(40).optional(),
+  imei: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .refine((value) => !value || /^\d{15}$/.test(value), "IMEI must be exactly 15 digits"),
   ptaApproved: z.boolean().optional(),
   batteryHealth: z.number().int().min(0).max(100).optional(),
-  items: z.array(reportItemSchema).min(1, "Add at least one checklist item"),
+  items: z
+    .array(reportItemSchema)
+    .min(1, "Add at least one checklist item")
+    .max(100, "Too many checklist items")
+    // Ungraded (N/A) lines are excluded from the score, so a report needs at
+    // least one real result. Otherwise every item could be skipped and an
+    // unearned grade recorded.
+    .refine(
+      (items) =>
+        items.some((item) => item.result !== INSPECTION_ITEM_RESULTS.NOT_APPLICABLE),
+      "Grade at least one checklist item",
+    ),
   photos: z.array(uploadedImageSchema).max(20).optional(),
 });
 

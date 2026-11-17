@@ -35,6 +35,8 @@ export const createListingPromotionSchema = z.object({
 export const createPromotionPaymentSchema = z.object({
   promotionId: z.string().min(1, "Promotion ID is required"),
   amount: z.number({ message: "Enter a valid amount" }).positive("Amount must be greater than 0"),
+  // NOTE: status and transactionId are NOT client-supplied; they come from provider verification.
+  // This prevents seller-submitted outcomes from being accepted (ADR-012).
   method: z.string().trim().min(1, "Payment method is required"),
   transactionId: z.string().trim().optional(),
 });

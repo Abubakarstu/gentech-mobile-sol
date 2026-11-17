@@ -19,6 +19,33 @@ export const APP = {
   defaultCurrency: "PKR",
 } as const;
 
+// ---------------------------------------------------------------------------
+// Country & Locale constants for multi-country localization.
+// ---------------------------------------------------------------------------
+
+/** Supported country codes. */
+export const COUNTRY_CODES = {
+  BAHRAIN: "BH",
+  PAKISTAN: "PK",
+} as const;
+
+export type CountryCode = (typeof COUNTRY_CODES)[keyof typeof COUNTRY_CODES];
+
+/** Supported locale codes. */
+export const LOCALES = {
+  ARABIC: "ar",
+  URDU: "ur",
+  ENGLISH: "en",
+} as const;
+
+export type LocaleCode = (typeof LOCALES)[keyof typeof LOCALES];
+
+/** Default country when no preference is set. */
+export const DEFAULT_COUNTRY: CountryCode = COUNTRY_CODES.PAKISTAN;
+
+/** Default locale when no preference is set. */
+export const DEFAULT_LOCALE: LocaleCode = LOCALES.ENGLISH;
+
 /**
  * User roles. A single account may hold buyer + seller capabilities; ADMIN is a
  * privileged superset. Kept in sync with the Prisma `Role` enum.

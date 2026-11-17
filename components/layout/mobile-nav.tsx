@@ -7,9 +7,11 @@ import { Menu, Plus, ShieldCheck, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { APP, ROUTES } from "@/lib/constants";
+import { useTranslations } from "next-intl";
 import type { CategoryItem } from "@/types/marketplace";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { CategoryIcon } from "@/features/marketplace/components/category-icon";
+import { CountryLocaleSelector } from "@/components/country-locale-selector";
 
 interface MobileNavProps {
   categories: CategoryItem[];
@@ -18,6 +20,7 @@ interface MobileNavProps {
 }
 
 export function MobileNav({ categories, isAuthenticated, isDemoSession = false }: MobileNavProps) {
+  const t = useTranslations("navigation");
   const [open, setOpen] = React.useState(false);
 
   // Lock body scroll while open.
@@ -72,14 +75,17 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
                   </span>
                   {APP.name}
                 </Link>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  aria-label="Close"
-                  onClick={() => setOpen(false)}
-                >
-                  <X className="size-5" />
-                </Button>
+                <div className="flex items-center gap-2">
+                  <CountryLocaleSelector />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Close"
+                    onClick={() => setOpen(false)}
+                  >
+                    <X className="size-5" />
+                  </Button>
+                </div>
               </div>
 
               <nav className="flex-1 overflow-y-auto p-4">
@@ -87,14 +93,14 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
                   href={ROUTES.marketplace}
                   className="hover:bg-accent block rounded-md px-3 py-2 text-sm font-medium"
                 >
-                  Browse all listings
+                  {t("marketplace")}
                 </Link>
                 <Link
                   href={ROUTES.inspectionService}
                   className="hover:bg-accent flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium"
                 >
                   <ShieldCheck className="text-muted-foreground size-4" />
-                  Phone Inspection
+                  {t("inspection")}
                 </Link>
 
                 <p className="text-muted-foreground mt-4 px-3 text-xs font-semibold uppercase">
@@ -122,23 +128,20 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
                 {!isDemoSession ? (
                   <Link href={ROUTES.sell} className={cn(buttonVariants(), "w-full")}>
                     <Plus className="size-4" />
-                    Post your ad
-                  </Link>
+                    {t("sell")}                  </Link>
                 ) : null}
                 {!isAuthenticated ? (
                   <Link
                     href={ROUTES.signIn}
                     className={cn(buttonVariants({ variant: "outline" }), "w-full")}
                   >
-                    Sign in
-                  </Link>
+                    {t("signIn")}                  </Link>
                 ) : (
                   <Link
                     href={ROUTES.dashboard}
                     className={cn(buttonVariants({ variant: "outline" }), "w-full")}
                   >
-                    Go to dashboard
-                  </Link>
+                    {t("dashboard")}                  </Link>
                 )}
               </div>
             </motion.aside>

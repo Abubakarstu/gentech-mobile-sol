@@ -206,7 +206,7 @@ export function MarketplaceFilters({
         </ul>
       </FilterGroup>
 
-      <FilterGroup title="Price (PKR)">
+      <FilterGroup title="Price">
         <PriceRangeFilter
           key={`${filters.minPrice ?? ""}-${filters.maxPrice ?? ""}`}
           min={filters.minPrice}

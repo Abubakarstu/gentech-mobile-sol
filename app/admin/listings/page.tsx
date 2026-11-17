@@ -45,6 +45,12 @@ function parseStatus(value: string | string[] | undefined): ListingStatus | unde
   return raw && raw in LISTING_STATUSES ? (raw as ListingStatus) : undefined;
 }
 
+function parseRegion(value: string | string[] | undefined): "BAHRAIN" | "PAKISTAN" | "ALL" | undefined {
+  const raw = firstParam(value);
+  if (raw === "BAHRAIN" || raw === "PAKISTAN" || raw === "ALL") return raw;
+  return undefined;
+}
+
 export default async function AdminListingsPage({
   searchParams,
 }: {
@@ -56,8 +62,9 @@ export default async function AdminListingsPage({
   const sp = await searchParams;
   const q = firstParam(sp.q);
   const status = parseStatus(sp.status);
+  const region = parseRegion(sp.region);
   const page = parsePage(sp.page);
-  const result = await getListings({ q, status, page });
+  const result = await getListings({ q, status, region, page });
 
   return (
     <div className="space-y-5">
@@ -107,6 +114,40 @@ export default async function AdminListingsPage({
                 )}
               >
                 {f.label}
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      <section
+        aria-label="Region filter"
+        className="rounded-xl border border-white/[0.08] bg-[#141519] p-3 sm:p-4"
+      >
+        <div className="mb-3 flex items-center justify-between gap-3">
+          <p className="text-xs font-medium text-slate-300">Filter by region</p>
+          <p className="text-[11px] text-slate-500">All regions shown by default</p>
+        </div>
+        <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          {["ALL", "BAHRAIN", "PAKISTAN"].map((r) => {
+            const href = r === "ALL"
+              ? `${ROUTES.adminListings}${status ? `?status=${status}` : ""}${q ? `${status ? "&" : "?"}q=${encodeURIComponent(q)}` : ""}`
+              : `${ROUTES.adminListings}?region=${r}${status ? `&status=${status}` : ""}${q ? `&q=${encodeURIComponent(q)}` : ""}`;
+            const active = (r === "ALL" && !region) || region === r;
+            const label = r === "ALL" ? "All Regions" : r === "BAHRAIN" ? "BH Bahrain" : "PK Pakistan";
+            return (
+              <Link
+                key={r}
+                href={href}
+                aria-current={active ? "page" : undefined}
+                className={cn(
+                  "inline-flex min-h-9 shrink-0 items-center rounded-lg border px-3 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-none",
+                  active
+                    ? "border-emerald-300/25 bg-emerald-300/10 text-emerald-200"
+                    : "border-white/[0.07] text-slate-400 hover:bg-white/[0.04] hover:text-slate-100",
+                )}
+              >
+                {label}
               </Link>
             );
           })}

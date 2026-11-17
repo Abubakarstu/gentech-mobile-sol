@@ -1,0 +1,208 @@
+{
+  "common": {
+    "appName": "GenTech",
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ ما",
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "search": "بحث",
+    "filter": "تصفية",
+    "sort": "ترتيب",
+    "next": "التالي",
+    "previous": "السابق",
+    "submit": "إرسال",
+    "close": "إغلاق",
+    "back": "رجوع",
+    "confirm": "تأكيد",
+    "yes": "نعم",
+    "no": "لا"
+  },
+  "navigation": {
+    "home": "الرئيسية",
+    "marketplace": "السوق",
+    "categories": "الفئات",
+    "sell": "بيع",
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "dashboard": "لوحة التحكم",
+    "myListings": "إعلاناتي",
+    "favorites": "المفضلة",
+    "messages": "الرسائل",
+    "notifications": "الإشعارات",
+    "account": "الحساب",
+    "admin": "الإدارة",
+    "logout": "تسجيل الخروج",
+    "inspection": "فحص الهاتف"
+  },
+  "homepage": {
+    "heroTitle": "اشترِ وبع الهواتف المحمولة",
+    "heroSubtitle": "سوق سريع وآمن وبسيط للهواتف المحمولة",
+    "featuredListings": "إعلانات مميزة",
+    "recentListings": "إعلانات حديثة",
+    "browseByCategory": "تصفح حسب الفئة",
+    "browseByBrand": "تصفح حسب العلامة",
+    "viewAll": "عرض الكل"
+  },
+  "listings": {
+    "title": "الإعلانات",
+    "noListings": "لم يتم العثور على إعلانات",
+    "price": "السعر",
+    "condition": "الحالة",
+    "city": "المدينة",
+    "brand": "العلامة",
+    "category": "الفئة",
+    "postedBy": "نشر بواسطة",
+    "views": "المشاهدات",
+    "negotiable": "قابل للتفاوض",
+    "featured": "مميز",
+    "sold": "مباع",
+    "new": "جديد",
+    "used": "مستعمل",
+    "refurbished": "مجدد"
+  },
+  "search": {
+    "placeholder": "ابحث عن الهواتف المحمولة...",
+    "noResults": "لم يتم العثور على نتائج",
+    "resultsCount": "تم العثور على {count} نتيجة",
+    "filters": "الفلاتر",
+    "clearFilters": "مسح الفلاتر"
+  },
+  "filters": {
+    "priceRange": "نطاق السعر",
+    "minPrice": "الحد الأدنى للسعر",
+    "maxPrice": "الحد الأقصى للسعر",
+    "condition": "الحالة",
+    "brand": "العلامة",
+    "category": "الفئة",
+    "city": "المدينة",
+    "storage": "التخزين",
+    "ram": "الذاكرة",
+    "color": "اللون",
+    "ptaStatus": "حالة PTA",
+    "batteryHealth": "صحة البطارية",
+    "warranty": "الضمان"
+  },
+  "productDetails": {
+    "specifications": "المواصفات",
+    "description": "الوصف",
+    "sellerInfo": "معلومات البائع",
+    "contactSeller": "التواصل مع البائع",
+    "reportListing": "الإبلاغ عن الإعلان",
+    "similarListings": "إعلانات مشابهة",
+    "memberSince": "عضو منذ",
+    "verified": "موثق"
+  },
+  "authentication": {
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "forgotPassword": "نسيت كلمة المرور؟",
+    "resetPassword": "إعادة تعيين كلمة المرور",
+    "fullName": "الاسم الكامل",
+    "createAccount": "إنشاء حساب",
+    "alreadyHaveAccount": "هل لديك حساب بالفعل؟",
+    "dontHaveAccount": "ليس لديك حساب؟",
+    "verifyEmail": "التحقق من البريد الإلكتروني",
+    "emailVerificationSent": "تم إرسال بريد التحقق",
+    "invalidCredentials": "بريد إلكتروني أو كلمة مرور غير صحيحة",
+    "passwordMismatch": "كلمات المرور غير متطابقة"
+  },
+  "profile": {
+    "myProfile": "ملفي الشخصي",
+    "editProfile": "تعديل الملف الشخصي",
+    "phone": "الهاتف",
+    "city": "المدينة",
+    "address": "العنوان",
+    "bio": "نبذة",
+    "saveChanges": "حفظ التغييرات",
+    "profileUpdated": "تم تحديث الملف الشخصي بنجاح"
+  },
+  "dashboard": {
+    "welcome": "مرحباً",
+    "overview": "نظرة عامة",
+    "myListings": "إعلاناتي",
+    "favorites": "المفضلة",
+    "savedSearches": "عمليات البحث المحفوظة",
+    "messages": "الرسائل",
+    "notifications": "الإشعارات",
+    "inspections": "الفحوصات",
+    "account": "الحساب"
+  },
+  "cart": {
+    "cart": "السلة",
+    "emptyCart": "سلتك فارغة",
+    "total": "المجموع",
+    "checkout": "الدفع",
+    "remove": "إزالة",
+    "quantity": "الكمية"
+  },
+  "checkout": {
+    "checkout": "الدفع",
+    "shippingAddress": "عنوان الشحن",
+    "paymentMethod": "طريقة الدفع",
+    "orderSummary": "ملخص الطلب",
+    "placeOrder": "تأكيد الطلب",
+    "processing": "جاري المعالجة...",
+    "success": "تم تأكيد الطلب بنجاح"
+  },
+  "payment": {
+    "paymentMethods": "طرق الدفع",
+    "selectPayment": "اختر طريقة الدفع",
+    "cardNumber": "رقم البطاقة",
+    "expiryDate": "تاريخ الانتهاء",
+    "cvv": "CVV",
+    "payNow": "ادفع الآن",
+    "paymentFailed": "فشل الدفع",
+    "paymentSuccess": "تم الدفع بنجاح"
+  },
+  "shipping": {
+    "shippingAddress": "عنوان الشحن",
+    "deliveryMethod": "طريقة التوصيل",
+    "estimatedDelivery": "التوصيل المتوقع",
+    "shippingCost": "تكلفة الشحن",
+    "freeShipping": "شحن مجاني"
+  },
+  "notifications": {
+    "noNotifications": "لا توجد إشعارات",
+    "markAllRead": "تحديد الكل كمقروء",
+    "newMessage": "رسالة جديدة",
+    "listingSold": "تم بيع الإعلان",
+    "priceDrop": "انخفاض السعر"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "invalidEmail": "يرجى إدخال بريد إلكتروني صحيح",
+    "minLength": "الحد الأدنى {min} أحرف",
+    "maxLength": "الحد الأقصى {max} أحرف",
+    "invalidPhone": "يرجى إدخال رقم هاتف صحيح"
+  },
+  "errors": {
+    "notFound": "الصفحة غير موجودة",
+    "serverError": "خطأ في الخادم",
+    "unauthorized": "غير مصرح",
+    "forbidden": "ممنوع",
+    "networkError": "خطأ في الشبكة"
+  },
+  "footer": {
+    "aboutUs": "من نحن",
+    "contactUs": "اتصل بنا",
+    "termsOfService": "شروط الخدمة",
+    "privacyPolicy": "سياسة الخصوصية",
+    "helpCenter": "مركز المساعدة",
+    "followUs": "تابعنا",
+    "allRightsReserved": "جميع الحقوق محفوظة"
+  },
+  "country": {
+    "selectCountry": "اختر الدولة",
+    "bahrain": "البحرين",
+    "pakistan": "باكستان",
+    "currency": "العملة",
+    "language": "اللغة"
+  }
+}

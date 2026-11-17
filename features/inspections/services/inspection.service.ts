@@ -17,6 +17,7 @@ import {
   listRequestsForRequester,
   scheduleRequest,
   setReportPublished,
+  type InspectionReportOutcome,
 } from "@/features/inspections/repositories/inspection.repository";
 import { logImeiAccess } from "@/features/audit";
 import type {
@@ -156,9 +157,9 @@ export async function scheduleInspection(
 export async function submitInspectionReport(
   input: SubmitReportInput,
   inspectorId: string,
-): Promise<boolean> {
+): Promise<InspectionReportOutcome> {
   const result = await createReport(input, inspectorId);
-  if (!result) return false;
+  if (!result.ok) return result;
 
   await dispatchNotification({
     userId: result.requesterId,
@@ -169,7 +170,7 @@ export async function submitInspectionReport(
     email: true,
   }).catch((error) => warn("completion notification failed", error));
 
-  return true;
+  return result;
 }
 
 /** Buyer publishes/unpublishes their report onto the listing. */

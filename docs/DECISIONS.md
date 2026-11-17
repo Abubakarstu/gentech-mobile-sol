@@ -42,11 +42,11 @@
 - **Status:** Approved, live processing gated
 - **Decision:** Inspection payments use PayFast's direct token/tokenized-transaction/status API. Card, wallet, and OTP details are sent to PayFast but never persisted or logged by GenTech. A short-lived authenticated continuation carries only the temporary provider instrument token and transaction context. Live processing remains disabled until merchant sandbox/3-D Secure testing and compliance review are complete. Promotion checkout must not activate listings or accept seller-submitted payment outcomes until it is connected to verified server-side payment processing.
 
-## ADR-008: Pause PayFast Verification and Continue Discovery Work
+## ADR-008: PayFast Verification Status Update
 
 - **Date:** 2026-11-11
-- **Status:** Approved
-- **Decision:** Pause M3-F02 at its code-complete boundary while merchant sandbox access and compliance review are unavailable. Keep live payment processing and promotion checkout disabled. Continue with M4-F01, the next prioritized roadmap module, without treating the payment integration as verified.
+- **Status:** Approved — M3-F02 implemented
+- **Decision:** M3-F02 paid promotion checkout is now implemented with server-verified payment gating using the built-in sandbox provider (`PAYMENTS_TEST_MODE=true`). The flow creates a promotion in pending state, snapshots the plan price server-side, routes the buyer to a payment provider (PayFast 3DS or internal sandbox), and activates the promotion only on server-verified `PAID` status. Seller-submitted outcomes are never accepted (ADR-012). Live PayFast processing remains disabled until merchant sandbox/3-D Secure and compliance verification are complete. Promotion checkout was previously paused at the code-complete boundary (ADR-008, 2026-11-11) but is now connected via the established payment abstraction pattern.
 
 ## ADR-009: WhatsApp Contact Uses Seller-Provided Listing Contact Numbers
 
@@ -59,3 +59,15 @@
 - **Date:** 2026-11-11
 - **Status:** Approved
 - **Decision:** A saved search enables in-app and email alerts by default; users can pause or resume alerts per search. Match alerts are sent only when a listing transitions from pending approval to active, never for pending listings, and the listing owner is excluded. Favorites remain private to the user and require an active listing.
+
+## ADR-011: Graded Inspection Reports Require a Paid, Open Request
+
+- **Date:** 2026-11-17
+- **Status:** Approved
+- **Decision:** The inspection state machine is explicit: only `REQUESTED`, `PAYMENT_PENDING`, and `SCHEDULED` requests can be claimed or rescheduled, and `IN_PROGRESS` may only be rescheduled. `COMPLETED`, `CANCELLED`, and `EXPIRED` are terminal and can never regress. A graded report is released only when the request is still open **and** `paymentStatus = PAID`, so the marketplace never delivers a paid service without collection. The report checklist defaults every line to `NOT_APPLICABLE` and at least one item must be graded, so an untouched form cannot produce an unearned A. Grades derive solely from graded checklist lines.
+
+## ADR-012: Simulated Integrations Fail Closed and Are Labelled
+
+- **Date:** 2026-11-17
+- **Status:** Approved
+- **Decision:** Payment (PayFast sandbox) and device-verification (PTA/CPID) simulators are used outside production automatically and in a production build only when `PAYMENTS_TEST_MODE` / `DEVICE_VERIFICATION_TEST_MODE` is explicitly `true` for preview/staging. Simulated IMEI results are persisted with `isSimulated = true`, shown with a warning banner, and never presented as real regulatory checks. Without a real provider or test mode, production fails closed: no payment method is offered and no PTA/CPID status is produced. Both flags must be `false` on public production.

@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
+import type { Region } from "@/lib/generated/prisma/enums";
 import { uniqueSlug } from "@/utils/slug";
 import type {
   ListingCardData,
@@ -206,8 +207,15 @@ function toCardData(row: ListingCardRow): ListingCardData {
 async function searchListingRows(
   filters: ListingFilters,
   ranked: boolean,
+  region?: Region,
 ): Promise<ListingSearchResult> {
   const conditions = buildListingConditions(filters, ranked);
+
+  // Add region isolation filter
+  if (region) {
+    conditions.push(Prisma.sql`"region"::text = ${region}`);
+  }
+
   const whereSql = Prisma.join(conditions, " AND ");
   const skip = (filters.page - 1) * filters.pageSize;
 
@@ -242,8 +250,8 @@ async function searchListingRows(
   };
 }
 
-export async function searchListings(filters: ListingFilters): Promise<ListingSearchResult> {
-  return searchListingRows(filters, false);
+export async function searchListings(filters: ListingFilters, region?: Region): Promise<ListingSearchResult> {
+  return searchListingRows(filters, false, region);
 }
 
 /**
@@ -251,8 +259,8 @@ export async function searchListings(filters: ListingFilters): Promise<ListingSe
  * `searchVector` GIN index, with the same structured filters as `searchListings`.
  * Requires `filters.q` to be present.
  */
-export async function searchListingsRanked(filters: ListingFilters): Promise<ListingSearchResult> {
-  return searchListingRows(filters, true);
+export async function searchListingsRanked(filters: ListingFilters, region?: Region): Promise<ListingSearchResult> {
+  return searchListingRows(filters, true, region);
 }
 
 export async function getListingFilterOptions(): Promise<ListingFilterOptions> {
@@ -362,9 +370,9 @@ function toDetail(row: ListingDetailRow): ListingDetail {
 }
 
 /** A single listing by slug. Increments the view counter (best effort). */
-export async function getListingBySlug(slug: string): Promise<ListingDetail | null> {
+export async function getListingBySlug(slug: string, region?: Region): Promise<ListingDetail | null> {
   const row = await prisma.listing.findFirst({
-    where: { slug, deletedAt: null },
+    where: { slug, deletedAt: null, ...(region ? { region } : {}) },
     select: detailSelect,
   });
   if (!row) return null;
@@ -382,12 +390,14 @@ export async function getListingBySlug(slug: string): Promise<ListingDetail | nu
 export async function suggestListings(
   q: string,
   limit = 6,
+  region?: Region,
 ): Promise<Array<{ title: string; slug: string }>> {
   return prisma.listing.findMany({
     where: {
       status: "ACTIVE",
       deletedAt: null,
       title: { contains: q, mode: "insensitive" },
+      ...(region ? { region } : {}),
     },
     orderBy: [{ isFeatured: "desc" }, { views: "desc" }],
     take: limit,
@@ -400,6 +410,7 @@ export async function getRelatedListings(
   categorySlug: string | undefined,
   excludeId: string,
   limit = 4,
+  region?: Region,
 ): Promise<ListingCardData[]> {
   const rows = await prisma.listing.findMany({
     where: {
@@ -407,6 +418,7 @@ export async function getRelatedListings(
       deletedAt: null,
       id: { not: excludeId },
       ...(categorySlug ? { category: { slug: categorySlug } } : {}),
+      ...(region ? { region } : {}),
     },
     orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
     take: limit,
@@ -416,9 +428,9 @@ export async function getRelatedListings(
 }
 
 /** All of a seller's listings (any status), newest first. */
-export async function getSellerListings(sellerId: string): Promise<ListingCardData[]> {
+export async function getSellerListings(sellerId: string, region?: Region): Promise<ListingCardData[]> {
   const rows = await prisma.listing.findMany({
-    where: { sellerId, deletedAt: null },
+    where: { sellerId, deletedAt: null, ...(region ? { region } : {}) },
     orderBy: { createdAt: "desc" },
     select: cardSelect,
   });
@@ -472,6 +484,16 @@ export async function createListing(
   input: CreateListingInput,
   sellerId: string,
 ): Promise<{ id: string; slug: string }> {
+  // Resolve seller's region for region isolation
+  const seller = await prisma.user.findUnique({
+    where: { id: sellerId },
+    select: { region: true },
+  })
+  const sellerRegion = seller?.region ?? "PAKISTAN"
+
+  // Resolve currency based on seller's region
+  const currency = sellerRegion === "BAHRAIN" ? "BHD" : "PKR"
+
   const city = await prisma.city.findFirst({
     where: {
       id: input.cityId,
@@ -514,6 +536,7 @@ export async function createListing(
       slug: uniqueSlug(input.title),
       description: input.description,
       price: new Prisma.Decimal(input.price),
+      currency,
       negotiable: input.negotiable ?? false,
       condition: input.condition,
       status: "PENDING_APPROVAL",
@@ -521,6 +544,7 @@ export async function createListing(
       area: area?.name,
       cityId: city.id,
       areaId: area?.id,
+      region: sellerRegion,
       attributes: buildAttributes(input),
       sellerId,
       categoryId: category.id,

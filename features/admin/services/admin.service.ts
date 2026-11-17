@@ -60,6 +60,7 @@ export async function getUsers(params: {
 export async function getListings(params: {
   q?: string;
   status?: ListingStatus;
+  region?: "BAHRAIN" | "PAKISTAN" | "ALL";
   page: number;
 }): Promise<Paginated<AdminListingRow>> {
   try {

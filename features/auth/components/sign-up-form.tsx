@@ -28,7 +28,7 @@ export function SignUpForm({ providers }: { providers: EnabledSocialProviders })
   const router = useRouter();
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
-    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
+    defaultValues: { name: "", email: "", password: "", confirmPassword: "", region: "PAKISTAN" },
   });
 
   async function onSubmit(values: SignUpInput) {
@@ -36,6 +36,7 @@ export function SignUpForm({ providers }: { providers: EnabledSocialProviders })
       name: values.name,
       email: values.email,
       password: values.password,
+      region: values.region,
       callbackURL: ROUTES.dashboard,
     });
 
@@ -119,6 +120,26 @@ export function SignUpForm({ providers }: { providers: EnabledSocialProviders })
                     placeholder="••••••••"
                     {...field}
                   />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="region"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Your Region</FormLabel>
+                <FormControl>
+                  <select
+                    {...field}
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="PAKISTAN">Pakistan</option>
+                    <option value="BAHRAIN">Bahrain</option>
+                  </select>
                 </FormControl>
                 <FormMessage />
               </FormItem>

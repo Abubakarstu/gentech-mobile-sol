@@ -116,11 +116,115 @@ export interface CreateBranchInput {
   longitude?: number;
 }
 
-export interface AddInventoryInput {
+export interface DealerLeadDto {
+  id: string;
   dealerId: string;
-  listingId?: string;
-  sku?: string;
+  source: "admin" | "conversation" | "import";
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  associatedListingId?: string;
+  status: string;
+  priority: "LOW" | "MEDIUM" | "HIGH";
+  notes?: string;
+  assignedTo: "owner" | "manager" | "staff";
+  createdAt: string;
+  updatedAt: string;
+  convertedAt?: string;
+  convertedToDealerId?: string;
+  conversionNotes?: string;
+}
+
+export interface CreateDealerLeadInput {
+  dealerId: string;
+  source: "admin" | "conversation" | "import";
+  contactName: string;
+  contactPhone: string;
+  contactEmail: string;
+  associatedListingId?: string;
+  status?: string;
+  priority?: "LOW" | "MEDIUM" | "HIGH";
+  notes?: string;
+  assignedTo?: "owner" | "manager" | "staff";
+}
+
+export interface UpdateDealerLeadInput {
+  leadId: string;
+  dealerId: string;
+  status: string;
+  notes?: string;
+}
+
+export interface BulkImportDealerInventoryInput {
+  sku: string;
   stockCount: number;
   location?: string;
   costPrice?: number;
+  listingId?: string;
+}
+
+// Role-based access control
+export enum DealerRole {
+  OWNER = "owner",
+  MANAGER = "manager",
+  STAFF = "staff",
+}
+
+export enum DealerPermission {
+  // Dealer operations
+  MANAGE_DEALER = "dealer.manage",
+  MANAGE_BRANCH = "branch.manage",
+  MANAGE_INVENTORY = "inventory.manage",
+  VIEW_DEALER = "dealer.view",
+  VIEW_BRANCH = "branch.view",
+  VIEW_INVENTORY = "inventory.view",
+
+  // Lead operations
+  CREATE_LEAD = "lead.create",
+  EDIT_LEAD = "lead.edit",
+  CONVERT_LEAD = "lead.convert",
+  DELETE_LEAD = "lead.delete",
+
+  // Dealer administration
+  APPROVE_DEALER = "admin.approve",
+  REJECT_DEALER = "admin.reject",
+  MANAGE_DEALERS = "admin.manage",
+}
+
+/** Utility to check if a role has a specific permission */
+export function hasPermission(role: string, permission: string): boolean {
+  const rolePermissions: Record<string, string[]> = {
+    [DealerRole.OWNER]: [
+      DealerPermission.MANAGE_DEALER,
+      DealerPermission.MANAGE_BRANCH,
+      DealerPermission.MANAGE_INVENTORY,
+      DealerPermission.VIEW_DEALER,
+      DealerPermission.VIEW_BRANCH,
+      DealerPermission.VIEW_INVENTORY,
+      DealerPermission.CREATE_LEAD,
+      DealerPermission.EDIT_LEAD,
+      DealerPermission.CONVERT_LEAD,
+      DealerPermission.DELETE_LEAD,
+      DealerPermission.APPROVE_DEALER,
+      DealerPermission.REJECT_DEALER,
+      DealerPermission.MANAGE_DEALERS,
+    ],
+    [DealerRole.MANAGER]: [
+      DealerPermission.MANAGE_DEALER,
+      DealerPermission.VIEW_DEALER,
+      DealerPermission.VIEW_BRANCH,
+      DealerPermission.VIEW_INVENTORY,
+      DealerPermission.CREATE_LEAD,
+      DealerPermission.EDIT_LEAD,
+      DealerPermission.CONVERT_LEAD,
+    ],
+    [DealerRole.STAFF]: [
+      DealerPermission.VIEW_DEALER,
+      DealerPermission.VIEW_BRANCH,
+      DealerPermission.VIEW_INVENTORY,
+    ],
+  };
+
+  const permissions = rolePermissions[role] || [];
+  return permissions.includes(permission);
 }

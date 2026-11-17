@@ -40,9 +40,29 @@ export function ImeiVerificationResultCard({ verification }: ImeiVerificationRes
           <p className="text-sm text-gray-500 font-mono">{verification.imei}</p>
         </div>
         <div className={`px-3 py-1 rounded-full text-sm font-medium ${risk.bg} ${risk.color}`}>
-          Risk: {risk.level}
+          {verification.isSimulated ? 'Simulated' : `Risk: ${risk.level}`}
         </div>
       </div>
+
+      {verification.isSimulated && (
+        <div
+          role="note"
+          className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-xs leading-5 text-amber-900"
+        >
+          <strong>Simulated result (test mode).</strong> This IMEI was not checked with PTA
+          or CPID. Use it only to exercise the flow and never as proof that a device is
+          registered, import-compliant, or clean.
+        </div>
+      )}
+      {verification.isStale && (
+        <div
+          role="note"
+          className="mb-4 rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-xs leading-5 text-yellow-900"
+        >
+          This status is older than 24 hours and could not be refreshed. Re-check before
+          relying on it.
+        </div>
+      )}
 
       <div className="space-y-4">
         {/* PTA Status */}
@@ -117,10 +137,18 @@ export function ImeiVerificationResultCard({ verification }: ImeiVerificationRes
         {/* Verification Metadata */}
         <div className="text-xs text-gray-500 border-t pt-3">
           {verification.verifiedAt && (
-            <div>Last verified: {new Date(verification.verifiedAt).toLocaleString()}</div>
+            <div>
+              {verification.isSimulated ? 'Simulated at' : 'Last verified'}:{' '}
+              {new Date(verification.verifiedAt).toLocaleString()}
+            </div>
           )}
           {verification.verificationSource && (
-            <div>Source: {verification.verificationSource}</div>
+            <div>
+              Source:{' '}
+              {verification.verificationSource === 'SIMULATED'
+                ? 'Simulated (test data)'
+                : verification.verificationSource}
+            </div>
           )}
         </div>
       </div>

@@ -99,7 +99,7 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
             {listing.title}
           </Link>
           <p className="text-muted-foreground truncate text-xs">
-            {listing.sellerName} · {listing.city}
+            {listing.sellerName} · {listing.city} · {listing.region === "BAHRAIN" ? "Bahrain" : "Pakistan"}
           </p>
           <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
             <ListingStatusBadge status={listing.status} />

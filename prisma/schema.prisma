@@ -22,6 +22,12 @@ enum Role {
   ADMIN
 }
 
+// Region enum for multi-tenant data isolation (Bahrain / Pakistan).
+enum Region {
+  BAHRAIN
+  PAKISTAN
+}
+
 // ---------------------------------------------------------------------------
 // Better Auth core models (field names must match Better Auth's expectations).
 // ---------------------------------------------------------------------------
@@ -37,6 +43,7 @@ model User {
 
   // Application fields
   role      Role      @default(USER)
+  region    Region    @default(PAKISTAN)
   banned    Boolean   @default(false)
   banReason String?
   deletedAt DateTime?
@@ -71,11 +78,16 @@ model User {
 
   // Relations — phone intelligence
   phoneModelReviews PhoneModelReview[]
+  sellerVerifications SellerVerification[]
   phoneComparisons  PhoneComparison[]
   verifiedImeis     ImeiVerification[] @relation("ImeiVerificationUser")
 
   // Relations — dealer leads
   dealerLeads DealerLead[] @relation("DealerLeads")
+
+  // Relations — cart & orders
+  cartItems CartItem[]
+  orders    Order[] @relation("CustomerOrders")
 
   @@index([role])
   @@map("user")
@@ -143,12 +155,13 @@ model Profile {
   phone      String?
   coverImage String?
   // Location (denormalised; PostGIS geometry added in the discovery phase)
-  city       String?
-  address    String?
-  latitude   Float?
-  longitude  Float?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  city         String?
+  address      String?
+  latitude     Float?
+  longitude    Float?
+  region       Region   @default(PAKISTAN)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("profile")
 }
@@ -187,6 +200,8 @@ model Category {
   image       String?
   position    Int     @default(0)
   isActive    Boolean @default(true)
+  /// Country/region this category is available in. NULL means available in all countries.
+  region      Region? @default(PAKISTAN)
 
   parentId String?
   parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: SetNull)
@@ -199,6 +214,7 @@ model Category {
 
   @@index([parentId])
   @@index([isActive])
+  @@index([region])
   @@map("category")
 }
 
@@ -227,12 +243,15 @@ model Listing {
   description String
 
   // Pricing — ALWAYS Decimal, never Float.
-  price      Decimal @db.Decimal(12, 2)
+  price      Decimal @db.Decimal(12, 3)
   currency   String  @default("PKR")
   negotiable Boolean @default(false)
 
   condition ListingCondition
   status    ListingStatus    @default(ACTIVE)
+
+  // Region isolation — which market this listing belongs to
+  region      Region    @default(PAKISTAN)
 
   /// Category-specific structured attributes (storage, ram, color, batteryHealth,
   /// ptaApproved, ...). Validated by a per-category Zod schema at the app layer.
@@ -283,6 +302,8 @@ model Listing {
   history         PhoneHistory[]
   dealerLeads     DealerLead[]
   promotions      ListingPromotion[]  @relation("ListingPromotions")
+  cartItems       CartItem[]
+  orderItems      OrderItem[]
 
   // Approval workflow
   rejectionReason String?
@@ -560,7 +581,7 @@ model InspectionPlan {
   slug        String  @unique
   description String?
   /// Fee — ALWAYS Decimal, never Float.
-  price       Decimal @db.Decimal(12, 2)
+  price       Decimal @db.Decimal(12, 3)
   currency    String  @default("PKR")
   /// How many checkpoints this tier covers (for marketing copy).
   checkpoints Int     @default(0)
@@ -598,7 +619,7 @@ model InspectionRequest {
   planId    String?
   plan      InspectionPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
   planName  String?
-  feeAmount Decimal         @db.Decimal(12, 2)
+  feeAmount Decimal         @db.Decimal(12, 3)
   currency  String          @default("PKR")
 
   paymentStatus InspectionPaymentStatus @default(UNPAID)
@@ -785,6 +806,7 @@ model Dealer {
   address   String?
   latitude  Float?
   longitude Float?
+  region    Region @default(PAKISTAN)
 
   // Dealer status and subscription
   status        DealerStatus @default(PENDING)
@@ -870,7 +892,7 @@ model DealerInventory {
   sku        String?   @unique
   stockCount Int       @default(1)
   location   String? // branch ID or storage location
-  costPrice  Decimal?  @db.Decimal(12, 2)
+  costPrice  Decimal?  @db.Decimal(12, 3)
   acquiredAt DateTime?
 
   createdAt DateTime @default(now())
@@ -931,7 +953,7 @@ model PhoneModel {
   // Official specifications
   modelNumber String?
   releaseDate DateTime?
-  launchPrice Decimal?  @db.Decimal(12, 2)
+  launchPrice Decimal?  @db.Decimal(12, 3)
 
   // Display
   displaySize       String? // e.g., "6.7 inches"
@@ -1067,9 +1089,9 @@ model PhoneValuation {
   batteryHealth Int?
 
   // Valuation result
-  estimatedPriceMin Decimal @db.Decimal(12, 2)
-  estimatedPriceMax Decimal @db.Decimal(12, 2)
-  estimatedPriceAvg Decimal @db.Decimal(12, 2)
+  estimatedPriceMin Decimal @db.Decimal(12, 3)
+  estimatedPriceMax Decimal @db.Decimal(12, 3)
+  estimatedPriceAvg Decimal @db.Decimal(12, 3)
 
   // Market data
   marketData  Json? // Listing prices used for calculation
@@ -1105,7 +1127,9 @@ model ImeiVerification {
   // Verification metadata
   verifiedAt         DateTime?
   verifiedBy         String? // User ID or system
-  verificationSource String? // "PTA", "CPID", "MANUAL"
+  verificationSource String? // "PTA", "CPID", "MANUAL", "BAHRAIN_QA"
+  isSimulated        Boolean @default(false)
+  region             Region  @default(PAKISTAN)
 
   // Metadata
   ipAddress String?
@@ -1122,6 +1146,7 @@ model ImeiVerification {
   @@index([cpidStatus])
   @@index([isStolen])
   @@index([isBlacklisted])
+  @@index([isSimulated])
   @@map("imei_verification")
 }
 
@@ -1153,12 +1178,14 @@ model PromotionPlan {
   slug         String             @unique
   description  String?
   placement    PromotionPlacement
-  price        Decimal            @db.Decimal(12, 2)
+  price        Decimal            @db.Decimal(12, 3)
   currency     String             @default("PKR")
   durationDays Int
   isActive     Boolean            @default(true)
   maxSlots     Int? // Maximum concurrent promotions for this plan
   metadata     Json?
+  /// Country/region this promotion plan is available in.
+  region       Region             @default(PAKISTAN)
   createdAt    DateTime           @default(now())
   updatedAt    DateTime           @updatedAt
 
@@ -1167,6 +1194,7 @@ model PromotionPlan {
 
   @@index([placement])
   @@index([isActive])
+  @@index([region])
   @@map("promotion_plan")
 }
 
@@ -1197,7 +1225,7 @@ model PromotionPayment {
   id            String           @id @default(cuid())
   promotionId   String
   promotion     ListingPromotion @relation(fields: [promotionId], references: [id], onDelete: Cascade)
-  amount        Decimal          @db.Decimal(12, 2)
+  amount        Decimal          @db.Decimal(12, 3)
   currency      String           @default("PKR")
   method        String // Payment method (jazzcash, easypaisa, etc.)
   status        String // PENDING, COMPLETED, FAILED, REFUNDED
@@ -1255,6 +1283,257 @@ model PhoneHistory {
   @@index([occurredAt])
   @@index([source, sourceId])
   @@map("phone_history")
+}
+
+// ---------------------------------------------------------------------------
+// Shipping & Delivery
+// ---------------------------------------------------------------------------
+
+/// Shipping method available in a country.
+model ShippingMethod {
+  id            String  @id @default(cuid())
+  name          String
+  description   String?
+  /// Country/region this shipping method is available in.
+  region        Region  @default(PAKISTAN)
+  /// Base price for this shipping method.
+  price         Decimal @db.Decimal(12, 3)
+  currency      String  @default("PKR")
+  /// Estimated delivery days.
+  estimatedDays Int     @default(3)
+  isActive      Boolean @default(true)
+  position      Int     @default(0)
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([region, isActive])
+  @@map("shipping_method")
+}
+
+/// Delivery zone within a country (governorate/province/city).
+model DeliveryZone {
+  id           String  @id @default(cuid())
+  name         String
+  /// Country/region this zone belongs to.
+  region       Region  @default(PAKISTAN)
+  /// City or area name.
+  city         String?
+  /// Additional delivery charge for this zone.
+  surcharge    Decimal @db.Decimal(12, 3) @default(0)
+  /// Whether cash on delivery is available in this zone.
+  codAvailable Boolean @default(true)
+  isActive     Boolean @default(true)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([region, isActive])
+  @@map("delivery_zone")
+}
+
+// ---------------------------------------------------------------------------
+// Seller Verification
+// ---------------------------------------------------------------------------
+
+/// Seller verification record.
+model SellerVerification {
+  id         String   @id @default(cuid())
+  sellerId   String
+  seller     User     @relation(fields: [sellerId], references: [id], onDelete: Cascade)
+  /// Country/region for this verification.
+  region     Region   @default(PAKISTAN)
+  /// Verification status.
+  status     String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  /// Verification documents (JSON array of URLs).
+  documents  Json?
+  /// Admin notes.
+  notes      String?
+  /// Reviewed by admin.
+  reviewedBy String?
+  reviewedAt DateTime?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([sellerId])
+  @@index([region, status])
+  @@map("seller_verification")
+}
+
+// ---------------------------------------------------------------------------
+// Cart
+// ---------------------------------------------------------------------------
+
+/// Cart item for a user's shopping cart.
+model CartItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listingId String
+  listing   Listing  @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  /// Price snapshot at time of adding to cart.
+  price     Decimal  @db.Decimal(12, 3)
+  currency  String   @default("PKR")
+  /// Country/region for this cart item.
+  region    Region   @default(PAKISTAN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, listingId])
+  @@index([userId])
+  @@map("cart_item")
+}
+
+// ---------------------------------------------------------------------------
+// Orders
+// ---------------------------------------------------------------------------
+
+/// Order status.
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+/// Order record — permanently stores transaction details.
+model Order {
+  id              String      @id @default(cuid())
+  orderNumber     String      @unique
+  customerId      String
+  customer        User        @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Cascade)
+  /// Country/region for this order.
+  region          Region      @default(PAKISTAN)
+  /// Currency for this order.
+  currency        String      @default("PKR")
+  /// Order status.
+  status          OrderStatus @default(PENDING)
+  /// Subtotal (sum of item prices).
+  subtotal        Decimal     @db.Decimal(12, 3)
+  /// Shipping charges.
+  shipping        Decimal     @db.Decimal(12, 3) @default(0)
+  /// Tax rate applied.
+  taxRate         Decimal     @db.Decimal(5, 4) @default(0)
+  /// Tax amount.
+  taxAmount       Decimal     @db.Decimal(12, 3) @default(0)
+  /// Tax name (VAT, etc.).
+  taxName         String?
+  /// Discount amount.
+  discount        Decimal     @db.Decimal(12, 3) @default(0)
+  /// Final total.
+  total           Decimal     @db.Decimal(12, 3)
+  /// Shipping method name.
+  shippingMethod  String?
+  /// Estimated delivery days.
+  estimatedDays   Int?
+  /// Delivery address (JSON).
+  deliveryAddress Json?
+  /// Payment method.
+  paymentMethod   String?
+  /// Payment status.
+  paymentStatus   String      @default("UNPAID")
+  /// Payment reference.
+  paymentRef      String?
+  /// Paid at.
+  paidAt          DateTime?
+  /// Order notes.
+  notes           String?
+  /// Items in this order.
+  items           OrderItem[]
+  /// Payments for this order.
+  payments        Payment[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([customerId])
+  @@index([region])
+  @@index([status])
+  @@index([createdAt])
+  @@map("order")
+}
+
+/// Order line item — permanently stores product details at time of purchase.
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  listingId   String?
+  listing     Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+  /// Product title at time of purchase.
+  title       String
+  /// Product price at time of purchase.
+  unitPrice   Decimal  @db.Decimal(12, 3)
+  /// Currency at time of purchase.
+  currency    String   @default("PKR")
+  quantity    Int      @default(1)
+  /// Line total.
+  lineTotal   Decimal  @db.Decimal(12, 3)
+
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
+  @@map("order_item")
+}
+
+// ---------------------------------------------------------------------------
+// Payments
+// ---------------------------------------------------------------------------
+
+/// Payment status.
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+/// Payment record for an order.
+model Payment {
+  id                    String        @id @default(cuid())
+  orderId               String
+  order                 Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  /// Payment provider used.
+  provider              String
+  /// Country for this payment.
+  country               String
+  /// Currency for this payment.
+  currency              String
+  /// Amount.
+  amount                Decimal       @db.Decimal(12, 3)
+  /// Payment status.
+  status                PaymentStatus @default(PENDING)
+  /// Provider's transaction reference.
+  providerReference     String?
+  /// Provider's transaction ID.
+  providerTransactionId String?
+  /// Idempotency key to prevent duplicate payments.
+  idempotencyKey        String?       @unique
+  /// Failure reason.
+  failureReason         String?
+  /// Verified at.
+  verifiedAt            DateTime?
+  /// Refunded at.
+  refundedAt            DateTime?
+  /// Refund amount.
+  refundAmount           Decimal?      @db.Decimal(12, 3)
+  /// Refund reason.
+  refundReason          String?
+  /// Metadata.
+  metadata              Json?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([provider])
+  @@index([status])
+  @@index([country])
+  @@map("payment")
 }
 
 // ---------------------------------------------------------------------------

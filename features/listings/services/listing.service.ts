@@ -32,9 +32,11 @@ export interface ListingFeed extends ListingSearchResult {
  * so the experience stays interactive. A connected-but-empty DB correctly returns
  * an empty feed (source: "db").
  */
-export async function getListingFeed(filters: ListingFilters): Promise<ListingFeed> {
+export async function getListingFeed(filters: ListingFilters, region?: string): Promise<ListingFeed> {
   try {
-    const result = filters.q ? await rankedThenOrm(filters) : await searchListings(filters);
+    const result = filters.q
+      ? await rankedThenOrm(filters, region)
+      : await searchListings(filters, region as any);
     return { ...result, source: "db" };
   } catch (error) {
     console.warn(
@@ -71,15 +73,15 @@ export async function getListingFilterOptions(): Promise<ListingFilterOptions> {
  * (e.g. migrations not run), fall back to the ORM `contains` search. A genuine
  * DB outage rethrows so the caller can serve demo data.
  */
-async function rankedThenOrm(filters: ListingFilters): Promise<ListingSearchResult> {
+async function rankedThenOrm(filters: ListingFilters, region?: string): Promise<ListingSearchResult> {
   try {
-    return await searchListingsRanked(filters);
+    return await searchListingsRanked(filters, region as any);
   } catch (error) {
     console.warn(
       "[listings] Full-text search unavailable — falling back to basic search.",
       error instanceof Error ? error.message : error,
     );
-    return searchListings(filters);
+    return searchListings(filters, region as any);
   }
 }
 
@@ -93,9 +95,9 @@ export interface ListingDetailResult {
  * Loads a listing detail by slug + related listings. Returns `null` when the listing
  * does not exist (→ 404). Falls back to demo data only when the database is unreachable.
  */
-export async function getListingDetail(slug: string): Promise<ListingDetailResult | null> {
+export async function getListingDetail(slug: string, region?: string): Promise<ListingDetailResult | null> {
   try {
-    const detail = await getListingBySlug(slug);
+    const detail = await getListingBySlug(slug, region as any);
     if (!detail) {
       // Reachable DB but no such listing. It may still be a demo/preview card
       // (e.g. shown while the catalog is being populated) — resolve it to the
@@ -110,7 +112,7 @@ export async function getListingDetail(slug: string): Promise<ListingDetailResul
       }
       return null;
     }
-    const related = await getRelatedListings(detail.categorySlug, detail.id);
+    const related = await getRelatedListings(detail.categorySlug, detail.id, 4, region as any);
     return { detail, related, source: "db" };
   } catch (error) {
     console.warn(

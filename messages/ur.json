@@ -1,0 +1,208 @@
+{
+  "common": {
+    "appName": "GenTech",
+    "loading": "لوڈ ہو رہا ہے...",
+    "error": "کچھ غلط ہو گیا",
+    "retry": "دوبارہ کوشش کریں",
+    "cancel": "منسوخ کریں",
+    "save": "محفوظ کریں",
+    "delete": "حذف کریں",
+    "edit": "ترمیم کریں",
+    "view": "دیکھیں",
+    "search": "تلاش کریں",
+    "filter": "فلٹر",
+    "sort": "ترتیب دیں",
+    "next": "اگلا",
+    "previous": "پچھلا",
+    "submit": "جمع کریں",
+    "close": "بند کریں",
+    "back": "واپس",
+    "confirm": "تصدیق کریں",
+    "yes": "ہاں",
+    "no": "نہیں"
+  },
+  "navigation": {
+    "home": "ہوم",
+    "marketplace": "مارکیٹ پلیس",
+    "categories": "زمرے",
+    "sell": "فروخت کریں",
+    "signIn": "سائن ان",
+    "signUp": "سائن اپ",
+    "dashboard": "ڈیش بورڈ",
+    "myListings": "میری لسٹنگز",
+    "favorites": "پسندیدہ",
+    "messages": "پیغامات",
+    "notifications": "اطلاعات",
+    "account": "اکاؤنٹ",
+    "admin": "ایڈمن",
+    "logout": "لاگ آؤٹ",
+    "inspection": "فون معائنہ"
+  },
+  "homepage": {
+    "heroTitle": "موبائل فون خریدیں اور فروخت کریں",
+    "heroSubtitle": "موبائل فونز کے لیے تیز، محفوظ اور آسان مارکیٹ پلیس",
+    "featuredListings": "نمایاں لسٹنگز",
+    "recentListings": "حالیہ لسٹنگز",
+    "browseByCategory": "زمرہ کے مطابق دیکھیں",
+    "browseByBrand": "برانڈ کے مطابق دیکھیں",
+    "viewAll": "سب دیکھیں"
+  },
+  "listings": {
+    "title": "لسٹنگز",
+    "noListings": "کوئی لسٹنگ نہیں ملی",
+    "price": "قیمت",
+    "condition": "حالت",
+    "city": "شہر",
+    "brand": "برانڈ",
+    "category": "زمرہ",
+    "postedBy": "پوسٹ کردہ",
+    "views": "ویوز",
+    "negotiable": "قابل مذاکرہ",
+    "featured": "نمایاں",
+    "sold": "فروخت ہو گیا",
+    "new": "نیا",
+    "used": "استعمال شدہ",
+    "refurbished": "ریفر بشڈ"
+  },
+  "search": {
+    "placeholder": "موبائل فونز تلاش کریں...",
+    "noResults": "کوئی نتائج نہیں ملے",
+    "resultsCount": "{count} نتائج ملے",
+    "filters": "فلٹرز",
+    "clearFilters": "فلٹرز صاف کریں"
+  },
+  "filters": {
+    "priceRange": "قیمت کی حد",
+    "minPrice": "کم سے کم قیمت",
+    "maxPrice": "زیادہ سے زیادہ قیمت",
+    "condition": "حالت",
+    "brand": "برانڈ",
+    "category": "زمرہ",
+    "city": "شہر",
+    "storage": "اسٹوریج",
+    "ram": "RAM",
+    "color": "رنگ",
+    "ptaStatus": "PTA اسٹیٹس",
+    "batteryHealth": "بیٹری ہیلتھ",
+    "warranty": "گارنٹی"
+  },
+  "productDetails": {
+    "specifications": "تفصیلات",
+    "description": "تفصیل",
+    "sellerInfo": "فروشنده کی معلومات",
+    "contactSeller": "فروشنده سے رابطہ کریں",
+    "reportListing": "لسٹنگ رپورٹ کریں",
+    "similarListings": "ملتی جلتی لسٹنگز",
+    "memberSince": "رکن بنے",
+    "verified": "تصدیق شدہ"
+  },
+  "authentication": {
+    "signIn": "سائن ان",
+    "signUp": "سائن اپ",
+    "email": "ای میل",
+    "password": "پاس ورڈ",
+    "confirmPassword": "پاس ورڈ کی تصدیق",
+    "forgotPassword": "پاس ورڈ بھول گئے؟",
+    "resetPassword": "پاس ورڈ ری سیٹ کریں",
+    "fullName": "پورا نام",
+    "createAccount": "اکاؤنٹ بنائیں",
+    "alreadyHaveAccount": "پہلے سے اکاؤنٹ ہے؟",
+    "dontHaveAccount": "اکاؤنٹ نہیں ہے؟",
+    "verifyEmail": "ای میل تصدیق کریں",
+    "emailVerificationSent": "تصدیقی ای میل بھیج دی گئی",
+    "invalidCredentials": "غلط ای میل یا پاس ورڈ",
+    "passwordMismatch": "پاس ورڈز میل نہیں کھاتے"
+  },
+  "profile": {
+    "myProfile": "میرا پروفائل",
+    "editProfile": "پروفائل ترمیم کریں",
+    "phone": "فون",
+    "city": "شہر",
+    "address": "پتہ",
+    "bio": "تعارف",
+    "saveChanges": "تبدیلیاں محفوظ کریں",
+    "profileUpdated": "پروفائل کامیابی سے اپ ڈیٹ ہو گیا"
+  },
+  "dashboard": {
+    "welcome": "خوش آمدید",
+    "overview": "جائزہ",
+    "myListings": "میری لسٹنگز",
+    "favorites": "پسندیدہ",
+    "savedSearches": "محفوظ تلاشیں",
+    "messages": "پیغامات",
+    "notifications": "اطلاعات",
+    "inspections": "معائنے",
+    "account": "اکاؤنٹ"
+  },
+  "cart": {
+    "cart": "کارٹ",
+    "emptyCart": "آپ کا کارٹ خالی ہے",
+    "total": "کل",
+    "checkout": "چیک آؤٹ",
+    "remove": "ہٹائیں",
+    "quantity": "مقدار"
+  },
+  "checkout": {
+    "checkout": "چیک آؤٹ",
+    "shippingAddress": "شپنگ ایڈریس",
+    "paymentMethod": "ادائیگی کا طریقہ",
+    "orderSummary": "آرڈر کا خلاصہ",
+    "placeOrder": "آرڈر دیں",
+    "processing": "پروسیسنگ...",
+    "success": "آرڈر کامیابی سے دیا گیا"
+  },
+  "payment": {
+    "paymentMethods": "ادائیگی کے طریقے",
+    "selectPayment": "ادائیگی کا طریقہ منتخب کریں",
+    "cardNumber": "کارڈ نمبر",
+    "expiryDate": "میعاد ختم ہونے کی تاریخ",
+    "cvv": "CVV",
+    "payNow": "ابھی ادا کریں",
+    "paymentFailed": "ادائیگی ناکام",
+    "paymentSuccess": "ادائیگی کامیاب"
+  },
+  "shipping": {
+    "shippingAddress": "شپنگ ایڈریس",
+    "deliveryMethod": "ڈیلیوری کا طریقہ",
+    "estimatedDelivery": "تخمینی ڈیلیوری",
+    "shippingCost": "شپنگ لاگت",
+    "freeShipping": "مفت شپنگ"
+  },
+  "notifications": {
+    "noNotifications": "کوئی اطلاع نہیں",
+    "markAllRead": "سب کو پڑھا ہوا نشان زد کریں",
+    "newMessage": "نیا پیغام",
+    "listingSold": "لسٹنگ فروخت ہو گئی",
+    "priceDrop": "قیمت میں کمی"
+  },
+  "validation": {
+    "required": "یہ فیلڈ ضروری ہے",
+    "invalidEmail": "براہ کرم درست ای میل درج کریں",
+    "minLength": "کم سے کم {min} حروف ضروری ہیں",
+    "maxLength": "زیادہ سے زیادہ {max} حروف ہو سکتے ہیں",
+    "invalidPhone": "براہ کرم درست فون نمبر درج کریں"
+  },
+  "errors": {
+    "notFound": "صفحہ نہیں ملا",
+    "serverError": "سرور کی خرابی",
+    "unauthorized": "غیر مجاز",
+    "forbidden": "ممنوع",
+    "networkError": "نیٹ ورک کی خرابی"
+  },
+  "footer": {
+    "aboutUs": "ہمارے بارے میں",
+    "contactUs": "ہم سے رابطہ کریں",
+    "termsOfService": "سروس کی شرائط",
+    "privacyPolicy": "پرائیویسی پالیسی",
+    "helpCenter": "ہیلپ سینٹر",
+    "followUs": "ہمیں فالو کریں",
+    "allRightsReserved": "جملہ حقوق محفوظ ہیں"
+  },
+  "country": {
+    "selectCountry": "ملک منتخب کریں",
+    "bahrain": "بحرین",
+    "pakistan": "پاکستان",
+    "currency": "کرنسی",
+    "language": "زبان"
+  }
+}

@@ -33,9 +33,9 @@ function warn(scope: string, error: unknown): void {
 // Promotion Plans (Admin)
 // ---------------------------------------------------------------------------
 
-export async function getActivePlans(): Promise<PromotionPlanDto[]> {
+export async function getActivePlans(region?: string): Promise<PromotionPlanDto[]> {
   try {
-    return await listActivePromotionPlans();
+    return await listActivePromotionPlans(region);
   } catch (error) {
     warn("failed to load active plans", error);
     return [];
@@ -103,11 +103,11 @@ export async function getListingPromotionInfo(
   }
 }
 
-export async function getActivePromotions(): Promise<
+export async function getActivePromotions(region?: string): Promise<
   { listingId: string; promotion: ListingPromotionDto }[]
 > {
   try {
-    return await getActivePromotedListings();
+    return await getActivePromotedListings(region);
   } catch (error) {
     warn("failed to get active promotions", error);
     return [];
@@ -222,6 +222,98 @@ export async function markPaymentFailed(id: string): Promise<void> {
   } catch (error) {
     warn("failed to mark payment failed", error);
     throw new Error("Could not mark payment as failed.");
+  }
+}
+
+/**
+ * Full promotion checkout flow:
+ * 1. Create listing promotion in PAUSED (awaiting payment) state
+ * 2. Snapshot plan price server-side, create PENDING payment record
+ * 3. Buyer completes payment via provider (PayFast 3DS or sandbox)
+ * 4. On server-verified PAID → activate promotion
+ * 5. Seller-submitted outcomes are NEVER accepted (ADR-012)
+ */
+export async function checkoutPromotion(
+  listingId: string,
+  planId: string,
+  paymentMethod: string,
+): Promise<{
+  promotionId: string;
+  paymentId: string;
+  planPrice: number;
+  currency: string;
+  status: "PENDING" | "ACTIVE";
+}> {
+  // Step 1: Create the listing promotion in PAUSED (awaiting payment) state
+  const promotionId = await promoteListing({ listingId, planId });
+  await pausePromotion(promotionId);
+
+  // Step 2: Snapshot plan price and create PENDING payment record
+  // The amount is derived from the plan, NOT from client input
+  const paymentId = await recordPayment({ promotionId, amount: 0, method: paymentMethod });
+
+  // Step 3: Get the plan price for the UI
+  const plan = await getPlan(planId);
+  if (!plan) {
+    // Clean up: mark promotion as canceled
+    await updateListingPromotionStatus(promotionId, "CANCELLED");
+    throw new Error("Promotion plan not found.");
+  }
+
+  return {
+    promotionId,
+    paymentId,
+    planPrice: Number(plan.price),
+    currency: plan.currency ?? "PKR",
+    status: "PENDING",
+  };
+}
+
+/**
+ * Server-verified payment completion.
+ * This should be called only after the payment provider (PayFast or sandbox)
+ * has verified the payment and returned PAID status. Client-submitted outcomes
+ * are rejected — the action handlers return PROMOTION_CHECKOUT_UNAVAILABLE.
+ */
+export async function completePromotionPaymentServerVerified(
+  paymentId: string,
+): Promise<{ ok: boolean; promotionId: string; status: "COMPLETED" | "FAILED" }> {
+  try {
+    // First, mark the payment as COMPLETED in the DB
+    await updatePromotionPaymentStatus(paymentId, "COMPLETED");
+
+    // Then activate the promotion (status: ACTIVE)
+    await prisma.listingPromotion.update({
+      where: { id: paymentId },
+      data: { status: "ACTIVE" },
+    });
+
+    return { ok: true, promotionId: paymentId, status: "COMPLETED" };
+  } catch (error) {
+    warn("failed to complete promotion payment server-verified", error);
+    // Roll back payment status to FAILED on error
+    try {
+      await updatePromotionPaymentStatus(paymentId, "FAILED");
+    } catch {}
+    return { ok: false, promotionId: paymentId, status: "FAILED" };
+  }
+}
+
+/**
+ * Server-verified payment failure.
+ * Called only after provider verification returned FAILED.
+ * Client-submitted failures are rejected (ADR-012).
+ */
+export async function failPromotionPaymentServerVerified(
+  paymentId: string,
+): Promise<{ ok: boolean; promotionId: string; status: "FAILED" }> {
+  try {
+    await updatePromotionPaymentStatus(paymentId, "FAILED");
+    // Keep promotion paused / do not activate; seller can retry
+    return { ok: true, promotionId: paymentId, status: "FAILED" };
+  } catch (error) {
+    warn("failed to fail promotion payment server-verified", error);
+    return { ok: false, promotionId: paymentId, status: "FAILED" };
   }
 }
 

@@ -42,6 +42,7 @@ export interface AdminListingRow {
   price: number;
   currency: string;
   status: ListingStatus;
+  region: string;
   city: string;
   views: number;
   sellerName: string;

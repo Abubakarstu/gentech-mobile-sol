@@ -17,7 +17,11 @@ export const imeiVerificationResultSchema = z.object({
   deviceBrand: z.string().nullable(),
   deviceColor: z.string().nullable(),
   verifiedAt: z.date().nullable(),
-  verificationSource: z.enum(['PTA', 'CPID', 'MANUAL']).nullable(),
+  verificationSource: z.enum(['PTA', 'CPID', 'SIMULATED', 'MANUAL']).nullable(),
+  /** Result produced by the built-in simulator, not a real PTA/CPID lookup. */
+  isSimulated: z.boolean().default(false),
+  /** Cached result older than the freshness window; re-check was unavailable. */
+  isStale: z.boolean().default(false),
   lastCheckedAt: z.date(),
 });
 
