@@ -118,7 +118,7 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="space-y-7">
-      <section className="workspace-hero relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(115deg,#171b21_0%,#151a1b_55%,#10201c_100%)] px-5 py-6 sm:px-7 sm:py-7">
+      <section className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(115deg,#171b21_0%,#151a1b_55%,#10201c_100%)] px-5 py-6 sm:px-7 sm:py-7">
         <div className="pointer-events-none absolute -top-24 -right-14 size-64 rounded-full bg-emerald-400/[0.08] blur-3xl" />
         <div className="relative flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
@@ -170,7 +170,7 @@ export default async function AdminOverviewPage() {
           </Link>
         </div>
 
-        <div className="workspace-stagger grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {metrics.map(({ icon: Icon, label, value, detail, href, tone }) => (
             <Link
               key={label}
