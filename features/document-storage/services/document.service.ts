@@ -1,7 +1,7 @@
 import "server-only";
 
 import crypto from "node:crypto";
-import { v2 as cloudinary } from "cloudinary";
+import { v2 as cloudinary, type UploadApiResponse } from "cloudinary";
 import { env } from "@/lib/env";
 
 export interface SecureUploadResult {
@@ -46,29 +46,18 @@ export async function uploadDocumentToCloudinary(
 
   try {
     const folder = `verification/${sellerId}/${verificationId}`;
-    const result = await cloudinary.uploader.upload_stream(
-      {
-        folder,
-        resource_type: "raw",
-        access_mode: "authenticated",
-        public_id: fileName.replace(/\.[^/.]+$/, ""),
-      },
-      (error, result) => {
-        if (error) throw error;
-      },
-    );
-
-    // Use upload instead of upload_stream for simpler handling
-    const uploadResult = await new Promise<any>((resolve, reject) => {
+    const uploadResult = await new Promise<UploadApiResponse>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
           folder,
           resource_type: "raw",
           access_mode: "authenticated",
+          public_id: fileName.replace(/\.[^/.]+$/, ""),
         },
         (error, result) => {
           if (error) reject(error);
-          else resolve(result);
+          else if (result) resolve(result);
+          else reject(new Error("Cloudinary upload returned no result"));
         },
       );
       stream.end(file);
@@ -172,7 +161,7 @@ export function validateDocument(file: { type: string; size: number; name: strin
   valid: boolean;
   error?: string;
 } {
-  if (!ALLOWED_DOCUMENT_TYPES.includes(file.type as any)) {
+  if (!new Set<string>(ALLOWED_DOCUMENT_TYPES).has(file.type)) {
     return { valid: false, error: `${file.name}: Invalid file type (PDF, JPEG, PNG, WebP only)` };
   }
   if (file.size > MAX_DOCUMENT_SIZE) {

@@ -10,6 +10,7 @@ import {
   isValidPaymentTransition,
   getAllowedTransitions,
 } from "@/features/payments/services/payment-state.service";
+import type { PaymentStatus } from "@/features/payments/types";
 
 describe("Payment State Transitions", () => {
   describe("Valid transitions", () => {
@@ -68,7 +69,7 @@ describe("Payment State Transitions", () => {
     });
 
     it("DELIVERED is not a payment status", () => {
-      expect(isValidPaymentTransition("SUCCEEDED" as any, "DELIVERED" as any)).toBe(false);
+      expect(isValidPaymentTransition("SUCCEEDED", "DELIVERED" as PaymentStatus)).toBe(false);
     });
   });
 

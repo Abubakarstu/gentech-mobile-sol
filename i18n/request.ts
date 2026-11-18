@@ -1,8 +1,5 @@
 import { getRequestConfig } from "next-intl/server"
 
-import { getCountryConfig } from "@/lib/countries"
-import { getCountryFromCookie } from "@/lib/country-cookie"
-
 /**
  * next-intl request configuration.
  *
@@ -16,9 +13,7 @@ import { getCountryFromCookie } from "@/lib/country-cookie"
 export default getRequestConfig(async ({ locale }) => {
   // Validate locale
   const validLocales = ["ar", "ur", "en"] as const
-  const resolvedLocale = validLocales.includes(locale as any)
-    ? (locale as (typeof validLocales)[number])
-    : "en"
+  const resolvedLocale = validLocales.find((value) => value === locale) ?? "en"
 
   return {
     locale: resolvedLocale,

@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 
 import { ROUTES } from "@/lib/constants";
+import type { CountryCode } from "@/lib/countries/types";
 import { getCurrentUser } from "@/lib/session";
-import { requireAdmin } from "@/features/admin/lib/require-admin";
 import { getSellerVerification } from "@/features/seller-verification/services/seller-verification.service";
 
 export default async function SellerVerificationPage({
@@ -14,8 +14,8 @@ export default async function SellerVerificationPage({
   const user = await getCurrentUser();
   if (!user) redirect(ROUTES.signIn);
 
-  const countryCode = country.toUpperCase() === "BH" ? "BH" : "PK";
-  const verification = await getSellerVerification(user.id, countryCode as any);
+  const countryCode: CountryCode = country.toUpperCase() === "BH" ? "BH" : "PK";
+  const verification = await getSellerVerification(user.id, countryCode);
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">

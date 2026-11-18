@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import type { Region } from "@/lib/generated/prisma/enums";
 import {
   createListingPromotion,
   createPromotionPlan,
@@ -33,7 +34,7 @@ function warn(scope: string, error: unknown): void {
 // Promotion Plans (Admin)
 // ---------------------------------------------------------------------------
 
-export async function getActivePlans(region?: string): Promise<PromotionPlanDto[]> {
+export async function getActivePlans(region?: Region): Promise<PromotionPlanDto[]> {
   try {
     return await listActivePromotionPlans(region);
   } catch (error) {
@@ -103,7 +104,7 @@ export async function getListingPromotionInfo(
   }
 }
 
-export async function getActivePromotions(region?: string): Promise<
+export async function getActivePromotions(region?: Region): Promise<
   { listingId: string; promotion: ListingPromotionDto }[]
 > {
   try {

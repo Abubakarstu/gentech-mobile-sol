@@ -18,6 +18,15 @@ export interface TransitionResult {
   newStatus?: OrderStatus;
 }
 
+interface OrderStatusAuditSnapshot {
+  status?: OrderStatus;
+  trackingNumber?: string;
+}
+
+function readStatusAuditSnapshot(value: unknown): OrderStatusAuditSnapshot {
+  return value !== null && typeof value === "object" ? (value as OrderStatusAuditSnapshot) : {};
+}
+
 // Valid status transitions
 const TRANSITIONS: StatusTransition[] = [
   { from: "PENDING", to: "CONFIRMED", allowedRoles: ["ADMIN", "SYSTEM"] },
@@ -119,7 +128,7 @@ export async function transitionOrderStatus(
       await tx.order.update({
         where: { id: orderId },
         data: {
-          status: newStatus as any,
+          status: newStatus,
           ...(trackingNumber ? { notes: `Tracking: ${trackingNumber}` } : {}),
         },
       });
@@ -173,14 +182,18 @@ export async function getOrderStatusHistory(orderId: string) {
         actor: { select: { name: true, email: true } },
       },
     });
-    return logs.map((log) => ({
-      id: log.id,
-      actor: log.actor.name,
-      previousStatus: (log.before as any)?.status,
-      newStatus: (log.after as any)?.status,
-      trackingNumber: (log.after as any)?.trackingNumber,
-      timestamp: log.timestamp.toISOString(),
-    }));
+    return logs.map((log) => {
+      const before = readStatusAuditSnapshot(log.before);
+      const after = readStatusAuditSnapshot(log.after);
+      return {
+        id: log.id,
+        actor: log.actor.name,
+        previousStatus: before.status,
+        newStatus: after.status,
+        trackingNumber: after.trackingNumber,
+        timestamp: log.timestamp.toISOString(),
+      };
+    });
   } catch {
     return [];
   }

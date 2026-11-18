@@ -1,6 +1,5 @@
 import "server-only";
 
-import type { NextResponse } from "next/server";
 // FCM config from environment (not validated by env.ts schema)
 const FCM_PROJECT_ID = process.env.NEXT_PUBLIC_FCM_PROJECT_ID;
 const FCM_CLIENT_EMAIL = process.env.NEXT_PUBLIC_FCM_CLIENT_EMAIL;
@@ -13,13 +12,36 @@ export interface FcmConfig {
   privateKey: string;
 }
 
+interface GoogleApisModule {
+  google: {
+    auth: {
+      JWT: new (
+        clientEmail: string | undefined,
+        keyFile: undefined,
+        privateKey: string | undefined,
+        scopes: string[],
+      ) => unknown;
+    };
+    firebasecloudmessaging: (options: {
+      version: string;
+      auth: unknown;
+    }) => {
+      projects: {
+        messages: {
+          send: (request: unknown) => Promise<{ data?: { name?: string } }>;
+        };
+      };
+    };
+  };
+}
+
 // Lazy-load googleapis to avoid build errors when not installed
-let googleApis: any = null;
+let googleApis: GoogleApisModule["google"] | null = null;
 async function getGoogleApis() {
   if (googleApis) return googleApis;
   try {
     // @ts-expect-error - googleapis is optional and may not be installed
-    const mod = await import("googleapis");
+    const mod: GoogleApisModule = await import(/* turbopackOptional: true */ "googleapis");
     googleApis = mod.google;
     return googleApis;
   } catch {
@@ -78,7 +100,7 @@ export async function sendFcmMessage(params: {
       },
     });
 
-    return { success: true, messageId: result.data.name };
+    return { success: true, messageId: result.data?.name };
   } catch (error) {
     console.error("[FCM] Send failed:", error);
     return { success: false, error: (error as Error).message };
@@ -155,7 +177,7 @@ export async function sendFcmToTopic(params: {
       },
     });
 
-    return { success: true, messageId: result.data.name };
+    return { success: true, messageId: result.data?.name };
   } catch (error) {
     console.error("[FCM] Send to topic failed:", error);
     return { success: false, error: (error as Error).message };

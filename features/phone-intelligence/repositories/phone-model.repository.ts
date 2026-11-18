@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma';
-import type { PhoneModel, Brand } from '@/lib/generated/prisma/client';
+import { Prisma, type PhoneModel, type Brand } from '@/lib/generated/prisma/client';
 
 export type PhoneModelWithBrand = PhoneModel & {
   brand: Brand;
@@ -136,7 +136,7 @@ export class PhoneModelRepository {
         brandId: data.brandId,
         modelNumber: data.modelNumber ?? null,
         releaseDate: data.releaseDate ?? null,
-        launchPrice: data.launchPrice ? (data.launchPrice as any) : null,
+        launchPrice: data.launchPrice ? new Prisma.Decimal(data.launchPrice) : null,
         displaySize: data.displaySize ?? null,
         displayResolution: data.displayResolution ?? null,
         displayType: data.displayType ?? null,
@@ -196,9 +196,9 @@ export class PhoneModelRepository {
       isUpcoming?: boolean;
     },
   ): Promise<PhoneModelWithBrand> {
-    const updateData: any = { ...data };
+    const updateData: Prisma.PhoneModelUncheckedUpdateInput = { ...data };
     if (data.launchPrice !== undefined) {
-      updateData.launchPrice = data.launchPrice !== null ? data.launchPrice : null;
+      updateData.launchPrice = data.launchPrice !== null ? new Prisma.Decimal(data.launchPrice) : null;
     }
     return prisma.phoneModel.update({
       where: { id },

@@ -578,13 +578,3 @@ export async function convertLeadToDealer(input: {
 
   return { dealer: toDealerDto(newDealer), leadConverted: true };
 }
-
-/**
- * Validates that a dealer owns a resource (listing, branch, inventory)
- * Throws error if dealer does not own the resource
- */
-async function validateDealerOwnership(dealerId: string, resourceDealerId: string, resourceType: "listing" | "branch" | "inventory"): Promise<void> {
-  if (dealerId !== resourceDealerId) {
-    throw new Error(`Dealer does not own this ${resourceType}`);
-  }
-}

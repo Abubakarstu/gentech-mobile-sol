@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import type { Region } from "@/lib/generated/prisma/enums";
 import type { CountryCode } from "@/lib/countries/types";
 
 export interface ShippingMethodDto {
@@ -37,10 +38,10 @@ export interface ShippingCalculation {
  * Get available shipping methods for a country.
  */
 export async function getShippingMethods(country: CountryCode): Promise<ShippingMethodDto[]> {
-  const region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
+  const region: Region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
   try {
     const methods = await prisma.shippingMethod.findMany({
-      where: { region: region as any, isActive: true },
+      where: { region, isActive: true },
       orderBy: { position: "asc" },
     });
     return methods.map((m) => ({
@@ -61,10 +62,10 @@ export async function getShippingMethods(country: CountryCode): Promise<Shipping
  * Get delivery zones for a country.
  */
 export async function getDeliveryZones(country: CountryCode): Promise<DeliveryZoneDto[]> {
-  const region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
+  const region: Region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
   try {
     const zones = await prisma.deliveryZone.findMany({
-      where: { region: region as any, isActive: true },
+      where: { region, isActive: true },
       orderBy: { name: "asc" },
     });
     return zones.map((z) => ({
@@ -88,7 +89,7 @@ export async function calculateShipping(
   methodId: string,
   zoneId?: string,
 ): Promise<ShippingCalculation | null> {
-  const region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
+  const region: Region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
   try {
     const method = await prisma.shippingMethod.findUnique({
       where: { id: methodId },

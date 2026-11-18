@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ROUTES } from "@/lib/constants";
+import type { CountryCode } from "@/lib/countries/types";
 import { requireAdmin } from "@/features/admin/lib/require-admin";
 import { getPendingVerifications } from "@/features/seller-verification/services/seller-verification.service";
 
@@ -15,9 +16,9 @@ export default async function AdminSellerVerificationsPage({
 
   const sp = await searchParams;
   const country = (sp.country as string) || "PK";
-  const countryCode = country === "BH" ? "BH" : "PK";
+  const countryCode: CountryCode = country === "BH" ? "BH" : "PK";
 
-  const verifications = await getPendingVerifications(countryCode as any);
+  const verifications = await getPendingVerifications(countryCode);
 
   return (
     <div className="space-y-5">

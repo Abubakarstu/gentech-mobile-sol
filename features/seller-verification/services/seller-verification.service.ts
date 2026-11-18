@@ -1,6 +1,8 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/lib/generated/prisma/client";
+import type { Region } from "@/lib/generated/prisma/enums";
 import type { CountryCode } from "@/lib/countries/types";
 
 export interface SellerVerificationDto {
@@ -23,10 +25,10 @@ export async function getSellerVerification(
   sellerId: string,
   country: CountryCode,
 ): Promise<SellerVerificationDto | null> {
-  const region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
+  const region: Region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
   try {
     const record = await prisma.sellerVerification.findFirst({
-      where: { sellerId, region: region as any },
+      where: { sellerId, region },
       orderBy: { createdAt: "desc" },
     });
     if (!record) return null;
@@ -53,16 +55,16 @@ export async function getSellerVerification(
 export async function submitVerification(
   sellerId: string,
   country: CountryCode,
-  documents: unknown,
+  documents: Prisma.InputJsonValue,
 ): Promise<SellerVerificationDto | null> {
-  const region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
+  const region: Region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
   try {
     const record = await prisma.sellerVerification.create({
       data: {
         sellerId,
-        region: region as any,
+        region,
         status: "PENDING",
-        documents: documents as any,
+        documents,
       },
     });
     return {
@@ -111,10 +113,10 @@ export async function reviewVerification(
  * Get all pending verifications for a country (admin).
  */
 export async function getPendingVerifications(country: CountryCode): Promise<SellerVerificationDto[]> {
-  const region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
+  const region: Region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
   try {
     const records = await prisma.sellerVerification.findMany({
-      where: { region: region as any, status: "PENDING" },
+      where: { region, status: "PENDING" },
       orderBy: { createdAt: "asc" },
     });
     return records.map((r) => ({

@@ -164,7 +164,7 @@ export async function updatePaymentStatus(
     await prisma.payment.update({
       where: { id },
       data: {
-        status: status as any,
+        status,
         ...(data?.providerTransactionId && { providerTransactionId: data.providerTransactionId }),
         ...(data?.failureReason && { failureReason: data.failureReason }),
         ...(data?.verifiedAt && { verifiedAt: data.verifiedAt }),

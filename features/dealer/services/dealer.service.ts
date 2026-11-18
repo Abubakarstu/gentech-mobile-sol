@@ -6,6 +6,7 @@ import {
   addUserToDealer,
   createBranch,
   createDealer,
+  convertLeadToDealer as convertLeadToDealerRecord,
   getBranchesByDealer,
   getDealerById,
   getDealerMembershipByUserId,
@@ -32,53 +33,12 @@ import type {
   DealerUserDto,
   UpdateDealerInput,
 } from "../types";
-import { DealerRole, DealerPermission } from "../types";
 
 // Re-export for use in actions
 export const addInventory = addInventoryToDealer;
 
 function warn(scope: string, error: unknown): void {
   console.warn(`[dealer] ${scope}:`, error instanceof Error ? error.message : error);
-}
-
-/** Checks if a user role has the required permission */
-function hasPermission(role: string, permission: string): boolean {
-  const rolePermissions: Record<string, string[]> = {
-    [DealerRole.OWNER]: [
-      DealerPermission.MANAGE_DEALER,
-      DealerPermission.MANAGE_BRANCH,
-      DealerPermission.MANAGE_INVENTORY,
-      DealerPermission.VIEW_DEALER,
-      DealerPermission.VIEW_BRANCH,
-      DealerPermission.VIEW_INVENTORY,
-      DealerPermission.CREATE_LEAD,
-      DealerPermission.EDIT_LEAD,
-      DealerPermission.CONVERT_LEAD,
-      DealerPermission.DELETE_LEAD,
-      DealerPermission.APPROVE_DEALER,
-      DealerPermission.REJECT_DEALER,
-      DealerPermission.MANAGE_DEALERS,
-    ],
-    [DealerRole.MANAGER]: [
-      DealerPermission.MANAGE_DEALER,
-      DealerPermission.VIEW_DEALER,
-      DealerPermission.VIEW_BRANCH,
-      DealerPermission.VIEW_INVENTORY,
-      DealerPermission.CREATE_LEAD,
-      DealerPermission.EDIT_LEAD,
-      DealerPermission.CONVERT_LEAD,
-      // Managers can't delete leads or manage dealers
-    ],
-    [DealerRole.STAFF]: [
-      DealerPermission.VIEW_DEALER,
-      DealerPermission.VIEW_BRANCH,
-      DealerPermission.VIEW_INVENTORY,
-      // Staff can only view, not edit
-    ],
-  };
-
-  const permissions = rolePermissions[role] || [];
-  return permissions.includes(permission);
 }
 
 /**
@@ -316,98 +276,10 @@ export async function convertLeadToDealer(input: {
   conversionNotes?: string;
 }): Promise<{ dealer: DealerDto; leadConverted: boolean }> {
   try {
-    // Check if dealer already exists
-    const existingDealer = await prisma.dealer.findUnique({
-      where: { id: input.dealerId },
-    });
-
-    if (existingDealer) {
-      // Map prisma dealer to DealerDto manually
-      const { createdAt, updatedAt, ...rest } = existingDealer as any;
-      return { dealer: { ...rest, createdAt: createdAt?.toISOString(), updatedAt: updatedAt?.toISOString() } as DealerDto, leadConverted: false };
-    }
-
-    // Create the dealer account
-    const ownerId = input.leadId || "lead-user";
-    const slug = input.leadId || "dealer";
-
-    const newDealer = await prisma.dealer.create({
-      data: {
-        name: input.leadId || "New Dealer",
-        slug,
-        description: `Dealer converted from lead`,
-        businessName: input.leadId || "New Dealer",
-        businessType: "retailer",
-        taxNumber: "",
-        phone: "",
-        email: "",
-        city: "",
-        address: "",
-        status: "PENDING",
-        plan: "BASIC",
-        featuredUntil: null,
-        isVerified: false,
-        verifiedAt: null,
-        reviewNote: null,
-        listingCount: 0,
-        soldCount: 0,
-        rating: 0,
-        reviewCount: 0,
-        users: {
-          create: {
-            userId: ownerId,
-            role: "owner",
-          },
-        },
-      },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true,
-        logo: true,
-        coverImage: true,
-        businessName: true,
-        businessType: true,
-        taxNumber: true,
-        phone: true,
-        email: true,
-        website: true,
-        city: true,
-        address: true,
-        latitude: true,
-        longitude: true,
-        status: true,
-        plan: true,
-        planExpiresAt: true,
-        featuredUntil: true,
-        isVerified: true,
-        verifiedAt: true,
-        reviewNote: true,
-        listingCount: true,
-        soldCount: true,
-        rating: true,
-        reviewCount: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    const { createdAt, updatedAt, ...rest } = newDealer as any;
-    return { dealer: { ...rest, createdAt: createdAt?.toISOString(), updatedAt: updatedAt?.toISOString() } as DealerDto, leadConverted: true };
+    return await convertLeadToDealerRecord(input);
   } catch (error) {
     warn("failed to convert lead to dealer", error);
     throw new Error("Could not convert lead to dealer.");
-  }
-}
-
-/**
- * Validates that a dealer owns a resource (listing, branch, inventory)
- * Throws error if dealer does not own the resource
- */
-async function validateDealerOwnership(dealerId: string, resourceDealerId: string, resourceType: "listing" | "branch" | "inventory"): Promise<void> {
-  if (dealerId !== resourceDealerId) {
-    throw new Error(`Dealer does not own this ${resourceType}`);
   }
 }
 

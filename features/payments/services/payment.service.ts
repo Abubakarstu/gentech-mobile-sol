@@ -2,12 +2,12 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { getPaymentProvider, getDefaultProvider, getProvidersForCountry } from "../providers";
-import { createPayment, findPaymentById, findPaymentByOrderId, updatePaymentStatus, findPaymentByIdempotencyKey } from "../repositories/payment.repository";
-import type { PaymentInitParams, PaymentInitResult, PaymentVerifyParams, PaymentVerifyResult, PaymentStatus } from "../types";
+import { createPayment, findPaymentById, updatePaymentStatus, findPaymentByIdempotencyKey } from "../repositories/payment.repository";
+import type { PaymentProviderId, PaymentVerifyResult, WebhookPayload } from "../types";
 
 export interface InitiatePaymentInput {
   orderId: string;
-  providerId?: string;
+  providerId?: PaymentProviderId;
   idempotencyKey?: string;
 }
 
@@ -64,7 +64,7 @@ export async function initiatePayment(input: InitiatePaymentInput): Promise<Init
     }
 
     // 5. Get provider
-    const providerId = (input.providerId as any) || getDefaultProvider(country);
+    const providerId = input.providerId ?? getDefaultProvider(country);
     const provider = getPaymentProvider(providerId);
     if (!provider) {
       return { success: false, error: "Payment provider not available" };
@@ -147,7 +147,7 @@ export async function verifyPayment(paymentId: string, providerReference: string
       return { success: true, status: "SUCCEEDED", providerTransactionId: payment.providerTransactionId ?? undefined };
     }
 
-    const provider = getPaymentProvider(payment.provider as any);
+    const provider = getPaymentProvider(payment.provider as PaymentProviderId);
     if (!provider) {
       return { success: false, status: "FAILED", error: "Provider not found" };
     }
@@ -187,7 +187,7 @@ export async function verifyPayment(paymentId: string, providerReference: string
 /**
  * Process a webhook from a payment provider.
  */
-export async function processWebhook(payload: any): Promise<{ success: boolean; error?: string }> {
+export async function processWebhook(payload: WebhookPayload): Promise<{ success: boolean; error?: string }> {
   try {
     const provider = getPaymentProvider(payload.provider);
     if (!provider) {

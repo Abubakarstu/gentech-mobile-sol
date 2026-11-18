@@ -63,7 +63,7 @@ export function recordError(
     | "cron"
     | "other"
     | "monitoring-stats" = "other",
-  metadata?: Record<string, any>
+  metadata?: Record<string, unknown>
 ) {
   const errorRecord = {
     timestamp: new Date().toISOString(),

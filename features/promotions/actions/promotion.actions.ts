@@ -9,7 +9,6 @@ import {
   cancelPromotion,
   getActivePlans,
   getListingPromotionInfo,
-  getUserActivePromotions,
   pausePromotion,
   checkoutPromotion,
   recordPayment,
@@ -82,13 +81,14 @@ export async function promoteListingAction(
       "jazzcash",
     );
     return { ok: true, promotionId: result.promotionId };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("[promotions] promoteListing failed:", error);
-    if (error.message.includes("plan not found")) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("plan not found")) {
       return { ok: false, error: "Promotion plan not found or inactive." };
     }
-    if (error.message.includes("Could not start promotion checkout")) {
-      return { ok: false, error: error.message };
+    if (message.includes("Could not start promotion checkout")) {
+      return { ok: false, error: message };
     }
     return { ok: false, error: GENERIC_ERROR };
   }

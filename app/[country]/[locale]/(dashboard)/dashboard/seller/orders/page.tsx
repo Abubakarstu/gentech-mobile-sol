@@ -26,12 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
   REFUNDED: "text-orange-400",
 };
 
-export default async function SellerOrdersPage({
-  params,
-}: {
-  params: Promise<{ country: string; locale: string }>;
-}) {
-  const { country, locale } = await params;
+export default async function SellerOrdersPage() {
   const user = await getCurrentUser();
   if (!user) redirect(ROUTES.signIn);
 
@@ -52,8 +47,9 @@ export default async function SellerOrdersPage({
   });
 
   // Group by order
+  type SellerOrder = (typeof orderItems)[number]["order"];
   const ordersMap = new Map<string, {
-    order: any;
+    order: SellerOrder;
     items: typeof orderItems;
   }>();
 

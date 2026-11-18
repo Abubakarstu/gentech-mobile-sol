@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { ROUTES } from "@/lib/constants";
+import { Prisma, OrderStatus, type Region } from "@/lib/generated/prisma/client";
 import { requireAdmin } from "@/features/admin/lib/require-admin";
 import { prisma } from "@/lib/prisma";
 import { getAllowedTransitions } from "@/features/orders/services/order-status.service";
@@ -39,12 +40,13 @@ export default async function AdminOrdersPage({
   const status = (sp.status as string) || "ALL";
   const q = (sp.q as string) || "";
 
-  const where: any = {};
+  const where: Prisma.OrderWhereInput = {};
   if (country !== "ALL") {
-    where.region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
+    const region: Region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
+    where.region = region;
   }
-  if (status !== "ALL") {
-    where.status = status;
+  if (status !== "ALL" && (Object.values(OrderStatus) as string[]).includes(status)) {
+    where.status = status as OrderStatus;
   }
   if (q) {
     where.OR = [

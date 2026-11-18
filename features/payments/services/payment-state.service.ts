@@ -53,10 +53,10 @@ export async function atomicTransitionPayment(
     const result = await prisma.payment.updateMany({
       where: {
         id: paymentId,
-        status: fromStatus as any,
+        status: fromStatus,
       },
       data: {
-        status: toStatus as any,
+        status: toStatus,
         ...(data?.providerTransactionId && { providerTransactionId: data.providerTransactionId }),
         ...(data?.failureReason && { failureReason: data.failureReason }),
         ...(data?.verifiedAt && { verifiedAt: data.verifiedAt }),

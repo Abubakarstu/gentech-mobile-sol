@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
+import type { Region } from "@/lib/generated/prisma/enums";
 import { slugify } from "@/utils/slug";
 import type {
   CreateListingPromotionInput,
@@ -137,7 +138,7 @@ export async function createPromotionPlan(input: CreatePromotionPlanInput): Prom
       durationDays: input.durationDays,
       maxSlots: input.maxSlots,
       isActive: input.isActive ?? true,
-      region: (input.region as any) ?? "PAKISTAN",
+      region: input.region ?? "PAKISTAN",
     },
     select: { id: true },
   });
@@ -152,10 +153,10 @@ export async function getPromotionPlan(id: string): Promise<PromotionPlanDto | n
   return row ? toPlanDto(row) : null;
 }
 
-export async function listActivePromotionPlans(region?: string): Promise<PromotionPlanDto[]> {
+export async function listActivePromotionPlans(region?: Region): Promise<PromotionPlanDto[]> {
   const where: Prisma.PromotionPlanWhereInput = {
     isActive: true,
-    ...(region ? { region: region as any } : {}),
+    ...(region ? { region } : {}),
   };
   const rows = await prisma.promotionPlan.findMany({
     where,
@@ -165,8 +166,8 @@ export async function listActivePromotionPlans(region?: string): Promise<Promoti
   return rows.map(toPlanDto);
 }
 
-export async function listAllPromotionPlans(region?: string): Promise<PromotionPlanDto[]> {
-  const where: Prisma.PromotionPlanWhereInput = region ? { region: region as any } : {};
+export async function listAllPromotionPlans(region?: Region): Promise<PromotionPlanDto[]> {
+  const where: Prisma.PromotionPlanWhereInput = region ? { region } : {};
   const rows = await prisma.promotionPlan.findMany({
     where,
     orderBy: { createdAt: "desc" },
@@ -251,14 +252,14 @@ export async function updateListingPromotionStatus(
   });
 }
 
-export async function getActivePromotedListings(region?: string): Promise<
+export async function getActivePromotedListings(region?: Region): Promise<
   { listingId: string; promotion: ListingPromotionDto; listingTitle: string; amountPaid: number }[]
 > {
   const rows = await prisma.listingPromotion.findMany({
     where: {
       status: "ACTIVE",
       expiresAt: { gte: new Date() },
-      ...(region ? { listing: { region: region as any } } : {}),
+      ...(region ? { listing: { region } } : {}),
     },
     include: {
       listing: {

@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
+import type { Region } from "@/lib/generated/prisma/enums";
 import { calculateTax } from "@/lib/tax";
 import { calculateShipping } from "@/features/shipping/services/shipping.service";
 import type { CountryCode } from "@/lib/countries/types";
@@ -37,7 +38,7 @@ function generateOrderNumber(): string {
  * Uses a database transaction to ensure atomicity.
  */
 export async function createOrder(input: CreateOrderInput): Promise<OrderResult> {
-  const region = input.country === "BH" ? "BAHRAIN" : "PAKISTAN";
+  const region: Region = input.country === "BH" ? "BAHRAIN" : "PAKISTAN";
   const currency = input.country === "BH" ? "BHD" : "PKR";
 
   try {
@@ -136,7 +137,7 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
         data: {
           orderNumber,
           customerId: input.customerId,
-          region: region as any,
+          region,
           currency,
           status: "PENDING",
           subtotal: new Prisma.Decimal(subtotal),
@@ -148,7 +149,7 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
           total: new Prisma.Decimal(total),
           shippingMethod: shippingMethodName,
           estimatedDays,
-          deliveryAddress: input.deliveryAddress as any,
+          deliveryAddress: input.deliveryAddress as Prisma.InputJsonValue,
           paymentMethod: input.paymentMethod,
           paymentStatus: "UNPAID",
           notes: input.notes,

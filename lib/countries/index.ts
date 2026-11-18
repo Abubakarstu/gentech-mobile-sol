@@ -49,7 +49,7 @@ export function getAvailableLocales(code: CountryCode): string[] {
 
 /** Check if a locale is available for a country. */
 export function isLocaleAvailable(country: CountryCode, locale: string): boolean {
-  return getCountryConfig(country).availableLocales.includes(locale as any)
+  return getCountryConfig(country).availableLocales.some((available) => available === locale)
 }
 
 /** Get the default currency for a country. */

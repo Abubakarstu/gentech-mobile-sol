@@ -101,12 +101,13 @@ export function calculatePercentage(amount: number, rate: number, currency: stri
 /**
  * Convert a Prisma Decimal to a number safely.
  */
-export function decimalToNumber(value: any): number {
+export function decimalToNumber(
+  value: number | string | { toNumber(): number } | null | undefined,
+): number {
   if (value === null || value === undefined) return 0;
   if (typeof value === "number") return value;
   if (typeof value === "string") return parseFloat(value);
-  if (value.toNumber) return value.toNumber();
-  return Number(value);
+  return value.toNumber();
 }
 
 /**

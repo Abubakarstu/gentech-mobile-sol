@@ -8,9 +8,7 @@ import { getRequestConfig } from "next-intl/server"
  */
 export default getRequestConfig(async ({ locale }) => {
   const validLocales = ["ar", "ur", "en"] as const
-  const resolvedLocale = validLocales.includes(locale as any)
-    ? (locale as (typeof validLocales)[number])
-    : "en"
+  const resolvedLocale = validLocales.find((value) => value === locale) ?? "en"
 
   return {
     locale: resolvedLocale,

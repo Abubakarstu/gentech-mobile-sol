@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
-import { transitionOrderStatus, getAllowedTransitions } from "@/features/orders/services/order-status.service";
+import { transitionOrderStatus, getAllowedTransitions, type OrderStatus } from "@/features/orders/services/order-status.service";
 
 export async function POST(request: Request) {
   try {
@@ -62,7 +62,7 @@ export async function GET(request: Request) {
     }
 
     const role = user.role || "USER";
-    const allowed = getAllowedTransitions(order.status as any, role);
+    const allowed = getAllowedTransitions(order.status as OrderStatus, role);
 
     return NextResponse.json({ currentStatus: order.status, allowedTransitions: allowed });
   } catch (error) {

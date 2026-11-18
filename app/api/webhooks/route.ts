@@ -11,7 +11,7 @@ type WebhookEvent =
 
 type WebhookPayload = {
   event: WebhookEvent;
-  data: any;
+  data: Record<string, unknown>;
   timestamp: string;
   signature?: string;
 };
