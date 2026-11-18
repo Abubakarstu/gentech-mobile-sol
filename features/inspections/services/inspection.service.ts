@@ -1,5 +1,8 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+
+import { CATALOG_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache";
 import { NOTIFICATION_TYPES, ROUTES } from "@/lib/constants";
 import { dispatchNotification } from "@/features/notifications/services/notification.service";
 import {
@@ -37,12 +40,21 @@ function warn(scope: string, error: unknown): void {
 
 /** Active packages for the request form + pricing page. Empty on any failure. */
 export async function getInspectionPlans(): Promise<InspectionPlanDto[]> {
-  try {
-    return await listActivePlans();
-  } catch (error) {
-    warn("could not load plans", error);
-    return [];
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        return await listActivePlans();
+      } catch (error) {
+        warn("could not load plans", error);
+        return [];
+      }
+    },
+    ["inspection-plans"],
+    {
+      revalidate: CATALOG_REVALIDATE_SECONDS,
+      tags: [CACHE_TAGS.catalog],
+    },
+  )();
 }
 
 /** A buyer's own inspection requests. Empty on any failure. */

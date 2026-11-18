@@ -261,7 +261,8 @@ export async function getActivePromotedListings(region?: Region): Promise<
       expiresAt: { gte: new Date() },
       ...(region ? { listing: { region } } : {}),
     },
-    include: {
+    select: {
+      ...promotionSelect,
       listing: {
         select: { title: true },
       },
@@ -271,9 +272,11 @@ export async function getActivePromotedListings(region?: Region): Promise<
       payments: {
         where: { status: "COMPLETED" },
         select: { amount: true },
+        take: 1,
       },
     },
     orderBy: { createdAt: "desc" },
+    take: 100,
   });
 
   return rows.map((row) => ({

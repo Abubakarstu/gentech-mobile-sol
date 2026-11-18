@@ -212,9 +212,9 @@ export class ValuationService {
       select: {
         price: true,
         createdAt: true,
-        condition: true,
       },
       orderBy: { createdAt: 'asc' },
+      take: 2000,
     });
 
     // Group by week

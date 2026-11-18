@@ -118,6 +118,7 @@ export async function getPendingVerifications(country: CountryCode): Promise<Sel
     const records = await prisma.sellerVerification.findMany({
       where: { region, status: "PENDING" },
       orderBy: { createdAt: "asc" },
+      take: 100,
     });
     return records.map((r) => ({
       id: r.id,

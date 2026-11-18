@@ -413,6 +413,7 @@ export async function listRequestsForRequester(
     where: { requesterId },
     orderBy: { createdAt: "desc" },
     select: requestSelect,
+    take: 100,
   });
   return rows.map(toRequestDto);
 }
@@ -453,6 +454,7 @@ export async function listInspectorQueue(
     where,
     orderBy: [{ status: "asc" }, { createdAt: "desc" }],
     select: requestSelect,
+    take: 100,
   });
   return rows.map(toRequestDto);
 }

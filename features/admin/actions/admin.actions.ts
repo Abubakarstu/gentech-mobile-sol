@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 
+import { CACHE_TAGS } from "@/lib/cache";
 import { LISTING_STATUSES, REPORT_STATUSES, ROUTES, USER_ROLES } from "@/lib/constants";
 import { requireAdmin } from "@/features/admin/lib/require-admin";
 import { logAudit } from "@/features/audit";
@@ -151,6 +152,7 @@ export async function adminSetListingStatusAction(input: {
 
     revalidatePath(ROUTES.adminListings);
     if (activated) revalidatePath(ROUTES.marketplace);
+    updateTag(CACHE_TAGS.catalog);
   });
 }
 
@@ -161,6 +163,7 @@ export async function adminDeleteListingAction(input: {
     if (!input.listingId) return { ok: false, error: "Invalid request." };
     await adminRemoveListing(input.listingId);
     revalidatePath(ROUTES.adminListings);
+    updateTag(CACHE_TAGS.catalog);
   });
 }
 
@@ -181,6 +184,7 @@ export async function approveListingAction(input: { listingId: string }): Promis
     });
     revalidatePath(ROUTES.adminListings);
     if (activated) revalidatePath(ROUTES.marketplace);
+    updateTag(CACHE_TAGS.catalog);
   });
 }
 
@@ -211,6 +215,7 @@ export async function rejectListingAction(input: {
       after: { status: "REJECTED", reason: parsed.data.reason },
     });
     revalidatePath(ROUTES.adminListings);
+    updateTag(CACHE_TAGS.catalog);
   });
 }
 
@@ -261,6 +266,7 @@ export async function createCategoryAction(input: {
       parentId: parsed.data.parentId || undefined,
     });
     revalidatePath(ROUTES.adminCategories);
+    updateTag(CACHE_TAGS.catalog);
   });
 }
 
@@ -278,6 +284,7 @@ export async function renameCategoryAction(input: {
     if (!parsed.success) return { ok: false, error: "Enter a valid name (2–60 chars)." };
     await renameCategory(parsed.data.categoryId, parsed.data.name);
     revalidatePath(ROUTES.adminCategories);
+    updateTag(CACHE_TAGS.catalog);
   });
 }
 
@@ -289,6 +296,7 @@ export async function setCategoryActiveAction(input: {
     if (!input.categoryId) return { ok: false, error: "Invalid request." };
     await setCategoryActive(input.categoryId, input.isActive);
     revalidatePath(ROUTES.adminCategories);
+    updateTag(CACHE_TAGS.catalog);
   });
 }
 
@@ -298,5 +306,6 @@ export async function deleteCategoryAction(input: { categoryId: string }): Promi
     const deleted = await deleteCategory(input.categoryId);
     if (!deleted) return { ok: false, error: "Category has listings and can't be deleted." };
     revalidatePath(ROUTES.adminCategories);
+    updateTag(CACHE_TAGS.catalog);
   });
 }

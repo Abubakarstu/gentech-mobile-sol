@@ -30,37 +30,38 @@ export default async function SellerOrdersPage() {
   const user = await getCurrentUser();
   if (!user) redirect(ROUTES.signIn);
 
-  // Get orders containing this seller's products
-  const orderItems = await prisma.orderItem.findMany({
+  const orders = await prisma.order.findMany({
     where: {
-      listing: { sellerId: user.id },
+      items: { some: { listing: { sellerId: user.id } } },
     },
-    include: {
-      order: {
-        include: {
-          customer: { select: { name: true, email: true } },
+    select: {
+      id: true,
+      orderNumber: true,
+      status: true,
+      region: true,
+      paymentStatus: true,
+      currency: true,
+      createdAt: true,
+      deliveryAddress: true,
+      shippingMethod: true,
+      estimatedDays: true,
+      customer: { select: { name: true, email: true } },
+      items: {
+        where: { listing: { sellerId: user.id } },
+        select: {
+          id: true,
+          title: true,
+          unitPrice: true,
+          currency: true,
+          quantity: true,
+          lineTotal: true,
         },
+        orderBy: { createdAt: "desc" },
       },
-      listing: { select: { title: true, sellerId: true } },
     },
     orderBy: { createdAt: "desc" },
+    take: 100,
   });
-
-  // Group by order
-  type SellerOrder = (typeof orderItems)[number]["order"];
-  const ordersMap = new Map<string, {
-    order: SellerOrder;
-    items: typeof orderItems;
-  }>();
-
-  for (const item of orderItems) {
-    if (!ordersMap.has(item.orderId)) {
-      ordersMap.set(item.orderId, { order: item.order, items: [] });
-    }
-    ordersMap.get(item.orderId)!.items.push(item);
-  }
-
-  const orders = Array.from(ordersMap.values());
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
@@ -78,7 +79,8 @@ export default async function SellerOrdersPage() {
         </div>
       ) : (
         <div className="mt-6 space-y-4">
-          {orders.map(({ order, items }) => {
+          {orders.map((order) => {
+            const items = order.items;
             const allowedTransitions = getAllowedTransitions(order.status, "SELLER");
             return (
               <div

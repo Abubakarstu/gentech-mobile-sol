@@ -1,6 +1,9 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+
 import { prisma } from "@/lib/prisma";
+import { CATALOG_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache";
 import type { Region } from "@/lib/generated/prisma/enums";
 import {
   createListingPromotion,
@@ -35,12 +38,21 @@ function warn(scope: string, error: unknown): void {
 // ---------------------------------------------------------------------------
 
 export async function getActivePlans(region?: Region): Promise<PromotionPlanDto[]> {
-  try {
-    return await listActivePromotionPlans(region);
-  } catch (error) {
-    warn("failed to load active plans", error);
-    return [];
-  }
+  return unstable_cache(
+    async () => {
+      try {
+        return await listActivePromotionPlans(region);
+      } catch (error) {
+        warn("failed to load active plans", error);
+        return [];
+      }
+    },
+    ["promotion-plans", region ?? "all"],
+    {
+      revalidate: CATALOG_REVALIDATE_SECONDS,
+      tags: [CACHE_TAGS.catalog],
+    },
+  )();
 }
 
 export async function getAllPlans(): Promise<PromotionPlanDto[]> {
@@ -144,9 +156,11 @@ export async function getUserActivePromotions(userId: string): Promise<
         payments: {
           where: { status: "COMPLETED" },
           select: { amount: true },
+          take: 1,
         },
       },
       orderBy: { createdAt: "desc" },
+      take: 100,
     });
 
     return promotions.map((p) => ({

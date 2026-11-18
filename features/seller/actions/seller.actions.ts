@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 
+import { CACHE_TAGS } from "@/lib/cache";
 import { LISTING_STATUSES, ROUTES } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
 import {
@@ -21,6 +22,7 @@ const GENERIC_ERROR = "Something went wrong. Please try again.";
 function revalidateSellerSurfaces() {
   revalidatePath(ROUTES.myListings);
   revalidatePath(ROUTES.dashboard);
+  updateTag(CACHE_TAGS.catalog);
 }
 
 /** Marks one of the current seller's listings as SOLD. */

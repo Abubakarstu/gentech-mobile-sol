@@ -1,7 +1,8 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
+import { CACHE_TAGS } from "@/lib/cache";
 import { ROUTES } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
 import { createListingSchema, type CreateListingInput } from "../schemas/create-listing";
@@ -33,6 +34,7 @@ export async function createListingAction(input: CreateListingInput): Promise<Cr
     const { id, slug } = await createListing(parsed.data, user.id);
     revalidatePath(ROUTES.marketplace);
     revalidatePath(ROUTES.dashboard);
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true, id, slug };
   } catch (error) {
     console.error("[create-listing] failed:", error);

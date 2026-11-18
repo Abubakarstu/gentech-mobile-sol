@@ -1,8 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 
+import { CACHE_TAGS } from "@/lib/cache";
 import { requireAdmin } from "@/features/admin/lib/require-admin";
 import { logAudit } from "@/features/audit";
 import {
@@ -55,6 +56,7 @@ export async function createCountryAction(
       after: country,
     });
     revalidatePath("/admin/locations");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Failed to create country." };
@@ -90,6 +92,7 @@ export async function updateCountryAction(
       after: updated,
     });
     revalidatePath("/admin/locations");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Failed to update country." };
@@ -115,6 +118,7 @@ export async function createCityAction(input: z.infer<typeof createCitySchema>):
       after: city,
     });
     revalidatePath("/admin/locations");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Failed to create city." };
@@ -152,6 +156,7 @@ export async function updateCityAction(input: z.infer<typeof updateCitySchema>):
       after: updated,
     });
     revalidatePath("/admin/locations");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Failed to update city." };
@@ -173,6 +178,7 @@ export async function deleteCityAction(id: string): Promise<ActionResult> {
       resourceId: parsed.data,
     });
     revalidatePath("/admin/locations");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Failed to delete city." };
@@ -210,6 +216,7 @@ export async function updateAreaAction(input: z.infer<typeof updateAreaSchema>):
       after: updated,
     });
     revalidatePath("/admin/locations");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Failed to update area." };
@@ -235,6 +242,7 @@ export async function createAreaAction(input: z.infer<typeof createAreaSchema>):
       after: area,
     });
     revalidatePath("/admin/locations");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Failed to create area." };
@@ -256,6 +264,7 @@ export async function deleteAreaAction(id: string): Promise<ActionResult> {
       resourceId: parsed.data,
     });
     revalidatePath("/admin/locations");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Failed to delete area." };

@@ -49,77 +49,77 @@ type ListingCardRow = Prisma.ListingGetPayload<{ select: typeof cardSelect }>;
 
 function buildListingConditions(filters: ListingFilters, ranked: boolean): Prisma.Sql[] {
   const conditions: Prisma.Sql[] = [
-    Prisma.sql`"status"::text = 'ACTIVE'`,
-    Prisma.sql`"deletedAt" IS NULL`,
+    Prisma.sql`l."status"::text = 'ACTIVE'`,
+    Prisma.sql`l."deletedAt" IS NULL`,
   ];
 
   if (ranked && filters.q) {
-    conditions.push(Prisma.sql`"searchVector" @@ websearch_to_tsquery('english', ${filters.q})`);
+    conditions.push(Prisma.sql`l."searchVector" @@ websearch_to_tsquery('english', ${filters.q})`);
   } else if (filters.q) {
     conditions.push(
-      Prisma.sql`(position(lower(${filters.q}) in lower("title")) > 0 OR position(lower(${filters.q}) in lower("description")) > 0)`,
+      Prisma.sql`(position(lower(${filters.q}) in lower(l."title")) > 0 OR position(lower(${filters.q}) in lower(l."description")) > 0)`,
     );
   }
   if (filters.category) {
     conditions.push(
-      Prisma.sql`"categoryId" IN (SELECT "id" FROM "category" WHERE "slug" = ${filters.category})`,
+      Prisma.sql`l."categoryId" IN (SELECT "id" FROM "category" WHERE "slug" = ${filters.category})`,
     );
   }
   if (filters.brand) {
     conditions.push(
-      Prisma.sql`"brandId" IN (SELECT "id" FROM "brand" WHERE "slug" = ${filters.brand})`,
+      Prisma.sql`l."brandId" IN (SELECT "id" FROM "brand" WHERE "slug" = ${filters.brand})`,
     );
   }
   if (filters.condition) {
-    conditions.push(Prisma.sql`"condition"::text = ${filters.condition}`);
+    conditions.push(Prisma.sql`l."condition"::text = ${filters.condition}`);
   }
   if (filters.city) {
-    conditions.push(Prisma.sql`lower("city") = lower(${filters.city})`);
+    conditions.push(Prisma.sql`lower(l."city") = lower(${filters.city})`);
   }
   if (filters.minPrice !== undefined) {
-    conditions.push(Prisma.sql`"price" >= ${filters.minPrice}`);
+    conditions.push(Prisma.sql`l."price" >= ${filters.minPrice}`);
   }
   if (filters.maxPrice !== undefined) {
-    conditions.push(Prisma.sql`"price" <= ${filters.maxPrice}`);
+    conditions.push(Prisma.sql`l."price" <= ${filters.maxPrice}`);
   }
   if (filters.storage) {
-    conditions.push(Prisma.sql`"attributes"->>'storage' = ${filters.storage}`);
+    conditions.push(Prisma.sql`l."attributes"->>'storage' = ${filters.storage}`);
   }
   if (filters.ram) {
-    conditions.push(Prisma.sql`"attributes"->>'ram' = ${filters.ram}`);
+    conditions.push(Prisma.sql`l."attributes"->>'ram' = ${filters.ram}`);
   }
   if (filters.color) {
-    conditions.push(Prisma.sql`"attributes"->>'color' = ${filters.color}`);
+    conditions.push(Prisma.sql`l."attributes"->>'color' = ${filters.color}`);
   }
   if (filters.batteryHealthMin !== undefined) {
     conditions.push(
-      Prisma.sql`CASE WHEN jsonb_typeof("attributes"->'batteryHealth') = 'number' THEN ("attributes"->>'batteryHealth')::numeric >= ${filters.batteryHealthMin} ELSE false END`,
+      Prisma.sql`CASE WHEN jsonb_typeof(l."attributes"->'batteryHealth') = 'number' THEN (l."attributes"->>'batteryHealth')::numeric >= ${filters.batteryHealthMin} ELSE false END`,
     );
   }
   if (filters.ptaStatus) {
-    conditions.push(Prisma.sql`"attributes"->>'ptaStatus' = ${filters.ptaStatus}`);
+    conditions.push(Prisma.sql`l."attributes"->>'ptaStatus' = ${filters.ptaStatus}`);
   }
   if (filters.cpidStatus) {
-    conditions.push(Prisma.sql`"attributes"->>'cpidStatus' = ${filters.cpidStatus}`);
+    conditions.push(Prisma.sql`l."attributes"->>'cpidStatus' = ${filters.cpidStatus}`);
   }
   if (filters.warranty) {
-    conditions.push(Prisma.sql`"attributes"->>'warranty' = ${filters.warranty}`);
+    conditions.push(Prisma.sql`l."attributes"->>'warranty' = ${filters.warranty}`);
   }
   if (filters.isInspected !== undefined) {
     conditions.push(
       filters.isInspected
-        ? Prisma.sql`EXISTS (SELECT 1 FROM "inspection_request" WHERE "inspection_request"."listingId" = "listing"."id" AND "inspection_request"."status"::text = 'COMPLETED')`
-        : Prisma.sql`NOT EXISTS (SELECT 1 FROM "inspection_request" WHERE "inspection_request"."listingId" = "listing"."id" AND "inspection_request"."status"::text = 'COMPLETED')`,
+        ? Prisma.sql`EXISTS (SELECT 1 FROM "inspection_request" ir WHERE ir."listingId" = l."id" AND ir."status"::text = 'COMPLETED')`
+        : Prisma.sql`NOT EXISTS (SELECT 1 FROM "inspection_request" ir WHERE ir."listingId" = l."id" AND ir."status"::text = 'COMPLETED')`,
     );
   }
   if (filters.isDealer !== undefined) {
     conditions.push(
-      filters.isDealer ? Prisma.sql`"dealerId" IS NOT NULL` : Prisma.sql`"dealerId" IS NULL`,
+      filters.isDealer ? Prisma.sql`l."dealerId" IS NOT NULL` : Prisma.sql`l."dealerId" IS NULL`,
     );
   }
   if (filters.isVerifiedSeller !== undefined) {
     conditions.push(
-      Prisma.sql`"sellerId" IN (SELECT "id" FROM "user" WHERE "emailVerified" = ${filters.isVerifiedSeller})`,
+      Prisma.sql`l."sellerId" IN (SELECT "id" FROM "user" WHERE "emailVerified" = ${filters.isVerifiedSeller})`,
     );
   }
 
@@ -128,19 +128,19 @@ function buildListingConditions(filters: ListingFilters, ranked: boolean): Prism
 
 function buildOrderBy(filters: ListingFilters, ranked: boolean): Prisma.Sql {
   if (ranked && filters.q) {
-    return Prisma.sql`"isFeatured" DESC, ts_rank("searchVector", websearch_to_tsquery('english', ${filters.q})) DESC, "createdAt" DESC`;
+    return Prisma.sql`l."isFeatured" DESC, ts_rank(l."searchVector", websearch_to_tsquery('english', ${filters.q})) DESC, l."createdAt" DESC`;
   }
 
   switch (filters.sort) {
     case "price_asc":
-      return Prisma.sql`"isFeatured" DESC, "price" ASC, "createdAt" DESC`;
+      return Prisma.sql`l."isFeatured" DESC, l."price" ASC, l."createdAt" DESC`;
     case "price_desc":
-      return Prisma.sql`"isFeatured" DESC, "price" DESC, "createdAt" DESC`;
+      return Prisma.sql`l."isFeatured" DESC, l."price" DESC, l."createdAt" DESC`;
     case "popular":
-      return Prisma.sql`"isFeatured" DESC, "views" DESC, "createdAt" DESC`;
+      return Prisma.sql`l."isFeatured" DESC, l."views" DESC, l."createdAt" DESC`;
     case "recent":
     default:
-      return Prisma.sql`"isFeatured" DESC, "createdAt" DESC`;
+      return Prisma.sql`l."isFeatured" DESC, l."createdAt" DESC`;
   }
 }
 
@@ -154,7 +154,7 @@ export async function matchListingFilters(
   const projections = filterSets.map((filters, index) => {
     const conditions = Prisma.join(buildListingConditions(filters, false), " AND ");
     const alias = Prisma.raw(`"match_${index}"`);
-    return Prisma.sql`EXISTS (SELECT 1 FROM "listing" WHERE "id" = ${listingId} AND ${conditions}) AS ${alias}`;
+    return Prisma.sql`EXISTS (SELECT 1 FROM "listing" l WHERE l."id" = ${listingId} AND ${conditions}) AS ${alias}`;
   });
   const rows = await prisma.$queryRaw<Array<Record<string, boolean>>>(Prisma.sql`
     SELECT ${Prisma.join(projections, ", ")}
@@ -204,6 +204,60 @@ function toCardData(row: ListingCardRow): ListingCardData {
   };
 }
 
+interface ListingCardRawRow {
+  id: string;
+  title: string;
+  slug: string;
+  price: Prisma.Decimal | string | number;
+  currency: string;
+  condition: ListingCardData["condition"];
+  city: string | null;
+  isFeatured: boolean;
+  negotiable: boolean;
+  views: number;
+  createdAt: Date;
+  attributes: Record<string, unknown> | null;
+  brandName: string | null;
+  brandSlug: string | null;
+  categorySlug: string | null;
+  imageUrl: string | null;
+  sellerEmailVerified: boolean;
+  isInspected: boolean;
+  dealerId: string | null;
+  total: bigint | number;
+}
+
+function toSearchCardData(row: ListingCardRawRow): ListingCardData {
+  const attrs = row.attributes;
+  return {
+    id: row.id,
+    title: row.title,
+    slug: row.slug,
+    price: Number(row.price),
+    currency: row.currency,
+    condition: row.condition,
+    city: row.city ?? "—",
+    brand: row.brandName ?? undefined,
+    brandSlug: row.brandSlug ?? undefined,
+    categorySlug: row.categorySlug ?? undefined,
+    isFeatured: row.isFeatured,
+    negotiable: row.negotiable,
+    views: row.views,
+    createdAt: row.createdAt.toISOString(),
+    imageUrl: row.imageUrl ?? undefined,
+    storage: typeof attrs?.storage === "string" ? attrs.storage : undefined,
+    ram: typeof attrs?.ram === "string" ? attrs.ram : undefined,
+    color: typeof attrs?.color === "string" ? attrs.color : undefined,
+    batteryHealth: typeof attrs?.batteryHealth === "number" ? attrs.batteryHealth : undefined,
+    ptaStatus: typeof attrs?.ptaStatus === "string" ? attrs.ptaStatus : undefined,
+    cpidStatus: typeof attrs?.cpidStatus === "string" ? attrs.cpidStatus : undefined,
+    warranty: typeof attrs?.warranty === "string" ? attrs.warranty : undefined,
+    isInspected: row.isInspected,
+    isVerifiedSeller: row.sellerEmailVerified,
+    isDealer: row.dealerId !== null,
+  };
+}
+
 async function searchListingRows(
   filters: ListingFilters,
   ranked: boolean,
@@ -211,38 +265,55 @@ async function searchListingRows(
 ): Promise<ListingSearchResult> {
   const conditions = buildListingConditions(filters, ranked);
 
-  // Add region isolation filter
   if (region) {
-    conditions.push(Prisma.sql`"region"::text = ${region}`);
+    conditions.push(Prisma.sql`l."region"::text = ${region}`);
   }
 
-  const whereSql = Prisma.join(conditions, " AND ");
-  const skip = (filters.page - 1) * filters.pageSize;
+  const rows = await prisma.$queryRaw<ListingCardRawRow[]>(Prisma.sql`
+    SELECT
+      l."id",
+      l."title",
+      l."slug",
+      l."price",
+      l."currency",
+      l."condition"::text AS "condition",
+      l."city",
+      l."isFeatured",
+      l."negotiable",
+      l."views",
+      l."createdAt",
+      l."attributes",
+      l."dealerId",
+      b."name" AS "brandName",
+      b."slug" AS "brandSlug",
+      c."slug" AS "categorySlug",
+      (
+        SELECT i."url"
+        FROM "listing_image" i
+        WHERE i."listingId" = l."id" AND i."isPrimary" = true
+        ORDER BY i."position" ASC
+        LIMIT 1
+      ) AS "imageUrl",
+      s."emailVerified" AS "sellerEmailVerified",
+      EXISTS (
+        SELECT 1
+        FROM "inspection_request" ir
+        WHERE ir."listingId" = l."id" AND ir."status"::text = 'COMPLETED'
+      ) AS "isInspected",
+      count(*) OVER() AS "total"
+    FROM "listing" l
+    LEFT JOIN "brand" b ON b."id" = l."brandId"
+    LEFT JOIN "category" c ON c."id" = l."categoryId"
+    LEFT JOIN "user" s ON s."id" = l."sellerId"
+    WHERE ${Prisma.join(conditions, " AND ")}
+    ORDER BY ${buildOrderBy(filters, ranked)}
+    LIMIT ${filters.pageSize} OFFSET ${(filters.page - 1) * filters.pageSize}
+  `);
 
-  const [idRows, countRows] = await Promise.all([
-    prisma.$queryRaw<Array<{ id: string }>>(Prisma.sql`
-      SELECT "id" FROM "listing"
-      WHERE ${whereSql}
-      ORDER BY ${buildOrderBy(filters, ranked)}
-      LIMIT ${filters.pageSize} OFFSET ${skip}
-    `),
-    prisma.$queryRaw<Array<{ count: bigint }>>(Prisma.sql`
-      SELECT count(*)::bigint AS "count" FROM "listing" WHERE ${whereSql}
-    `),
-  ]);
-
-  const total = Number(countRows[0]?.count ?? 0);
-  const ids = idRows.map((row) => row.id);
-  const rows = ids.length
-    ? await prisma.listing.findMany({
-        where: { id: { in: ids } },
-        select: cardSelect,
-      })
-    : [];
-  const byId = new Map(rows.map((row) => [row.id, toCardData(row)]));
+  const total = Number(rows[0]?.total ?? 0);
 
   return {
-    items: ids.map((id) => byId.get(id)).filter((item): item is ListingCardData => Boolean(item)),
+    items: rows.map(toSearchCardData),
     total,
     page: filters.page,
     pageSize: filters.pageSize,

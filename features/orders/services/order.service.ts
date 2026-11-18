@@ -132,7 +132,6 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
     const orderNumber = generateOrderNumber();
 
     const order = await prisma.$transaction(async (tx) => {
-      // Create order
       const newOrder = await tx.order.create({
         data: {
           orderNumber,
@@ -153,25 +152,19 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
           paymentMethod: input.paymentMethod,
           paymentStatus: "UNPAID",
           notes: input.notes,
+          items: {
+            create: orderItems.map((item) => ({
+              listingId: item.listingId,
+              title: item.title,
+              unitPrice: new Prisma.Decimal(item.unitPrice),
+              currency: item.currency,
+              quantity: item.quantity,
+              lineTotal: new Prisma.Decimal(item.lineTotal),
+            })),
+          },
         },
       });
 
-      // Create order items
-      for (const item of orderItems) {
-        await tx.orderItem.create({
-          data: {
-            orderId: newOrder.id,
-            listingId: item.listingId,
-            title: item.title,
-            unitPrice: new Prisma.Decimal(item.unitPrice),
-            currency: item.currency,
-            quantity: item.quantity,
-            lineTotal: new Prisma.Decimal(item.lineTotal),
-          },
-        });
-      }
-
-      // Clear cart
       await tx.cartItem.deleteMany({
         where: { userId: input.customerId },
       });

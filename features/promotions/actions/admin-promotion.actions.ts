@@ -1,9 +1,10 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 
 import { requireAdmin } from "@/features/admin/lib/require-admin";
 import { logAudit } from "@/features/audit";
+import { CACHE_TAGS } from "@/lib/cache";
 import { ROUTES } from "@/lib/constants";
 import { createPlan, updatePlan } from "../services/promotion.service";
 import { createPromotionPlanSchema, updatePromotionPlanSchema } from "../schemas/promotion";
@@ -38,6 +39,7 @@ export async function createPromotionPlanAction(input: unknown): Promise<ActionR
     });
     revalidatePath(ROUTES.adminPromotions);
     revalidatePath(ROUTES.dashboard);
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     console.error("[promotions] create plan failed:", error);
@@ -71,6 +73,7 @@ export async function updatePromotionPlanAction(input: unknown): Promise<ActionR
     });
     revalidatePath(ROUTES.adminPromotions);
     revalidatePath(ROUTES.dashboard);
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (error) {
     console.error("[promotions] update plan failed:", error);

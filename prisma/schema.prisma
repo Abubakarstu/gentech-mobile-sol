@@ -321,11 +321,17 @@ model Listing {
   deletedAt DateTime?
 
   @@index([status, createdAt])
+  @@index([region, status, createdAt])
+  @@index([region, isFeatured, createdAt])
+  @@index([status, price])
+  @@index([status, views])
   @@index([categoryId, status])
   @@index([brandId])
   @@index([sellerId])
   @@index([isFeatured, status])
   @@index([city])
+  @@index([region, city])
+  @@index([region, area])
   @@index([cityId])
   @@index([areaId])
   @@index([searchVector], type: Gin)
@@ -367,6 +373,7 @@ model Favorite {
   createdAt DateTime @default(now())
 
   @@unique([userId, listingId])
+  @@index([userId, createdAt])
   @@index([listingId])
   @@map("favorite")
 }
@@ -532,6 +539,7 @@ model Notification {
   createdAt DateTime  @default(now())
 
   @@index([userId, readAt])
+  @@index([userId, type, createdAt])
   @@map("notification")
 }
 
@@ -664,7 +672,9 @@ model InspectionRequest {
   updatedAt DateTime @updatedAt
 
   @@index([requesterId, status])
+  @@index([requesterId, createdAt])
   @@index([inspectorId, status])
+  @@index([inspectorId, status, createdAt])
   @@index([listingId])
   @@index([cityId])
   @@index([areaId])
@@ -701,6 +711,7 @@ model InspectionReport {
   updatedAt DateTime @updatedAt
 
   @@index([verdict])
+  @@index([isPublished])
   @@map("inspection_report")
 }
 
@@ -1023,6 +1034,7 @@ model PhoneModel {
 
   @@index([brandId])
   @@index([isActive])
+  @@index([isActive, brandId, position])
   @@index([isUpcoming])
   @@index([slug])
   @@map("phone_model")
@@ -1146,6 +1158,7 @@ model ImeiVerification {
   updatedAt DateTime @updatedAt
 
   @@index([imei])
+  @@index([verifiedBy, createdAt])
   @@index([ptaStatus])
   @@index([cpidStatus])
   @@index([isStolen])
@@ -1283,6 +1296,7 @@ model PhoneHistory {
   createdAt  DateTime @default(now())
 
   @@index([listingId])
+  @@index([listingId, occurredAt])
   @@index([eventType])
   @@index([occurredAt])
   @@index([source, sourceId])
@@ -1361,6 +1375,7 @@ model SellerVerification {
 
   @@index([sellerId])
   @@index([region, status])
+  @@index([sellerId, region, createdAt])
   @@map("seller_verification")
 }
 
@@ -1454,7 +1469,9 @@ model Order {
   updatedAt       DateTime    @updatedAt
 
   @@index([customerId])
+  @@index([customerId, createdAt])
   @@index([region])
+  @@index([region, status, createdAt])
   @@index([status])
   @@index([createdAt])
   @@map("order")
@@ -1480,6 +1497,7 @@ model OrderItem {
   createdAt   DateTime @default(now())
 
   @@index([orderId])
+  @@index([listingId])
   @@map("order_item")
 }
 
@@ -1534,6 +1552,7 @@ model Payment {
   updatedAt             DateTime      @updatedAt
 
   @@index([orderId])
+  @@index([orderId, createdAt])
   @@index([provider])
   @@index([status])
   @@index([country])

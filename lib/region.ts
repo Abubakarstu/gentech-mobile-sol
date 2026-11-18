@@ -9,6 +9,8 @@
  * - Follows same patterns as lib/monitoring.ts, lib/otp.ts
  */
 
+import { cache } from "react"
+
 import { prisma } from "@/lib/prisma"
 import type { Region as PrismaRegion } from "@/lib/generated/prisma/enums"
 
@@ -68,9 +70,7 @@ export async function getDefaultCurrency(userId?: string): Promise<string> {
  * @param userId — Optional; if omitted, reads from the active Better Auth session.
  * @returns The user's assigned region.
  */
-export async function getCurrentRegion(userId?: string): Promise<Region> {
-  if (!userId) return DEFAULT_REGION
-
+const getRegionFromUser = cache(async (userId: string): Promise<Region> => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -78,10 +78,13 @@ export async function getCurrentRegion(userId?: string): Promise<Region> {
     })
     return (user?.region as Region) ?? DEFAULT_REGION
   } catch {
-    // Silently fall through to default on any DB error
+    return DEFAULT_REGION
   }
+})
 
-  return DEFAULT_REGION
+export async function getCurrentRegion(userId?: string): Promise<Region> {
+  if (!userId) return DEFAULT_REGION
+  return getRegionFromUser(userId)
 }
 
 /**

@@ -27,7 +27,10 @@ export interface CartSummary {
  */
 export async function getCart(userId: string): Promise<CartSummary> {
   const items = await prisma.cartItem.findMany({
-    where: { userId },
+    where: {
+      userId,
+      listing: { status: "ACTIVE", deletedAt: null },
+    },
     include: {
       listing: {
         select: {
@@ -36,8 +39,6 @@ export async function getCart(userId: string): Promise<CartSummary> {
           price: true,
           currency: true,
           region: true,
-          status: true,
-          deletedAt: true,
           images: { take: 1, select: { url: true } },
         },
       },
@@ -51,10 +52,7 @@ export async function getCart(userId: string): Promise<CartSummary> {
   let region = "PAKISTAN";
 
   for (const item of items) {
-    // Skip unavailable listings
-    if (!item.listing || item.listing.status !== "ACTIVE" || item.listing.deletedAt) {
-      continue;
-    }
+    if (!item.listing) continue;
     const price = Number(item.listing.price);
     validItems.push({
       id: item.id,
@@ -178,10 +176,13 @@ export async function validateCart(userId: string): Promise<{
   priceChanges: { listingId: string; oldPrice: number; newPrice: number }[];
 }> {
   const cartItems = await prisma.cartItem.findMany({
-    where: { userId },
+    where: {
+      userId,
+      listing: { status: "ACTIVE", deletedAt: null },
+    },
     include: {
       listing: {
-        select: { id: true, price: true, status: true, deletedAt: true, region: true },
+        select: { id: true, price: true },
       },
     },
   });
@@ -190,7 +191,7 @@ export async function validateCart(userId: string): Promise<{
   const priceChanges: { listingId: string; oldPrice: number; newPrice: number }[] = [];
 
   for (const item of cartItems) {
-    if (!item.listing || item.listing.status !== "ACTIVE" || item.listing.deletedAt) {
+    if (!item.listing) {
       unavailableItems.push(item.listingId);
       continue;
     }

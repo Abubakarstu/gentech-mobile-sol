@@ -1,6 +1,9 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
+
 import { prisma } from "@/lib/prisma";
+import { CATALOG_REVALIDATE_SECONDS, CACHE_TAGS } from "@/lib/cache";
 import { LISTING_STATUSES } from "@/lib/constants";
 import { getDemoCategories } from "@/features/marketplace/data/fixtures";
 import type { Region } from "@/lib/generated/prisma/enums";
@@ -21,52 +24,59 @@ export async function getCategoriesWithCounts(
   limit?: number,
   region?: Region,
 ): Promise<CategoryItem[]> {
-  try {
-    const [categories, groups] = await Promise.all([
-      prisma.category.findMany({
-        where: {
-          isActive: true,
-          ...(region ? { OR: [{ region }, { region: null }] } : {}),
-        },
-        orderBy: [{ position: "asc" }, { name: "asc" }],
-        select: { id: true, name: true, slug: true, icon: true },
-      }),
-      prisma.listing.groupBy({
-        by: ["categoryId"],
-        where: {
-          status: LISTING_STATUSES.ACTIVE,
-          deletedAt: null,
-          ...(region ? { region } : {}),
-        },
-        _count: { _all: true },
-      }),
-    ]);
+  return unstable_cache(
+    async () => {
+      try {
+        const [categories, groups] = await Promise.all([
+          prisma.category.findMany({
+            where: {
+              isActive: true,
+              ...(region ? { OR: [{ region }, { region: null }] } : {}),
+            },
+            orderBy: [{ position: "asc" }, { name: "asc" }],
+            select: { id: true, name: true, slug: true, icon: true },
+          }),
+          prisma.listing.groupBy({
+            by: ["categoryId"],
+            where: {
+              status: LISTING_STATUSES.ACTIVE,
+              deletedAt: null,
+              ...(region ? { region } : {}),
+            },
+            _count: { _all: true },
+          }),
+        ]);
 
-    if (categories.length === 0) return demoCategoriesWithoutCounts(region);
+        if (categories.length === 0) return demoCategoriesWithoutCounts(region);
 
-    const countByCategory = new Map(groups.map((g) => [g.categoryId, g._count._all]));
+        const countByCategory = new Map(groups.map((g) => [g.categoryId, g._count._all]));
 
-    const items: CategoryItem[] = categories.map((category) => {
-      const count = countByCategory.get(category.id) ?? 0;
-      return {
-        id: category.id,
-        name: category.name,
-        slug: category.slug,
-        icon: category.icon ?? undefined,
-        // Only surface a number when there is something to count.
-        ...(count > 0 ? { count } : {}),
-      };
-    });
+        const items: CategoryItem[] = categories.map((category) => {
+          const count = countByCategory.get(category.id) ?? 0;
+          return {
+            id: category.id,
+            name: category.name,
+            slug: category.slug,
+            icon: category.icon ?? undefined,
+            ...(count > 0 ? { count } : {}),
+          };
+        });
 
-    // Show categories with listings first, then the rest (keeps the grid useful).
-    items.sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
+        items.sort((a, b) => (b.count ?? 0) - (a.count ?? 0));
 
-    return typeof limit === "number" ? items.slice(0, limit) : items;
-  } catch (error) {
-    console.warn(
-      "[marketplace] could not load category counts — using demo layout.",
-      error instanceof Error ? error.message : error,
-    );
-    return demoCategoriesWithoutCounts(region);
-  }
+        return typeof limit === "number" ? items.slice(0, limit) : items;
+      } catch (error) {
+        console.warn(
+          "[marketplace] could not load category counts — using demo layout.",
+          error instanceof Error ? error.message : error,
+        );
+        return demoCategoriesWithoutCounts(region);
+      }
+    },
+    ["categories-with-counts", String(limit ?? "all"), region ?? "all"],
+    {
+      revalidate: CATALOG_REVALIDATE_SECONDS,
+      tags: [CACHE_TAGS.catalog],
+    },
+  )();
 }

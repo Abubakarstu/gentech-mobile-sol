@@ -1,7 +1,9 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
+
+import { CACHE_TAGS } from "@/lib/cache";
 
 import { requireAdmin } from "@/features/admin/lib/require-admin";
 import { logAudit } from "@/features/audit";
@@ -54,6 +56,7 @@ export async function createBrandAction(input: z.infer<typeof createBrandSchema>
     revalidatePath("/admin/brands");
     revalidatePath("/marketplace");
     revalidatePath("/sell");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to create brand.";
@@ -97,6 +100,7 @@ export async function updateBrandAction(input: z.infer<typeof updateBrandSchema>
     revalidatePath("/admin/brands");
     revalidatePath("/marketplace");
     revalidatePath("/sell");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to update brand.";
@@ -121,6 +125,7 @@ export async function deleteBrandAction(id: string): Promise<ActionResult> {
     revalidatePath("/admin/brands");
     revalidatePath("/marketplace");
     revalidatePath("/sell");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to delete brand.";
@@ -188,6 +193,7 @@ export async function createModelAction(input: z.infer<typeof createModelSchema>
     revalidatePath("/compare");
     revalidatePath("/valuation");
     revalidatePath("/marketplace");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to create model.";
@@ -253,6 +259,7 @@ export async function updateModelAction(input: z.infer<typeof updateModelSchema>
     revalidatePath("/compare");
     revalidatePath("/valuation");
     revalidatePath("/marketplace");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to update model.";
@@ -278,6 +285,7 @@ export async function deleteModelAction(id: string): Promise<ActionResult> {
     revalidatePath("/compare");
     revalidatePath("/valuation");
     revalidatePath("/marketplace");
+    updateTag(CACHE_TAGS.catalog);
     return { ok: true };
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to delete model.";
