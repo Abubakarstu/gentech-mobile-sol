@@ -68,10 +68,20 @@ export interface CountryConfig {
   }
 }
 
-/** Country code to display name mapping. */
+/** Country code to English display name mapping. */
 export const COUNTRY_NAMES: Record<CountryCode, string> = {
   BH: "Bahrain",
   PK: "Pakistan",
+}
+
+/**
+ * Country name in the language of the surrounding UI. Never use `nativeName`
+ * inside a translated sentence: it would mix Arabic/Urdu script into English
+ * copy (or the wrong script into the other RTL locale).
+ */
+export const LOCALIZED_COUNTRY_NAMES: Record<CountryCode, Record<LocaleCode, string>> = {
+  BH: { en: "Bahrain", ar: "البحرين", ur: "بحرین" },
+  PK: { en: "Pakistan", ar: "باكستان", ur: "پاکستان" },
 }
 
 /** Locale code to display name mapping. */

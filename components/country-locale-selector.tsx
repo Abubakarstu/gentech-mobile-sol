@@ -10,6 +10,7 @@ import {
   getAllCountries,
   getAllSupportedLocales,
   getCountryConfig,
+  getCountryName,
   getDefaultLocale,
 } from "@/lib/countries";
 import {
@@ -106,7 +107,7 @@ export function CountryLocaleSelector() {
           className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-sm transition-colors hover:bg-accent disabled:opacity-60"
         >
           <span aria-hidden>{config.flag}</span>
-          <span className="hidden sm:inline">{config.nativeName}</span>
+          <span className="hidden sm:inline">{getCountryName(currentCountry, currentLocale)}</span>
           <ChevronDown className="size-3.5 text-muted-foreground" aria-hidden />
         </button>
 
@@ -127,7 +128,7 @@ export function CountryLocaleSelector() {
                 )}
               >
                 <span aria-hidden>{item.flag}</span>
-                <span>{item.nativeName}</span>
+                <span>{getCountryName(item.code, currentLocale)}</span>
                 <span className="text-muted-foreground ms-auto text-xs">
                   {item.defaultCurrency}
                 </span>

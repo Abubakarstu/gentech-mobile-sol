@@ -4,7 +4,7 @@ Last Updated: 2026-11-18
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (237/237 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 47 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Baseline Technical Quality:** Verified (239/239 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 47 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
 
@@ -37,7 +37,7 @@ Last Updated: 2026-11-18
 
 ## Technical Health Metrics
 - **Auth API Origin:** Browser auth uses the current origin; Vercel production/preview URLs are detected without URL environment variables.
-- **Tests Passing:** 237 / 237
+- **Tests Passing:** 239 / 239
 - **TypeScript Errors:** 0
 - **Production Build:** Success after clean Prisma generation; `pnpm db:generate` runs in both `build` and `vercel-build`, and the clean build log reports zero `Module not found` warnings.
 - **Region Analytics:** Admin dashboard and analytics page report Bahrain/Pakistan users, listings, orders, payments, and city/area breakdowns. BHD (3 dp) and PKR (0 dp) stay in their own currency — no cross-conversion. Admin listings region filter restored after a bad `main` merge dropped it.
@@ -71,12 +71,15 @@ Last Updated: 2026-11-18
 | Switchers | `components/country-locale-selector.tsx` (independent country + language dropdowns), `components/layout/site-header.tsx`, `components/layout/mobile-nav.tsx` (existing render points) |
 | Rendering / SEO | `app/[country]/[locale]/layout.tsx` (6 static params, canonical + 12 hreflang alternatives), `app/layout.tsx`, `components/direction-setter.tsx`, `app/globals.css` (Arabic/Urdu font stacks and RTL form alignment) |
 | Translations | `messages/{en,ar,ur}.json` — added `homepage.noListings` (the inspection page called a key that only existed in `marketplace`, causing a non-fatal `MISSING_MESSAGE` in all three languages) |
+| Locale-aware country names | `lib/countries/{index,types}.ts` (`LOCALIZED_COUNTRY_NAMES`, `getCountryName`), `app/[country]/[locale]/page.tsx`, `app/[country]/[locale]/(marketing)/marketplace/page.tsx`, `features/marketplace/components/home-hero.tsx`, `components/layout/site-footer.tsx`, `components/country-locale-selector.tsx` — fixed `nativeName` being interpolated into English copy (e.g. `…across البحرين`) and native-script labels in the country picker |
 | Business rules | `lib/validation/phone.ts` (new BH/PK validators), both `app/**/account/actions.ts`, `features/notifications/services/notification-delivery.service.ts` |
 | Tests | `tests/localization/{detection,country-and-phone}.test.ts` (new), `tests/countries/middleware-detection.test.ts` (extended) |
 
 ### Test report
 - `pnpm typecheck` — 0 errors.
 - `pnpm lint` — 0 errors / 47 pre-existing warnings.
-- `pnpm test -- --run --no-isolate` — **237/237 passing** (31 new assertions covering requested scenarios 1–10, priority chains, Accept-Language parsing, 6 country/locale routes, query preservation, country-specific phone validation and currency/payment isolation).
+- `pnpm test -- --run --no-isolate` — **239/239 passing** (33 new tests covering requested scenarios 1–10, priority chains, Accept-Language parsing, locale-aware country names with no cross-script leakage, 6 country/locale routes, query preservation, country-specific phone validation and currency/payment isolation).
 - `pnpm build` — exit code 0, compiled successfully; all 6 `/{country}/{locale}` combinations are routed dynamically by country/language. The `homepage.noListings` build warning is resolved.
 - Runtime DB note: local Prisma cannot reach `127.0.0.1:5432`, so build-time data fetches fall back to demo data with non-fatal `prisma:error` logs. The new user preference columns are **nullable and defensive**; production must apply `20261118_add_user_localization_preferences` before profile persistence is active (no destructive migration was executed).
+- Verified rendered output on all six routes: meta description, hero subtitle, footer tagline, and country picker labels use the country name in the active UI language (`Bahrain`/`البحرين`/`بحرین`, `Pakistan`/`باكستان`/`پاکستان`) with no cross-script leakage. Also repaired a malformed local `.env` line where `NEXT_PUBLIC_APP_NAME` and `PAYMENTS_TEST_MODE` were concatenated, which had corrupted the page `<title>`.
+- **Known data-level follow-up (not changed):** city and listing names (for example `Manama`, `Karachi`) come from demo/DB data and are currently English on RTL pages. Proper localization needs `nameAr`/`nameUr` columns plus repository and picker changes — a schema change that requires explicit approval before implementation. Brand/model names and PTA/currency codes are intentionally left as proper nouns/codes.

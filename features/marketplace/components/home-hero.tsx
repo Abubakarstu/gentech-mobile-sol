@@ -1,25 +1,26 @@
 import { getServerTranslations } from "@/lib/i18n/get-server-translations";
 
 import { LocalizedLink } from "@/components/localized-link";
-import { getCountryConfig } from "@/lib/countries";
-import type { CountryCode } from "@/lib/countries/types";
+import { getCountryName } from "@/lib/countries";
+import type { CountryCode, LocaleCode } from "@/lib/countries/types";
 import type { CategoryItem } from "@/types/marketplace";
 import type { LocationTree } from "@/features/locations/services/location.service";
 import { SearchBar } from "./search-bar";
 
 export async function HomeHero({
   country,
+  locale,
   popularCategories,
   locations,
 }: {
   country: CountryCode;
+  locale: LocaleCode;
   popularCategories: CategoryItem[];
   locations: LocationTree;
 }) {
   const t = await getServerTranslations("homepage");
   const tSearch = await getServerTranslations("search");
   const tCategories = await getServerTranslations("categories");
-  const config = getCountryConfig(country);
 
   return (
     <section className="relative overflow-hidden border-b">
@@ -29,7 +30,7 @@ export async function HomeHero({
           {t("heroTitle")}
         </h1>
         <p className="text-muted-foreground mx-auto mt-4 max-w-xl text-base text-pretty sm:text-lg">
-          {t("heroSubtitle", { country: config.nativeName })}
+          {t("heroSubtitle", { country: getCountryName(country, locale) })}
         </p>
 
         <div className="mx-auto mt-8 max-w-2xl">

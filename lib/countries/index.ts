@@ -1,6 +1,12 @@
 import { bhConfig } from "./bh"
 import { pkConfig } from "./pk"
-import type { CountryCode, CountryConfig, LocaleCode } from "./types"
+import {
+  COUNTRY_NAMES,
+  LOCALIZED_COUNTRY_NAMES,
+  type CountryCode,
+  type CountryConfig,
+  type LocaleCode,
+} from "./types"
 
 /**
  * Centralized country registry.
@@ -63,6 +69,11 @@ export function isSupportedLocale(locale: string): locale is LocaleCode {
 /** All UI languages offered in both countries, in the header switcher order. */
 export function getAllSupportedLocales(): readonly LocaleCode[] {
   return SUPPORTED_LOCALES
+}
+
+/** Country name rendered in the language of the current UI. */
+export function getCountryName(code: CountryCode, locale: LocaleCode): string {
+  return LOCALIZED_COUNTRY_NAMES[code][locale] ?? COUNTRY_NAMES[code] ?? getCountryConfig(code).name
 }
 
 /** Get the default currency for a country. */

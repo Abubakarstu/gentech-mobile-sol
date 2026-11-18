@@ -6,7 +6,7 @@ import {
   getLocaleFromParam,
   getRegionForCountry,
 } from "@/lib/countries/server";
-import { getCountryConfig } from "@/lib/countries";
+import { getCountryName } from "@/lib/countries";
 import { ROUTES } from "@/lib/constants";
 import { getListingFeed } from "@/features/listings/services/listing.service";
 import { getCategoriesWithCounts } from "@/features/marketplace/services/category.service";
@@ -31,12 +31,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const countryCode = getCountryFromParam(country);
   const resolvedLocale = getLocaleFromParam(locale, countryCode);
   setRequestLocale(resolvedLocale);
-  const config = getCountryConfig(countryCode);
   const t = await getTranslations({ locale: resolvedLocale, namespace: "homepage" });
 
   return {
     title: t("heroTitle"),
-    description: t("heroSubtitle", { country: config.nativeName }),
+    description: t("heroSubtitle", {
+      country: getCountryName(countryCode, resolvedLocale),
+    }),
   };
 }
 
@@ -70,6 +71,7 @@ export default async function LocalizedHomepage({ params }: PageProps) {
     <>
       <HomeHero
         country={countryCode}
+        locale={locale}
         popularCategories={categories}
         locations={locations}
       />

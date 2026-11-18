@@ -6,7 +6,7 @@ import {
   getLocaleFromParam,
   getRegionForCountry,
 } from "@/lib/countries/server";
-import { getCountryConfig } from "@/lib/countries";
+import { getCountryName } from "@/lib/countries";
 import { ROUTES } from "@/lib/constants";
 import { LocalizedLink } from "@/components/localized-link";
 import { parseListingFilters } from "@/features/listings/schemas/filters";
@@ -61,12 +61,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { country, locale } = await params;
   const countryCode = getCountryFromParam(country);
   const resolvedLocale = getLocaleFromParam(locale, countryCode);
-  const config = getCountryConfig(countryCode);
   const t = await getTranslations({ locale: resolvedLocale, namespace: "marketplace" });
 
   return {
     title: t("title"),
-    description: t("description", { country: config.nativeName }),
+    description: t("description", {
+      country: getCountryName(countryCode, resolvedLocale),
+    }),
   };
 }
 

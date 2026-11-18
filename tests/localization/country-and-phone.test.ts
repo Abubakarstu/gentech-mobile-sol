@@ -1,7 +1,15 @@
 import { describe, expect, it } from "vitest";
 
-import { getAllSupportedLocales, getCountryConfig, getDefaultLocale } from "@/lib/countries";
+import {
+  getAllSupportedLocales,
+  getCountryConfig,
+  getCountryName,
+  getDefaultLocale,
+} from "@/lib/countries";
 import { isRtlLocale } from "@/lib/countries/types";
+import enMessages from "@/messages/en.json";
+import arMessages from "@/messages/ar.json";
+import urMessages from "@/messages/ur.json";
 import { isValidPhoneForCountry, validatePhoneForCountry } from "@/lib/validation/phone";
 
 describe("country-specific configuration", () => {
@@ -33,6 +41,45 @@ describe("country-specific configuration", () => {
     expect(isRtlLocale("ar")).toBe(true);
     expect(isRtlLocale("ur")).toBe(true);
     expect(isRtlLocale("en")).toBe(false);
+  });
+});
+
+describe("locale-aware country names", () => {
+  const expected: Record<"BH" | "PK", Record<"en" | "ar" | "ur", string>> = {
+    BH: { en: "Bahrain", ar: "البحرين", ur: "بحرین" },
+    PK: { en: "Pakistan", ar: "باكستان", ur: "پاکستان" },
+  };
+
+  it("returns the country name in the language of the UI", () => {
+    for (const country of ["BH", "PK"] as const) {
+      for (const locale of ["en", "ar", "ur"] as const) {
+        expect(getCountryName(country, locale)).toBe(expected[country][locale]);
+      }
+    }
+  });
+
+  it("never mixes scripts in sentences that interpolate the country name", () => {
+    const messages = { en: enMessages, ar: arMessages, ur: urMessages };
+    const templates = [
+      (locale: "en" | "ar" | "ur") => messages[locale].homepage.heroSubtitle,
+      (locale: "en" | "ar" | "ur") => messages[locale].marketplace.description,
+      (locale: "en" | "ar" | "ur") => messages[locale].footer.tagline,
+    ];
+
+    for (const locale of ["en", "ar", "ur"] as const) {
+      for (const country of ["BH", "PK"] as const) {
+        const countryName = getCountryName(country, locale);
+        for (const template of templates) {
+          const rendered = template(locale).replace("{country}", countryName);
+          expect(rendered).toContain(countryName);
+          if (locale === "en") {
+            expect(rendered).not.toMatch(/[\u0600-\u06FF]/);
+          } else {
+            expect(rendered).not.toMatch(/[A-Za-z]{3,}/);
+          }
+        }
+      }
+    }
   });
 });
 
