@@ -4,37 +4,34 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { DEMO_ACCOUNTS } from "@/features/auth/lib/demo-accounts";
 import { ROUTES } from "@/lib/constants";
 import { Button } from "@/components/ui/button";
 
-const DEMO_ACCOUNTS = [
-  { username: "admin", password: "admin", label: "Admin panel", href: ROUTES.admin },
-  { username: "user", password: "user", label: "User panel", href: ROUTES.dashboard },
-  {
-    username: "dealer",
-    password: "dealer",
-    label: "Dealer panel",
-    href: `${ROUTES.dashboard}/dealer`,
-  },
-];
+const DASHBOARD_ROUTES: Record<string, string> = {
+  admin: ROUTES.admin,
+  inspector: ROUTES.inspector,
+  user: ROUTES.dashboard,
+  dealer: ROUTES.dealerDashboard,
+};
 
 export function DemoAccess({ productionDemo = false }: { productionDemo?: boolean }) {
   const router = useRouter();
   const [pending, setPending] = useState<string | null>(null);
   const accounts = productionDemo
-    ? DEMO_ACCOUNTS.filter((account) => account.username === "user")
+    ? DEMO_ACCOUNTS.filter((account) => account.key === "user")
     : DEMO_ACCOUNTS;
 
-  async function enterDemo(username: string, password: string, href: string) {
-    setPending(username);
+  async function enterDemo(email: string, password: string, key: string, dashboard: string) {
+    setPending(key);
     try {
       const response = await fetch("/api/demo-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
       if (!response.ok) throw new Error("Demo sign-in is unavailable.");
-      router.push(href);
+      router.push(DASHBOARD_ROUTES[dashboard] ?? ROUTES.dashboard);
       router.refresh();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Could not start demo session.");
@@ -48,21 +45,28 @@ export function DemoAccess({ productionDemo = false }: { productionDemo?: boolea
       <p className="text-muted-foreground mt-1 text-xs">
         {productionDemo
           ? "Read-only preview account. Database changes are disabled."
-          : "Local preview accounts. Data changes are not saved."}
+          : "One-click demo sign-in. No email verification required."}
       </p>
       <div className="mt-3 grid gap-2">
         {accounts.map((account) => (
           <Button
-            key={account.username}
+            key={account.key}
             type="button"
             variant="outline"
-            className="justify-between"
+            className="h-auto flex-col items-stretch gap-1 py-2.5 text-left"
             disabled={pending !== null}
-            onClick={() => void enterDemo(account.username, account.password, account.href)}
+            onClick={() =>
+              void enterDemo(account.email, account.password, account.key, account.dashboard)
+            }
           >
-            <span>{pending === account.username ? "Opening..." : account.label}</span>
-            <span className="text-muted-foreground font-mono text-xs">
-              {account.username} / {account.password}
+            <span className="text-sm font-medium">
+              {pending === account.key ? "Opening..." : account.label}
+            </span>
+            <span className="text-muted-foreground font-mono text-[11px] leading-4">
+              {account.email}
+            </span>
+            <span className="text-muted-foreground font-mono text-[11px] leading-4">
+              {account.password}
             </span>
           </Button>
         ))}

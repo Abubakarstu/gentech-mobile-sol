@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BellRing, Globe2, Mail, MapPin, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
+import { EmailVerificationToggle } from "@/features/admin/components/email-verification-toggle";
+import { isEmailVerificationRequired } from "@/features/admin/services/settings.service";
+
 export const metadata: Metadata = {
   title: "Marketplace settings — Admin",
   robots: { index: false, follow: false },
@@ -40,7 +43,9 @@ const settings = [
   },
 ];
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
+  const emailVerificationRequired = await isEmailVerificationRequired();
+
   return (
     <div className="space-y-7">
       <header>
@@ -49,10 +54,20 @@ export default function AdminSettingsPage() {
         </p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">Marketplace settings</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-          Centralize marketplace policy and service configuration. These controls are a design
-          inventory; saving settings is not enabled until backed by audited APIs.
+          Centralize marketplace policy and service configuration. Authentication policy is
+          editable; the remaining controls are a design inventory until they are backed by audited
+          APIs.
         </p>
       </header>
+      <section className="rounded-xl border border-white/10 bg-[#141519] p-5">
+        <div className="mb-4">
+          <h2 className="text-sm font-semibold text-slate-100">Authentication policy</h2>
+          <p className="mt-1 text-xs text-slate-500">
+            Changes are stored server-side, permission-gated, and written to the audit log.
+          </p>
+        </div>
+        <EmailVerificationToggle initialRequired={emailVerificationRequired} />
+      </section>
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {settings.map(({ icon: Icon, title, text }) => (
           <article key={title} className="rounded-xl border border-white/10 bg-[#141519] p-5">

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 
 import { signIn } from "@/lib/auth-client";
 import { ROUTES } from "@/lib/constants";
+import { findDemoAccountByEmail } from "@/features/auth/lib/demo-accounts";
 import { signInSchema, type SignInInput } from "@/features/auth/schemas";
 import { SocialButtons, type EnabledSocialProviders } from "./social-buttons";
 import { AuthDivider } from "./auth-divider";
@@ -24,6 +25,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+
+const DEMO_DASHBOARD_ROUTES: Record<string, string> = {
+  admin: ROUTES.admin,
+  inspector: ROUTES.inspector,
+  user: ROUTES.dashboard,
+  dealer: ROUTES.dealerDashboard,
+};
 
 export function SignInForm({
   providers,
@@ -41,6 +49,27 @@ export function SignInForm({
   });
 
   async function onSubmit(values: SignInInput) {
+    const demoAccount = demoAccessEnabled ? findDemoAccountByEmail(values.email) : undefined;
+    if (demoAccount) {
+      if (values.password !== demoAccount.password) {
+        toast.error("Invalid email or password.");
+        return;
+      }
+      try {
+        const response = await fetch("/api/demo-login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: values.email, password: values.password }),
+        });
+        if (!response.ok) throw new Error("Demo sign-in is unavailable.");
+        router.push(DEMO_DASHBOARD_ROUTES[demoAccount.dashboard] ?? ROUTES.dashboard);
+        router.refresh();
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Could not start demo session.");
+      }
+      return;
+    }
+
     const { error } = await signIn.email({
       email: values.email,
       password: values.password,

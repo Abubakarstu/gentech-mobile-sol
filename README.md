@@ -96,12 +96,18 @@ environment:
 | Admin     | `admin@demo.gentech.test`     | `DemoAdmin-2026!`     |
 | Inspector | `inspector@demo.gentech.test` | `DemoInspector-2026!` |
 | User      | `user@demo.gentech.test`      | `DemoUser-2026!`      |
+| Dealer    | `dealer@demo.gentech.test`    | `DemoDealer-2026!`    |
 
 The admin account has full admin access. Keep `DEMO_SEED_USERS="false"` in Vercel
 Production: these documented credentials must only be seeded into a protected Preview
 database, because anyone with this list could sign in as admin. Use the Preview
 database's `DATABASE_URL` and `DIRECT_URL`; setting the flag alone does not create,
 migrate, or seed a database.
+
+When demo mode is enabled, the same credentials also work in the normal email/password
+form without a database connection; they create a local demo session. Email verification
+is off by default and can be switched on by an admin at `/admin/settings` (the change is
+server-side, permission-gated, and audited).
 
 ## 4. Run
 

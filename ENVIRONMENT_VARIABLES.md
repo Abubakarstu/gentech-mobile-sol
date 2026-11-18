@@ -12,7 +12,7 @@
 | `DEMO_SEED_USERS`                 | OPTIONAL  | NO          | YES      | NO              | NO      | `true` seeds verified demo accounts in development/protected Preview only                |
 | `BETTER_AUTH_URL`                 | OPTIONAL  | NO          | YES      | NO              | NO      | Auth base URL override (Vercel origin is detected automatically)                        |
 | `APP_URL`                         | OPTIONAL  | YES         | YES      | NO              | NO      | Server-side app URL override for non-Vercel deployments                                 |
-| `AUTH_SKIP_EMAIL_VERIFICATION`    | OPTIONAL  | NO          | YES      | NO              | NO      | Dev-only: skip email verification (ignored in production)                               |
+| `AUTH_SKIP_EMAIL_VERIFICATION`    | OPTIONAL  | NO          | YES      | NO              | NO      | Legacy compatibility flag; admin panel now controls email verification                  |
 | `GOOGLE_CLIENT_ID`                | OPTIONAL  | NO          | YES      | NO              | YES     | Google OAuth client ID                                                                  |
 | `GOOGLE_CLIENT_SECRET`            | OPTIONAL  | NO          | YES      | NO              | YES     | Google OAuth client secret                                                              |
 | `FACEBOOK_CLIENT_ID`              | OPTIONAL  | NO          | YES      | NO              | YES     | Facebook OAuth client ID                                                                |
@@ -123,9 +123,9 @@ read-only demo mode and disables database access.
 
 ## Development-Only Variables
 
-- **`AUTH_SKIP_EMAIL_VERIFICATION`**: Set to `"true"` to skip email verification in development
-  - **Ignored in production** (see `lib/auth.ts`)
-  - Only for local development without email provider
+- **`AUTH_SKIP_EMAIL_VERIFICATION`**: Legacy compatibility flag; no longer controls verification
+  - Use the admin panel at `/admin/settings` to require email verification
+  - Verification is off by default and persisted in the `app_setting` table
 
 ## Build-Only Variables
 

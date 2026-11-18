@@ -7,11 +7,11 @@ import { cookies, headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { USER_ROLES, type UserRole } from "@/lib/constants";
 import { DEMO_LOCAL_SECRET, isDemoModeEnabled, isReadOnlyDemoEnabled } from "@/lib/demo-mode";
+import type { DemoRole } from "@/features/auth/lib/demo-accounts";
 
 const DEMO_COOKIE = "gentech_demo_session";
 const DEMO_AUTH_SECRET_PLACEHOLDER = "local-demo-secret-change-before-deploy-000000000000";
 const DEMO_SESSION_MAX_AGE = 8 * 60 * 60 * 1000;
-type DemoRole = "ADMIN" | "USER" | "DEALER";
 
 function demoModeEnabled() {
   if (!isDemoModeEnabled()) return false;
@@ -30,9 +30,10 @@ function createDemoSession(role: DemoRole) {
   const now = new Date();
   const expiresAt = new Date(now.getTime() + DEMO_SESSION_MAX_AGE);
   const account = {
-    ADMIN: { name: "Demo Admin", email: "admin@demo.local" },
-    USER: { name: "Demo User", email: "user@demo.local" },
-    DEALER: { name: "Demo Dealer", email: "dealer@demo.local" },
+    ADMIN: { name: "Demo Admin", email: "admin@demo.gentech.test" },
+    INSPECTOR: { name: "Demo Inspector", email: "inspector@demo.gentech.test" },
+    USER: { name: "Demo User", email: "user@demo.gentech.test" },
+    DEALER: { name: "Demo Dealer", email: "dealer@demo.gentech.test" },
   }[role];
   const userId = `demo:${role.toLowerCase()}`;
 
@@ -76,7 +77,7 @@ function readDemoRole(value?: string): DemoRole | null {
     !role ||
     !issuedAt ||
     !signature ||
-    !["ADMIN", "USER", "DEALER"].includes(role) ||
+    !["ADMIN", "INSPECTOR", "USER", "DEALER"].includes(role) ||
     (process.env.NODE_ENV === "production" && role !== "USER")
   ) {
     return null;

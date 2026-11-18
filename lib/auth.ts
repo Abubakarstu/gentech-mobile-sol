@@ -2,6 +2,7 @@ import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 
+import { isEmailVerificationRequired } from "@/features/admin/services/settings.service";
 import { APP_URL, IS_VERCEL_DEPLOYMENT } from "@/lib/app-url";
 import { APP, USER_ROLES } from "@/lib/constants";
 import { sendEmail } from "@/lib/email";
@@ -34,13 +35,11 @@ function buildSocialProviders(): BetterAuthOptions["socialProviders"] {
 }
 
 /**
- * Email verification is ALWAYS required in production. For local development only —
- * where no email provider may be configured — it can be relaxed by setting
- * `AUTH_SKIP_EMAIL_VERIFICATION=true`. The production guard makes it impossible to
- * accidentally ship an unverified-signups configuration.
+ * Better Auth's static gate stays off so the admin-controlled setting can be
+ * evaluated per sign-in in the route handler. Unverified accounts are rejected
+ * there when verification is enabled, and demo accounts are always pre-verified.
  */
-const requireEmailVerification =
-  env.NODE_ENV === "production" || env.AUTH_SKIP_EMAIL_VERIFICATION !== "true";
+const requireEmailVerification = false;
 
 export const auth = betterAuth({
   appName: APP.name,
@@ -66,6 +65,7 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
+      if (!(await isEmailVerificationRequired())) return;
       await sendEmail({
         to: user.email,
         subject: `Verify your ${APP.name} email`,

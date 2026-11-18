@@ -753,6 +753,20 @@ model InspectionPhoto {
 }
 
 // ---------------------------------------------------------------------------
+// Admin-controlled application settings
+// ---------------------------------------------------------------------------
+
+/// Key/value application settings managed from the admin panel.
+model AppSetting {
+  key       String   @id
+  value     Json
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+
+  @@map("app_setting")
+}
+
+// ---------------------------------------------------------------------------
 // Audit logging for sensitive operations
 // ---------------------------------------------------------------------------
 

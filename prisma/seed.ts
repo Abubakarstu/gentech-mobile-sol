@@ -10,6 +10,7 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import { hashPassword } from "better-auth/crypto";
 
+import { DEMO_ACCOUNTS } from "../features/auth/lib/demo-accounts";
 import { PrismaClient } from "../lib/generated/prisma/client";
 
 // Prisma 7 no longer auto-loads .env; load it for standalone `pnpm db:seed` runs.
@@ -66,27 +67,6 @@ const BRANDS = [
   "Motorola",
 ];
 
-const DEMO_ACCOUNTS = [
-  {
-    name: "GenTech Demo Admin",
-    email: "admin@demo.gentech.test",
-    password: "DemoAdmin-2026!",
-    role: "ADMIN" as const,
-  },
-  {
-    name: "GenTech Demo Inspector",
-    email: "inspector@demo.gentech.test",
-    password: "DemoInspector-2026!",
-    role: "INSPECTOR" as const,
-  },
-  {
-    name: "GenTech Demo User",
-    email: "user@demo.gentech.test",
-    password: "DemoUser-2026!",
-    role: "USER" as const,
-  },
-];
-
 async function seedDemoAccounts(prisma: PrismaClient) {
   if (process.env.DEMO_SEED_USERS !== "true") return;
   if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview") {
@@ -101,18 +81,20 @@ async function seedDemoAccounts(prisma: PrismaClient) {
 
   for (const demoAccount of DEMO_ACCOUNTS) {
     const password = await hashPassword(demoAccount.password);
+    // Dealer capability is modelled by DealerUser membership, not a Role enum value.
+    const role = demoAccount.role === "DEALER" ? "USER" : demoAccount.role;
     const user = await prisma.user.upsert({
       where: { email: demoAccount.email },
       update: {
         name: demoAccount.name,
         emailVerified: true,
-        role: demoAccount.role,
+        role,
       },
       create: {
         name: demoAccount.name,
         email: demoAccount.email,
         emailVerified: true,
-        role: demoAccount.role,
+        role,
       },
     });
 
@@ -134,9 +116,42 @@ async function seedDemoAccounts(prisma: PrismaClient) {
         password,
       },
     });
+
+    if (demoAccount.key === "dealer") {
+      const dealer = await prisma.dealer.upsert({
+        where: { slug: "demo-mobile-store" },
+        update: {
+          name: "Demo Mobile Store",
+          businessName: "GenTech Demo Mobile Store",
+          status: "ACTIVE",
+          isVerified: true,
+          verifiedAt: new Date(),
+        },
+        create: {
+          name: "Demo Mobile Store",
+          slug: "demo-mobile-store",
+          businessName: "GenTech Demo Mobile Store",
+          description: "Seeded demo dealership for sign-in and dealer dashboard previews.",
+          email: demoAccount.email,
+          city: "Lahore",
+          region: "PAKISTAN",
+          status: "ACTIVE",
+          isVerified: true,
+          verifiedAt: new Date(),
+        },
+      });
+
+      await prisma.dealerUser.upsert({
+        where: {
+          dealerId_userId: { dealerId: dealer.id, userId: user.id },
+        },
+        update: { role: "owner", isActive: true },
+        create: { dealerId: dealer.id, userId: user.id, role: "owner", isActive: true },
+      });
+    }
   }
 
-  console.info("✓ Seeded demo admin, inspector, and user accounts.");
+  console.info("✓ Seeded demo admin, inspector, user, and dealer accounts.");
 }
 
 /** Inspection packages (PakWheels-style tiers). Prices in PKR. */

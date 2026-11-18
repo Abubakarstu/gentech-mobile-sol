@@ -71,3 +71,15 @@
 - **Date:** 2026-11-17
 - **Status:** Approved
 - **Decision:** Payment (PayFast sandbox) and device-verification (PTA/CPID) simulators are used outside production automatically and in a production build only when `PAYMENTS_TEST_MODE` / `DEVICE_VERIFICATION_TEST_MODE` is explicitly `true` for preview/staging. Simulated IMEI results are persisted with `isSimulated = true`, shown with a warning banner, and never presented as real regulatory checks. Without a real provider or test mode, production fails closed: no payment method is offered and no PTA/CPID status is produced. Both flags must be `false` on public production.
+
+## ADR-013: Demo Credentials Are Canonical Fixtures With Scoped Session Creation
+
+- **Date:** 2026-11-18
+- **Status:** Approved
+- **Decision:** Demo credentials live in one shared module and are consumed by the seed, sign-in form, demo panel, and auth route. Known demo emails are intercepted before Better Auth or Prisma so local demo sign-in never depends on a database and never returns 500. A wrong password returns 401. In production, demo sessions are restricted to the read-only user unless `DEMO_READ_ONLY` is enabled for a protected preview. Dealer capability is represented by `USER` + `DealerUser` membership because the `Role` enum has no dealer value; no authorization enum is widened for demos.
+
+## ADR-014: Email Verification Is Opt-In and Admin-Controlled
+
+- **Date:** 2026-11-18
+- **Status:** Approved
+- **Decision:** Email verification is off by default and controlled by the persisted `EMAIL_VERIFICATION_REQUIRED` app setting at `/admin/settings`. The setting is permission-gated with `requireAdmin()`, audited, and fail-safe: an absent setting, missing migration, or unavailable database leaves verification off rather than locking users out. Better Auth's static `requireEmailVerification` stays `false`; the auth route enforces the setting per sign-in and discards any session response for an unverified account. Demo accounts remain pre-verified and `AUTH_SKIP_EMAIL_VERIFICATION` is retained only for legacy compatibility.
