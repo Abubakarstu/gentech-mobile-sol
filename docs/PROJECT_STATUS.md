@@ -1,6 +1,6 @@
 # GenTech Marketplace — Project Status Tracker
 
-Last Updated: 2026-11-17
+Last Updated: 2026-11-18
 
 ## Overall Status
 
@@ -40,7 +40,7 @@ Last Updated: 2026-11-17
 - **TypeScript Errors:** 0
 - **Production Build:** Success (`cross-env SKIP_ENV_VALIDATION=1 next build`)
 - **Region Analytics:** Admin dashboard and analytics page report Bahrain/Pakistan users, listings, orders, payments, and city/area breakdowns. BHD (3 dp) and PKR (0 dp) stay in their own currency — no cross-conversion. Admin listings region filter restored after a bad `main` merge dropped it.
-- **Merge Integrity:** A bad merge into `feature/phase7-country-payments` left `features/admin/components/location-manager.tsx` half-converted (duplicate handlers, undefined state, unclosed brace) which broke TypeScript, and dropped the admin listings region filter. Both restored. `origin/main` is at `52a47f2` and still does not contain the multi-country work (`26305c2`, `3c668b7`) — the feature branch must be merged and redeployed before `gentech-mauve.vercel.app` shows Arabic/BHD or region analytics.
+- **Merge Integrity:** A bad merge into `feature/phase7-country-payments` left `features/admin/components/location-manager.tsx` half-converted (duplicate handlers, undefined state, unclosed brace) which broke TypeScript, and dropped the admin listings region filter. Both restored. `origin/main` is at `52a47f2` and still does not contain the multi-country work (`26305c2`, `f350ec8`, `9e4e0ae`) — the feature branch must be merged and redeployed before `gentech-mauve.vercel.app` shows Arabic/BHD or region analytics. Live check on 2026-11-18 still returns 404 for `/bh/ar`.
 - **M4-F01:** Dynamic filters for storage, RAM, color, battery health, PTA/CPID, warranty, inspection, verified sellers, and dealers; database query paths implemented and preview behavior covered by tests.
 - **M4-F02:** Listing-scoped chat with text/image messages, polling updates, typing indicators, and read receipts; validated WhatsApp links use seller/dealer contact numbers and prefilled listing context.
 - **M4-F03:** Favorite toggles persist per user, dashboard favorites list is available, and enabled saved searches notify once per listing activation through in-app and email channels. Saved searches can pause or resume alerts.
