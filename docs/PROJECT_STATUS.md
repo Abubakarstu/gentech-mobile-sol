@@ -4,9 +4,9 @@ Last Updated: 2026-11-18
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (206/206 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 47 non-blocking warnings, Next.js production build clean from a freshly generated Prisma client).
-- **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management. Country detection uses saved preference → Vercel/CF geo header → configured default, routing Bahrain visitors to Arabic/BHD. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
-- **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) now resolve the request locale from middleware headers and pass it explicitly to `getTranslations`, so visible Arabic/Urdu copy no longer falls back to English. Verified locally on `/bh/ar`, `/bh/en`, `/pk/ur`, `/pk/en`: correct `<html lang/dir>`, localized hero, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`; the duplicate nested homepage was removed.
+- **Baseline Technical Quality:** Verified (237/237 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 47 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
+- **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
 
 ---
 
@@ -37,7 +37,7 @@ Last Updated: 2026-11-18
 
 ## Technical Health Metrics
 - **Auth API Origin:** Browser auth uses the current origin; Vercel production/preview URLs are detected without URL environment variables.
-- **Tests Passing:** 206 / 206
+- **Tests Passing:** 237 / 237
 - **TypeScript Errors:** 0
 - **Production Build:** Success after clean Prisma generation; `pnpm db:generate` runs in both `build` and `vercel-build`, and the clean build log reports zero `Module not found` warnings.
 - **Region Analytics:** Admin dashboard and analytics page report Bahrain/Pakistan users, listings, orders, payments, and city/area breakdowns. BHD (3 dp) and PKR (0 dp) stay in their own currency — no cross-conversion. Admin listings region filter restored after a bad `main` merge dropped it.
@@ -52,3 +52,31 @@ Last Updated: 2026-11-18
 - **Admin UI:** Responsive layouts, route context, loading/error states, and clearer catalog/moderation workflows verified.
 - **Lint Status:** 0 errors; `pnpm lint` exits 0. All explicit `any`, `require()`, raw `<a href="/...">`, and optional-module findings are resolved. Remaining non-blocking advisories: 47 warnings (unused variables, `next/no-img-element`, Vite config native-loader notice); CI runs `pnpm lint` without `--max-warnings`.
 - **Typed Safety:** No `@typescript-eslint/no-explicit-any` findings remain and the temporary rule downgrade was removed from `eslint.config.mjs`. Prisma `Region`, `OrderStatus`, `PaymentStatus`, `Prisma.Decimal`, `Prisma.InputJsonValue`, and typed DTOs replace casts. The optional `googleapis` import is typed and marked `turbopackOptional`, so Vercel/Turbopack reports no module warning.
+
+---
+
+## Independent Localization Implementation — 2026-11-18
+
+### Detection precedence (single shared implementation)
+- **Country:** explicit `/{country}/{locale}` segment → authenticated profile (`gentech_user_country`) → `gentech_country` cookie → Vercel/Cloudflare GeoIP → `PK`.
+- **Language:** explicit route segment → authenticated profile (`gentech_user_locale`) → `gentech_locale` cookie → `Accept-Language` (quality-weighted, regional subtags normalised) → country default (`ar` for BH, `ur` for PK) → `en`.
+- Browser language is never used to infer country and is never written as a permanent cookie. Neither switcher mutates the other preference, currency, payments, shipping, or tax configuration.
+
+### Modified / added files and components
+| Area | Files |
+| :--- | :--- |
+| Shared detection | `lib/localization/detect.ts` (new), `middleware.ts`, `lib/countries/{index,types,server,bh,pk}.ts` |
+| Single i18n config | `i18n.ts`, `next.config.ts` (plugin path unchanged); removed orphaned `i18n/request.ts` |
+| Preferences | `features/localization/actions/preferences.ts` (new), `features/localization/repositories/user-preferences.repository.ts` (new), `lib/country-cookie-client.ts`, `prisma/schema.prisma`, `prisma/migrations/20261118_add_user_localization_preferences/migration.sql` (new, not applied) |
+| Switchers | `components/country-locale-selector.tsx` (independent country + language dropdowns), `components/layout/site-header.tsx`, `components/layout/mobile-nav.tsx` (existing render points) |
+| Rendering / SEO | `app/[country]/[locale]/layout.tsx` (6 static params, canonical + 12 hreflang alternatives), `app/layout.tsx`, `components/direction-setter.tsx`, `app/globals.css` (Arabic/Urdu font stacks and RTL form alignment) |
+| Translations | `messages/{en,ar,ur}.json` — added `homepage.noListings` (the inspection page called a key that only existed in `marketplace`, causing a non-fatal `MISSING_MESSAGE` in all three languages) |
+| Business rules | `lib/validation/phone.ts` (new BH/PK validators), both `app/**/account/actions.ts`, `features/notifications/services/notification-delivery.service.ts` |
+| Tests | `tests/localization/{detection,country-and-phone}.test.ts` (new), `tests/countries/middleware-detection.test.ts` (extended) |
+
+### Test report
+- `pnpm typecheck` — 0 errors.
+- `pnpm lint` — 0 errors / 47 pre-existing warnings.
+- `pnpm test -- --run --no-isolate` — **237/237 passing** (31 new assertions covering requested scenarios 1–10, priority chains, Accept-Language parsing, 6 country/locale routes, query preservation, country-specific phone validation and currency/payment isolation).
+- `pnpm build` — exit code 0, compiled successfully; all 6 `/{country}/{locale}` combinations are routed dynamically by country/language. The `homepage.noListings` build warning is resolved.
+- Runtime DB note: local Prisma cannot reach `127.0.0.1:5432`, so build-time data fetches fall back to demo data with non-fatal `prisma:error` logs. The new user preference columns are **nullable and defensive**; production must apply `20261118_add_user_localization_preferences` before profile persistence is active (no destructive migration was executed).

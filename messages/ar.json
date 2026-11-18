@@ -54,7 +54,8 @@
     "browseByCategory": "تصفح حسب الفئة",
     "browseByBrand": "تصفح حسب العلامة",
     "viewAll": "عرض الكل",
-    "popular": "شائع:"
+    "popular": "شائع:",
+    "noListings": "لا توجد خطط فحص متاحة بعد."
   },
   "howItWorks": {
     "title": "كيف يعمل",

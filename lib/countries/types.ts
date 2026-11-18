@@ -1,9 +1,10 @@
 /**
  * Country configuration types for multi-country localization.
  *
- * Country and language are independent preferences:
- * - Bahrain: Arabic (default) or English
- * - Pakistan: Urdu (default) or English
+ * Country and language are independent preferences. Any supported language may
+ * be used in any supported country without affecting currency or payments.
+ * - Bahrain: defaults to Arabic when no explicit/browser preference exists
+ * - Pakistan: defaults to Urdu when no explicit/browser preference exists
  *
  * RTL languages: Arabic (ar), Urdu (ur)
  * LTR languages: English (en)
@@ -12,8 +13,8 @@
 /** Supported country codes. */
 export type CountryCode = "BH" | "PK"
 
-/** Supported locale codes. */
-export type LocaleCode = "ar" | "ur" | "en"
+/** Supported locale codes (country-agnostic). */
+export type LocaleCode = "en" | "ar" | "ur"
 
 /** Request headers populated by middleware for server-rendered locale metadata. */
 export const COUNTRY_HEADER = "x-gentech-country"

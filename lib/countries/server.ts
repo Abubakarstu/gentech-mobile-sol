@@ -3,12 +3,7 @@ import "server-only"
 import { headers } from "next/headers"
 
 import { Region } from "@/lib/generated/prisma/enums"
-import {
-  DEFAULT_COUNTRY,
-  getAvailableLocales,
-  getCountryConfig,
-  isValidCountryCode,
-} from "./index"
+import { DEFAULT_COUNTRY, getCountryConfig, isValidCountryCode } from "./index"
 import {
   COUNTRY_HEADER,
   LOCALE_HEADER,
@@ -31,10 +26,12 @@ export function getCountryFromParam(value: string): CountryCode {
   return parseCountry(value) ?? DEFAULT_COUNTRY
 }
 
+/**
+ * Resolves a locale URL segment. Any supported language is valid in any country
+ * so a manual language choice never forces a country or fallback.
+ */
 export function getLocaleFromParam(value: string, country: CountryCode): LocaleCode {
-  const requested = parseLocale(value)
-  if (requested && getAvailableLocales(country).includes(requested)) return requested
-  return getCountryConfig(country).defaultLocale
+  return parseLocale(value) ?? getCountryConfig(country).defaultLocale
 }
 
 export function getRegionForCountry(country: CountryCode): Region {
@@ -46,10 +43,7 @@ export async function getRequestCountryLocale(): Promise<{ country: CountryCode;
   const requestHeaders = await headers()
   const country = parseCountry(requestHeaders.get(COUNTRY_HEADER)) ?? DEFAULT_COUNTRY
   const requested = parseLocale(requestHeaders.get(LOCALE_HEADER))
-  const locale =
-    requested && getAvailableLocales(country).includes(requested)
-      ? requested
-      : getCountryConfig(country).defaultLocale
+  const locale = requested ?? getCountryConfig(country).defaultLocale
 
   return { country, locale }
 }

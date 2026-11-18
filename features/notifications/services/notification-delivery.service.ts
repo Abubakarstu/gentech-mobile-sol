@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/features/notifications/repositories/notification.repository";
+import { getUserLocalizationPreferences } from "@/features/localization/repositories/user-preferences.repository";
 
 export type NotificationLocale = "en" | "ar" | "ur";
 
@@ -105,20 +106,13 @@ const ORDER_NOTIFICATION_TEMPLATES: Record<
 };
 
 /**
- * Get user's preferred language.
+ * Uses the user's saved language when present; region is only a last-resort
+ * default for accounts that never made an explicit selection.
  */
 async function getUserLanguage(userId: string): Promise<NotificationLocale> {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { region: true },
-    });
-    // Default based on region
-    if (user?.region === "BAHRAIN") return "ar";
-    return "ur";
-  } catch {
-    return "en";
-  }
+  const preferences = await getUserLocalizationPreferences(userId);
+  if (preferences?.locale) return preferences.locale;
+  return preferences?.regionCountry === "BH" ? "ar" : "ur";
 }
 
 /**

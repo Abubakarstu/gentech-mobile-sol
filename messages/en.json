@@ -54,7 +54,8 @@
     "browseByCategory": "Browse by Category",
     "browseByBrand": "Browse by Brand",
     "viewAll": "View All",
-    "popular": "Popular:"
+    "popular": "Popular:",
+    "noListings": "No inspection plans available yet."
   },
   "howItWorks": {
     "title": "How it works",

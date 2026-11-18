@@ -14,9 +14,12 @@ export const bhConfig: CountryConfig = {
   name: "Bahrain",
   nativeName: "البحرين",
   flag: "🇧🇭",
+  /** Country-based default when no explicit/browser preference exists. */
   defaultLocale: "ar",
-  availableLocales: ["ar", "en"],
+  /** All supported UI languages are available in Bahrain. */
+  availableLocales: ["en", "ar", "ur"],
   defaultCurrency: "BHD",
+  /** UI direction follows the selected language (ar/ur RTL, en LTR). */
   rtl: true,
   paymentMethods: ["benefitpay", "local_card", "visa", "mastercard"],
   shippingMethods: ["local_delivery", "express_delivery", "pickup"],

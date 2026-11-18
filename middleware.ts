@@ -1,17 +1,22 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { isReadOnlyDemoEnabled } from "@/lib/demo-mode";
-import { getAvailableLocales, getDefaultLocale, isValidCountryCode } from "@/lib/countries";
+import { getDefaultLocale, isSupportedLocale } from "@/lib/countries";
 import {
   COUNTRY_HEADER,
   LOCALE_HEADER,
   type CountryCode,
   type LocaleCode,
 } from "@/lib/countries/types";
-import { DEFAULT_COUNTRY } from "@/lib/constants";
+import {
+  COUNTRY_COOKIE,
+  LOCALE_COOKIE,
+  USER_COUNTRY_COOKIE,
+  USER_LOCALE_COOKIE,
+  resolveLocalization,
+} from "@/lib/localization/detect";
 
 const COUNTRY_SEGMENTS: Record<string, CountryCode> = { bh: "BH", pk: "PK" };
-const LOCALE_SEGMENTS: readonly LocaleCode[] = ["ar", "ur", "en"];
 
 /** Only these public routes have localized equivalents; admin tools stay global. */
 const LOCALIZED_ROUTES = new Set([
@@ -43,32 +48,38 @@ function isStaticOrApi(pathname: string): boolean {
   );
 }
 
-/** Manual preference wins; geo inference never overwrites it. */
-function resolveCountryLocale(request: NextRequest): { country: CountryCode; locale: LocaleCode } {
-  const savedCountry = request.cookies.get("gentech_country")?.value?.trim().toUpperCase() ?? "";
-  let country: CountryCode = DEFAULT_COUNTRY;
+/**
+ * Resolves preferences with the shared priority chain. Explicit URL segments win;
+ * a browser language is only consulted when no saved preference exists and is
+ * never written back as a permanent setting.
+ */
+function resolveCountryLocale(
+  request: NextRequest,
+  explicitCountry?: CountryCode,
+  explicitLocale?: LocaleCode,
+): { country: CountryCode; locale: LocaleCode } {
+  const geoCountry =
+    request.headers.get("x-vercel-ip-country") || request.headers.get("cf-ipcountry") || "";
 
-  if (savedCountry && isValidCountryCode(savedCountry)) {
-    country = savedCountry;
-  } else {
-    const geoCountry = (
-      request.headers.get("x-vercel-ip-country") ||
-      request.headers.get("cf-ipcountry") ||
-      ""
-    )
-      .trim()
-      .toUpperCase();
-    if (geoCountry && isValidCountryCode(geoCountry)) country = geoCountry;
-  }
+  const resolved = resolveLocalization(
+    {
+      country: {
+        explicit: explicitCountry,
+        user: request.cookies.get(USER_COUNTRY_COOKIE)?.value,
+        cookie: request.cookies.get(COUNTRY_COOKIE)?.value,
+        geo: geoCountry,
+      },
+      locale: {
+        explicit: explicitLocale,
+        user: request.cookies.get(USER_LOCALE_COOKIE)?.value,
+        cookie: request.cookies.get(LOCALE_COOKIE)?.value,
+        acceptLanguage: request.headers.get("accept-language"),
+      },
+    },
+    (country) => getDefaultLocale(country),
+  );
 
-  const savedLocale = request.cookies.get("gentech_locale")?.value?.trim().toLowerCase() ?? "";
-  const locale =
-    LOCALE_SEGMENTS.find((value) => value === savedLocale) &&
-    getAvailableLocales(country).includes(savedLocale as LocaleCode)
-      ? (savedLocale as LocaleCode)
-      : getDefaultLocale(country);
-
-  return { country, locale };
+  return { country: resolved.country, locale: resolved.locale };
 }
 
 function withContextHeaders(request: NextRequest, country: CountryCode, locale: LocaleCode) {
@@ -100,6 +111,8 @@ function addSecurityHeaders(response: NextResponse) {
   response.headers.set("X-Content-Type-Options", "nosniff");
   response.headers.set("X-XSS-Protection", "1; mode=block");
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  // Preferences are per visitor; caches must vary on language and cookies.
+  response.headers.set("Vary", "Accept-Language, Cookie");
   response.headers.set(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(), interest-cohort=()",
@@ -115,7 +128,9 @@ function addSecurityHeaders(response: NextResponse) {
 
 /** Adds country/locale context and security headers to a pass-through response. */
 function passThrough(request: NextRequest, country: CountryCode, locale: LocaleCode) {
-  const response = NextResponse.next({ request: { headers: withContextHeaders(request, country, locale) } });
+  const response = NextResponse.next({
+    request: { headers: withContextHeaders(request, country, locale) },
+  });
   addSecurityHeaders(response);
   return response;
 }
@@ -152,31 +167,32 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  const { country, locale } = resolveCountryLocale(request);
   const segments = pathname.split("/").filter(Boolean);
   const firstSegment = segments[0]?.toLowerCase() ?? "";
   const secondSegment = segments[1]?.toLowerCase() ?? "";
   const routeCountry = COUNTRY_SEGMENTS[firstSegment];
 
   if (routeCountry) {
-    const routeLocale = LOCALE_SEGMENTS.find((value) => value === secondSegment);
+    const routeLocale = isSupportedLocale(secondSegment) ? secondSegment : null;
 
-    if (routeLocale && getAvailableLocales(routeCountry).includes(routeLocale)) {
-      return passThrough(request, routeCountry, routeLocale);
-    }
+    // Explicit URL preferences always win and every language is valid in both
+    // countries — no forced locale normalisation.
+    if (routeLocale) return passThrough(request, routeCountry, routeLocale);
 
-    // /bh, /bh/ur, /bh/unknown and /bh/marketplace all normalise to the
-    // country's default locale so mixed content can never render.
-    const fallbackLocale = getDefaultLocale(routeCountry);
-    const remaining = routeLocale ? segments.slice(2) : segments.slice(1);
+    // /bh, /bh/marketplace, /bh/unknown → keep the explicit country and resolve
+    // the best language from user/cookie/browser/country default.
+    const { locale } = resolveCountryLocale(request, routeCountry);
+    const remaining = segments.slice(1);
     const newUrl = request.nextUrl.clone();
-    newUrl.pathname = `/${routeCountry.toLowerCase()}/${fallbackLocale}${
+    newUrl.pathname = `/${routeCountry.toLowerCase()}/${locale}${
       remaining.length > 0 ? `/${remaining.join("/")}` : ""
     }`;
     const response = NextResponse.redirect(newUrl);
     addSecurityHeaders(response);
     return response;
   }
+
+  const { country, locale } = resolveCountryLocale(request);
 
   if (pathname === "/") return localizedRedirect(request, country, locale);
 

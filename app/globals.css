@@ -191,3 +191,33 @@
     animation: none;
   }
 }
+
+/* Language-aware typography. System stacks keep the strict font-src CSP intact. */
+:root {
+  --font-arabic: "Noto Naskh Arabic", "Noto Kufi Arabic", "Segoe UI", Tahoma, sans-serif;
+  --font-urdu: "Noto Nastaliq Urdu", "Jameel Noori Nastaleeq", "Segoe UI", Tahoma, sans-serif;
+}
+
+html[lang="ar"] body {
+  font-family: var(--font-arabic);
+  line-height: 1.85;
+  letter-spacing: 0;
+}
+
+html[lang="ur"] body {
+  font-family: var(--font-urdu);
+  line-height: 2.15;
+  letter-spacing: 0;
+}
+
+html[dir="rtl"] input,
+html[dir="rtl"] textarea {
+  text-align: right;
+}
+
+/* Prices, phone numbers and identifiers stay in their natural reading order. */
+.ltr,
+.numeric {
+  direction: ltr;
+  unicode-bidi: isolate;
+}

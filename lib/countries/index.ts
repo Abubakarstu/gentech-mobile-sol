@@ -17,6 +17,9 @@ export const COUNTRIES: Record<CountryCode, CountryConfig> = {
 /** Default country when no preference is set. */
 export const DEFAULT_COUNTRY: CountryCode = "PK"
 
+/** All supported UI languages (country-agnostic). */
+export const SUPPORTED_LOCALES: readonly LocaleCode[] = ["en", "ar", "ur"]
+
 /** Get country configuration by code. */
 export function getCountryConfig(code: CountryCode): CountryConfig {
   return COUNTRIES[code] ?? COUNTRIES[DEFAULT_COUNTRY]
@@ -50,6 +53,16 @@ export function getAvailableLocales(code: CountryCode): LocaleCode[] {
 /** Check if a locale is available for a country. */
 export function isLocaleAvailable(country: CountryCode, locale: string): boolean {
   return getCountryConfig(country).availableLocales.some((available) => available === locale)
+}
+
+/** Check if a locale is supported by the marketplace UI. */
+export function isSupportedLocale(locale: string): locale is LocaleCode {
+  return SUPPORTED_LOCALES.some((available) => available === locale)
+}
+
+/** All UI languages offered in both countries, in the header switcher order. */
+export function getAllSupportedLocales(): readonly LocaleCode[] {
+  return SUPPORTED_LOCALES
 }
 
 /** Get the default currency for a country. */

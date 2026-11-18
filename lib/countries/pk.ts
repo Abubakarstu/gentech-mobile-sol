@@ -14,9 +14,12 @@ export const pkConfig: CountryConfig = {
   name: "Pakistan",
   nativeName: "پاکستان",
   flag: "🇵🇰",
+  /** Country-based default when no explicit/browser preference exists. */
   defaultLocale: "ur",
-  availableLocales: ["ur", "en"],
+  /** All supported UI languages are available in Pakistan. */
+  availableLocales: ["en", "ar", "ur"],
   defaultCurrency: "PKR",
+  /** UI direction follows the selected language (ar/ur RTL, en LTR). */
   rtl: true,
   paymentMethods: ["jazzcash", "easypaisa", "bank_transfer", "cod", "visa", "mastercard"],
   shippingMethods: ["local_courier", "express_courier", "pickup"],

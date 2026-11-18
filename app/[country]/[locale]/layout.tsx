@@ -1,25 +1,51 @@
+import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import { isLocaleAvailable, isValidCountryCode } from "@/lib/countries";
-import { isRtlLocale, type LocaleCode } from "@/lib/countries/types";
+import {
+  getCountryCodes,
+  getDefaultLocale,
+  getAllSupportedLocales,
+  isSupportedLocale,
+  isValidCountryCode,
+} from "@/lib/countries";
+import { isRtlLocale } from "@/lib/countries/types";
 import { DirectionSetter } from "@/components/direction-setter";
 
-const VALID_LOCALES = ["ar", "ur", "en"] as const;
-type ValidLocale = (typeof VALID_LOCALES)[number];
-
-function isValidLocale(locale: string): locale is ValidLocale {
-  return VALID_LOCALES.includes(locale as ValidLocale);
-}
+type LocalizedParams = { country: string; locale: string };
 
 export function generateStaticParams() {
-  return [
-    { country: "bh", locale: "ar" },
-    { country: "bh", locale: "en" },
-    { country: "pk", locale: "ur" },
-    { country: "pk", locale: "en" },
-  ];
+  const params: LocalizedParams[] = [];
+  for (const country of getCountryCodes()) {
+    for (const locale of getAllSupportedLocales()) {
+      params.push({ country: country.toLowerCase(), locale });
+    }
+  }
+  return params;
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<LocalizedParams>;
+}): Promise<Metadata> {
+  const { country, locale } = await params;
+  const countryCode = country.toUpperCase();
+  if (!isValidCountryCode(countryCode) || !isSupportedLocale(locale)) return {};
+
+  const canonical = `/${countryCode.toLowerCase()}/${locale}`;
+  const languages: Record<string, string> = {};
+  for (const code of getCountryCodes()) {
+    for (const language of getAllSupportedLocales()) {
+      languages[`${language}-${code}`] = `/${code.toLowerCase()}/${language}`;
+    }
+  }
+  languages["x-default"] = "/";
+
+  return {
+    alternates: { canonical, languages },
+  };
 }
 
 export default async function CountryLocaleLayout({
@@ -27,27 +53,24 @@ export default async function CountryLocaleLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ country: string; locale: string }>;
+  params: Promise<LocalizedParams>;
 }) {
   const { country, locale } = await params;
-
-  // Validate country and locale as a pair — /bh/ur and /pk/ar are not valid.
   const countryCode = country.toUpperCase();
-  if (!isValidCountryCode(countryCode)) {
-    notFound();
-  }
-  if (!isValidLocale(locale) || !isLocaleAvailable(countryCode, locale)) {
+
+  if (!isValidCountryCode(countryCode) || !isSupportedLocale(locale)) {
     notFound();
   }
 
-  const resolvedLocale = locale as LocaleCode;
+  // Any supported language is valid in any supported country.
+  const resolvedLocale = isSupportedLocale(locale) ? locale : getDefaultLocale(countryCode);
   setRequestLocale(resolvedLocale);
   const messages = await getMessages({ locale: resolvedLocale });
   const isRtl = isRtlLocale(resolvedLocale);
 
   return (
     <NextIntlClientProvider locale={resolvedLocale} messages={messages}>
-      <DirectionSetter locale={locale} isRtl={isRtl} />
+      <DirectionSetter locale={resolvedLocale} isRtl={isRtl} />
       {children}
     </NextIntlClientProvider>
   );

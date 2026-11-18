@@ -44,6 +44,10 @@ model User {
   // Application fields
   role      Role      @default(USER)
   region    Region    @default(PAKISTAN)
+  // Independent localization preferences. Null means "not explicitly saved";
+  // detection then continues with cookies, browser hint, and country default.
+  preferredLocale  String?
+  preferredCountry String?
   banned    Boolean   @default(false)
   banReason String?
   deletedAt DateTime?
