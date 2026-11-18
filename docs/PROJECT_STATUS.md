@@ -97,3 +97,12 @@ Last Updated: 2026-11-18
 - **Search:** suggestion icons and input padding use logical `start`/`ps` placement; suggestions panel is height-bounded (`max-h-[min(60vh,22rem)]`) with independent scrolling; Escape closes suggestions; RTL suggestion text uses `text-start`.
 - **Listing cards:** badges reserve space for the favorite control and use logical `start` placement; favorite uses logical `end` placement and a 44px mobile touch target (`size-11 sm:size-9`).
 - **Checks rerun:** `pnpm typecheck` 0 errors; `pnpm lint` 0 errors / 47 pre-existing warnings; `pnpm test -- --run --no-isolate` 239/239; `pnpm build` exit 0 (263 pages). Built CSS contains all new logical utilities.
+
+### Analytics — business intelligence and conversion tracking (2026-11-18)
+- **Event contract:** added standard `begin_checkout` and `purchase` events plus typed helpers; re-exported canonical names from a shared `event-names` module so provider fan-out and helpers cannot drift.
+- **Provider fan-out:** `track()` now enriches every event with sanitised attribution (page path with UTM keys only, sanitised referrer, country, language) and maps commerce/chat events to GA4 and Meta standard events (`InitiateCheckout`, `Purchase`, `Contact`) while keeping custom events for diagnostics.
+- **Conversion instrumentation:** wired the previously dead `create_listing` event, added `begin_checkout` on checkout load, and added a `purchase` event rendered only from the server-verified paid order detail page — query-string visits cannot create a conversion.
+- **Identity stitching:** authenticated users are identified with their user id and role (no email/PII traits); analytics identity is reset on sign-out and demo sessions are excluded.
+- **Business intelligence:** `/admin/analytics` now shows a region-scoped buyer funnel (views → favorites → chats → orders → paid orders) with stage conversion rates, derived only from persisted state; BHD and PKR remain separate.
+- **Tests:** new analytics event-contract, provider fan-out (including privacy-safe attribution), and conversion-funnel rate tests.
+- **Checks:** `pnpm typecheck` 0 errors; `pnpm lint` 0 errors / 47 pre-existing warnings; `pnpm test -- --run --no-isolate` 253/253; `pnpm build` exit 0 (263 pages). New analytics/funnel files pass Prettier; six touched tracked files retain their pre-existing Prettier baseline.

@@ -18,6 +18,7 @@ import {
   type UploadedImage,
 } from "@/features/listings/schemas/create-listing";
 import { createListingAction } from "@/features/listings/actions/create-listing";
+import { trackCreateListing } from "@/features/analytics/lib/events";
 import { ImageUploader } from "./image-uploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,6 +79,7 @@ export function CreateListingForm({
       return;
     }
     toast.success("Listing submitted! It will go live once approved by our team.");
+    if (result.id) trackCreateListing({ id: result.id, price: values.price });
     router.push(result.slug ? `/listings/${result.slug}` : ROUTES.dashboard);
     router.refresh();
   }

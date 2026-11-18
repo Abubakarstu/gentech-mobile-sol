@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { ROUTES } from "@/lib/constants";
 import { getCurrentUser } from "@/lib/session";
 import { getOrder } from "@/features/orders/services/order.service";
+import { PurchaseTracker } from "@/features/analytics/components/purchase-tracker";
 
 const STATUS_LABELS: Record<string, string> = {
   PENDING: "Pending",
@@ -43,6 +44,13 @@ export default async function OrderDetailPage({
 
   const decimals = order.currency === "BHD" ? 3 : 0;
 
+  const purchaseItems = order.items.map((item) => ({
+    item_id: item.listingId ?? item.id,
+    item_name: item.title,
+    quantity: item.quantity,
+    price: Number(item.unitPrice),
+  }));
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <a
@@ -75,6 +83,15 @@ export default async function OrderDetailPage({
       <p className="mt-1 text-xs text-slate-500">
         Placed on {new Date(order.createdAt).toLocaleString()}
       </p>
+
+      {order.paymentStatus === "PAID" ? (
+        <PurchaseTracker
+          orderId={order.id}
+          value={Number(order.total)}
+          currency={order.currency}
+          items={purchaseItems}
+        />
+      ) : null}
 
       {/* Order Items */}
       <section className="mt-6">
@@ -118,7 +135,9 @@ export default async function OrderDetailPage({
           {order.discount && Number(order.discount) > 0 && (
             <div className="flex justify-between text-green-400">
               <span>Discount</span>
-              <span>-{Number(order.discount).toFixed(decimals)} {order.currency}</span>
+              <span>
+                -{Number(order.discount).toFixed(decimals)} {order.currency}
+              </span>
             </div>
           )}
           <div className="flex justify-between">
@@ -154,10 +173,7 @@ export default async function OrderDetailPage({
               </p>
             )}
             <p className="text-slate-400">
-              Address:{" "}
-              <span className="text-white">
-                {JSON.stringify(order.deliveryAddress)}
-              </span>
+              Address: <span className="text-white">{JSON.stringify(order.deliveryAddress)}</span>
             </p>
           </div>
         </section>

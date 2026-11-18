@@ -3,6 +3,7 @@ import "server-only";
 import type { ListingStatus, ReportStatus } from "@/lib/constants";
 import type {
   AdminCategoryRow,
+  ConversionFunnel,
   AdminListingRow,
   AdminReportRow,
   AdminUserRow,
@@ -11,6 +12,7 @@ import type {
   RegionAnalytics,
 } from "@/features/admin/types";
 import {
+  getConversionFunnel as loadConversionFunnel,
   getRegionAnalytics as loadRegionAnalytics,
   getPlatformStats,
   listCategories,
@@ -53,6 +55,15 @@ export async function getRegionAnalyticsData(): Promise<RegionAnalytics> {
   } catch (error) {
     console.warn("[admin] region analytics unavailable.", error instanceof Error ? error.message : error);
     return { regions: [], generatedAt: new Date().toISOString() };
+  }
+}
+
+export async function getConversionFunnelData(): Promise<ConversionFunnel> {
+  try {
+    return await loadConversionFunnel();
+  } catch (error) {
+    console.warn("[admin] conversion funnel unavailable.", error instanceof Error ? error.message : error);
+    return { metrics: [], generatedAt: new Date().toISOString() };
   }
 }
 

@@ -3,7 +3,10 @@ import Link from "next/link";
 import { ArrowRight, Globe2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getRegionAnalyticsData } from "@/features/admin/services/admin.service";
+import {
+  getConversionFunnelData,
+  getRegionAnalyticsData,
+} from "@/features/admin/services/admin.service";
 import { formatPrice } from "@/utils/format";
 
 export const metadata: Metadata = {
@@ -14,8 +17,15 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 const formatCount = (value: number) => value.toLocaleString();
+const formatRate = (value: number) => (value === 0 ? "0%" : `${value.toFixed(2)}%`);
 
-function LocationList({ title, rows }: { title: string; rows: Array<{ name: string; count: number }> }) {
+function LocationList({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: Array<{ name: string; count: number }>;
+}) {
   return (
     <div>
       <p className="text-xs font-medium text-slate-400">{title}</p>
@@ -26,7 +36,7 @@ function LocationList({ title, rows }: { title: string; rows: Array<{ name: stri
           {rows.map((row) => (
             <li key={row.name} className="flex items-center justify-between gap-3 text-xs">
               <span className="truncate text-slate-300">{row.name}</span>
-              <span className="shrink-0 tabular-nums text-slate-500">{formatCount(row.count)}</span>
+              <span className="shrink-0 text-slate-500 tabular-nums">{formatCount(row.count)}</span>
             </li>
           ))}
         </ul>
@@ -36,7 +46,10 @@ function LocationList({ title, rows }: { title: string; rows: Array<{ name: stri
 }
 
 export default async function AdminAnalyticsPage() {
-  const { regions } = await getRegionAnalyticsData();
+  const [{ regions }, { metrics: funnel }] = await Promise.all([
+    getRegionAnalyticsData(),
+    getConversionFunnelData(),
+  ]);
   const activeListings = regions.reduce((sum, region) => sum + region.activeListings, 0);
   const orders = regions.reduce((sum, region) => sum + region.orders, 0);
 
@@ -78,6 +91,69 @@ export default async function AdminAnalyticsPage() {
             </CardContent>
           </Card>
         ))}
+      </section>
+
+      <section aria-label="Buyer conversion funnel" className="space-y-4">
+        <div>
+          <h2 className="text-sm font-semibold text-slate-100">Buyer conversion funnel</h2>
+          <p className="mt-1 text-xs text-slate-500">
+            Derived from persisted views, favorites, conversations, and paid orders. Browser events
+            are diagnostic only and never counted as conversions.
+          </p>
+        </div>
+
+        {funnel.length === 0 ? (
+          <Card className="border-white/[0.08] bg-[#141519]">
+            <CardContent className="py-8 text-center text-xs text-slate-500">
+              Conversion data is unavailable without a database connection.
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-3 lg:grid-cols-2">
+            {funnel.map((metric) => (
+              <Card key={metric.region} className="border-white/[0.08] bg-[#141519]">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-sm font-semibold text-slate-100">
+                    <span aria-hidden>{metric.flag}</span>
+                    {metric.label}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-5 gap-2 text-center">
+                    {[
+                      { label: "Views", value: metric.views },
+                      { label: "Favorites", value: metric.favorites },
+                      { label: "Chats", value: metric.chats },
+                      { label: "Orders", value: metric.orders },
+                      { label: "Paid", value: metric.paidOrders },
+                    ].map((stage) => (
+                      <div key={stage.label} className="rounded-lg bg-white/[0.03] p-2">
+                        <p className="text-[10px] text-slate-500">{stage.label}</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-100 tabular-nums">
+                          {formatCount(stage.value)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 border-t border-white/[0.06] pt-3 text-center">
+                    {[
+                      { label: "View → chat", value: metric.viewToChatRate },
+                      { label: "Chat → order", value: metric.chatToOrderRate },
+                      { label: "View → order", value: metric.viewToOrderRate },
+                    ].map((rate) => (
+                      <div key={rate.label}>
+                        <p className="text-[10px] text-slate-500">{rate.label}</p>
+                        <p className="mt-1 text-xs font-semibold text-emerald-300 tabular-nums">
+                          {formatRate(rate.value)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </section>
 
       {regions.length === 0 ? (
@@ -129,7 +205,7 @@ export default async function AdminAnalyticsPage() {
                   ].map((metric) => (
                     <div key={metric.label}>
                       <p className="text-xs text-slate-500">{metric.label}</p>
-                      <p className="mt-1 text-sm font-semibold tabular-nums text-slate-100">
+                      <p className="mt-1 text-sm font-semibold text-slate-100 tabular-nums">
                         {metric.value}
                       </p>
                     </div>

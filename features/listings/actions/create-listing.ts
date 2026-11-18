@@ -9,6 +9,7 @@ import { createListing } from "../services/listing.service";
 
 export interface CreateListingResult {
   ok: boolean;
+  id?: string;
   slug?: string;
   error?: string;
 }
@@ -29,10 +30,10 @@ export async function createListingAction(input: CreateListingInput): Promise<Cr
   }
 
   try {
-    const { slug } = await createListing(parsed.data, user.id);
+    const { id, slug } = await createListing(parsed.data, user.id);
     revalidatePath(ROUTES.marketplace);
     revalidatePath(ROUTES.dashboard);
-    return { ok: true, slug };
+    return { ok: true, id, slug };
   } catch (error) {
     console.error("[create-listing] failed:", error);
     return {

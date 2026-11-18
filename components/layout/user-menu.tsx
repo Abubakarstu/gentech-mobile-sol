@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 
 import { signOut } from "@/lib/auth-client";
+import { identify, resetAnalytics } from "@/features/analytics/lib/client";
 import { ROUTES, USER_ROLES, type UserRole } from "@/lib/constants";
 import { useLocalizedHref } from "@/lib/localized-routing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -33,6 +34,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface UserMenuProps {
+  userId: string;
   name: string;
   email: string;
   image?: string | null;
@@ -53,6 +55,7 @@ function initials(name: string) {
 }
 
 export function UserMenu({
+  userId,
   name,
   email,
   image,
@@ -64,6 +67,11 @@ export function UserMenu({
   const t = useTranslations("navigation");
   const tCommon = useTranslations("common");
   const [pending, setPending] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isDemoSession) return;
+    identify(userId, { role });
+  }, [isDemoSession, role, userId]);
 
   const homeHref = useLocalizedHref(ROUTES.home);
   const dashboardHref = useLocalizedHref(ROUTES.dashboard);
@@ -81,6 +89,7 @@ export function UserMenu({
     setPending(true);
     if (isDemoSession) {
       await fetch("/api/demo-login", { method: "DELETE" });
+      resetAnalytics();
       router.push(homeHref);
       router.refresh();
       return;
@@ -89,6 +98,7 @@ export function UserMenu({
     await signOut({
       fetchOptions: {
         onSuccess: () => {
+          resetAnalytics();
           router.push(homeHref);
           router.refresh();
         },

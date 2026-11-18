@@ -12,8 +12,13 @@ import {
   type UserRole,
 } from "@/lib/constants";
 import { slugify } from "@/utils/slug";
+import {
+  buildConversionFunnel,
+  type ConversionFunnelRow,
+} from "@/features/admin/lib/conversion-funnel";
 import type {
   AdminCategoryRow,
+  ConversionFunnel,
   AdminListingRow,
   AdminReportRow,
   AdminUserRow,
@@ -163,7 +168,8 @@ export async function getRegionAnalytics(): Promise<RegionAnalytics> {
     const orders = orderGroups.find((g) => g.region === config.region)?._count._all ?? 0;
 
     const payments = paymentGroups.filter(
-      (g) => config.countryCodes.includes(g.country.toUpperCase()) && g.currency === config.currency,
+      (g) =>
+        config.countryCodes.includes(g.country.toUpperCase()) && g.currency === config.currency,
     );
 
     return {
@@ -191,6 +197,38 @@ export async function getRegionAnalytics(): Promise<RegionAnalytics> {
   });
 
   return { regions, generatedAt: new Date().toISOString() };
+}
+
+/**
+ * Buyer conversion funnel from persisted state, never from client-side events.
+ * Views, favorites and chats are listing-scoped; orders are region-scoped.
+ */
+export async function getConversionFunnel(): Promise<ConversionFunnel> {
+  const scoped = await Promise.all(
+    REGION_CONFIG.map(async (config) => {
+      const listingWhere = { region: config.region, deletedAt: null } as const;
+      const [views, favorites, chats, orders, paidOrders] = await Promise.all([
+        prisma.listing.aggregate({ where: listingWhere, _sum: { views: true } }),
+        prisma.favorite.count({ where: { listing: listingWhere } }),
+        prisma.conversation.count({ where: { listing: listingWhere } }),
+        prisma.order.count({ where: { region: config.region } }),
+        prisma.order.count({ where: { region: config.region, paymentStatus: "PAID" } }),
+      ]);
+
+      return {
+        region: config.region,
+        label: config.label,
+        flag: config.flag,
+        views: views._sum.views ?? 0,
+        favorites,
+        chats,
+        orders,
+        paidOrders,
+      } satisfies ConversionFunnelRow;
+    }),
+  );
+
+  return { metrics: buildConversionFunnel(scoped), generatedAt: new Date().toISOString() };
 }
 
 // --------------------------------------------------------------------------

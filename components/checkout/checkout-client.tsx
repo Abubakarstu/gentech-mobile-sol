@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2 } from "lucide-react";
 
+import { trackBeginCheckout } from "@/features/analytics/lib/events";
 import { ShippingSelector } from "@/components/checkout/shipping-selector";
 import { CheckoutSummary } from "@/components/checkout/checkout-summary";
 import { PaymentMethodSelector } from "@/components/checkout/payment-method-selector";
@@ -42,6 +43,24 @@ export function CheckoutClient({
   const [total, setTotal] = React.useState(0);
   const [placing, setPlacing] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const checkoutTracked = React.useRef(false);
+
+  const checkoutItems = React.useMemo(
+    () =>
+      cartItems.map((item) => ({
+        item_id: item.listingId,
+        item_name: item.title,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    [cartItems],
+  );
+
+  React.useEffect(() => {
+    if (checkoutTracked.current || checkoutItems.length === 0) return;
+    checkoutTracked.current = true;
+    trackBeginCheckout({ value: subtotal, currency, items: checkoutItems });
+  }, [checkoutItems, currency, subtotal]);
 
   const decimals = currency === "BHD" ? 3 : 0;
 
@@ -86,13 +105,17 @@ export function CheckoutClient({
               {cartItems.map((item) => (
                 <div key={item.id} className="flex items-center gap-3">
                   {item.image ? (
-                    <img src={item.image} alt={item.title} className="size-12 rounded object-cover" />
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="size-12 rounded object-cover"
+                    />
                   ) : (
                     <div className="size-12 rounded bg-slate-800" />
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{item.title}</p>
-                    <p className="text-xs text-muted-foreground">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{item.title}</p>
+                    <p className="text-muted-foreground text-xs">
                       {item.price.toFixed(decimals)} {item.currency} x {item.quantity}
                     </p>
                   </div>
@@ -171,7 +194,7 @@ export function CheckoutClient({
           />
           {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
           <button
-            className="mt-4 w-full rounded-md bg-primary px-4 py-3 text-white hover:bg-primary/90 disabled:opacity-50"
+            className="bg-primary hover:bg-primary/90 mt-4 w-full rounded-md px-4 py-3 text-white disabled:opacity-50"
             onClick={handlePlaceOrder}
             disabled={placing || !shippingMethodId || !paymentMethod}
           >

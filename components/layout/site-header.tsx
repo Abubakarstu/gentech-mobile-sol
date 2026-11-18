@@ -95,6 +95,7 @@ export async function SiteHeader() {
 
           {user ? (
             <UserMenu
+              userId={user.id}
               name={user.name}
               email={user.email}
               image={user.image}

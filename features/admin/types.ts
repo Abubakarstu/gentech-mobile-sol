@@ -110,3 +110,26 @@ export interface RegionAnalytics {
   regions: RegionMetric[];
   generatedAt: string;
 }
+
+/** Region-scoped buyer funnel derived from persisted marketplace state. */
+export interface ConversionFunnelMetric {
+  region: MarketRegion;
+  label: string;
+  flag: string;
+  views: number;
+  favorites: number;
+  chats: number;
+  orders: number;
+  paidOrders: number;
+  /** Percent of listing views that started a conversation. */
+  viewToChatRate: number;
+  /** Percent of conversations that became an order. */
+  chatToOrderRate: number;
+  /** Percent of listing views that became an order. */
+  viewToOrderRate: number;
+}
+
+export interface ConversionFunnel {
+  metrics: ConversionFunnelMetric[];
+  generatedAt: string;
+}
