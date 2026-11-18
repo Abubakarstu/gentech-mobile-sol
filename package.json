@@ -82,10 +82,5 @@
     "typescript": "^5",
     "vitest": "^4.1.10",
     "wrangler": "^4.104.0"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "workerd"
-    ]
   }
 }
