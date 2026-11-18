@@ -1,15 +1,12 @@
-import type { Metadata } from 'next';
-import { ImeiVerificationResultCard } from '@/features/phone-intelligence/components/imei-verification-result';
-import { verifyImeiAction, getImeiVerificationAction } from '@/features/phone-intelligence/actions/imei.actions';
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: 'IMEI Verification - GenTech',
-  description: 'Check PTA registration status and verify IMEI for any mobile phone. Ensure your device is compliant and not blacklisted.',
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+import { getCountryFromParam, getLocaleFromParam } from "@/lib/countries/server";
+import { ImeiVerificationResultCard } from "@/features/phone-intelligence/components/imei-verification-result";
+import {
+  verifyImeiAction,
+  getImeiVerificationAction,
+} from "@/features/phone-intelligence/actions/imei.actions";
 
 type ImeiCheckSearchParams = {
   imei?: string;
@@ -18,11 +15,30 @@ type ImeiCheckSearchParams = {
   invalid?: string;
 };
 
-export default async function ImeiCheckPage({
-  searchParams,
-}: {
+type PageProps = {
+  params: Promise<{ country: string; locale: string }>;
   searchParams?: Promise<ImeiCheckSearchParams>;
-}) {
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { country, locale } = await params;
+  const countryCode = getCountryFromParam(country);
+  const resolvedLocale = getLocaleFromParam(locale, countryCode);
+  const t = await getTranslations({ locale: resolvedLocale, namespace: "imei" });
+
+  return {
+    title: t("title"),
+    description: t("description"),
+    robots: { index: true, follow: true },
+  };
+}
+
+export default async function ImeiCheckPage({ params, searchParams }: PageProps) {
+  const { country, locale: localeParam } = await params;
+  const countryCode = getCountryFromParam(country);
+  const locale = getLocaleFromParam(localeParam, countryCode);
+  const showPakistanSignals = countryCode === "PK";
+  const t = await getTranslations({ locale, namespace: "imei" });
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const { imei, unavailable, rateLimited, invalid } = resolvedSearchParams;
 
@@ -34,47 +50,35 @@ export default async function ImeiCheckPage({
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">IMEI Verification</h1>
-        <p className="text-gray-600">
-          Check PTA registration status and verify your device is not blacklisted
+        <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">
+          {showPakistanSignals ? t("description") : t("traBody")}
         </p>
       </div>
 
-      <div className="max-w-2xl mx-auto">
-        {invalid && (
-          <div
-            role="alert"
-            className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
-          >
-            Enter a valid 15-digit IMEI. Dial *#06# on the phone to find it.
-          </div>
-        )}
-        {rateLimited && (
-          <div
-            role="alert"
-            className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800"
-          >
-            Too many IMEI checks. Wait a minute before trying again.
-          </div>
-        )}
-        {unavailable && (
-          <div
-            role="alert"
-            className="mb-4 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-700"
-          >
-            PTA/CPID verification is not available in this environment, so no status was
-            produced. Do not treat an absent result as proof that the device is registered
-            or clean.
-          </div>
-        )}
+      <div className="mx-auto max-w-2xl">
+        {invalid ? (
+          <p role="alert" className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+            {t("invalid")}
+          </p>
+        ) : null}
+        {rateLimited ? (
+          <p role="alert" className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800">
+            {t("rateLimited")}
+          </p>
+        ) : null}
+        {unavailable ? (
+          <p role="alert" className="mb-4 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-700">
+            {t("unavailable")}
+          </p>
+        ) : null}
 
-        {/* IMEI Check Form */}
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-6">
-          <h2 className="text-xl font-semibold mb-4">Enter IMEI Number</h2>
+        <div className="bg-card mb-6 rounded-lg border p-6 shadow-md">
+          <h2 className="mb-4 text-xl font-semibold">{t("formTitle")}</h2>
           <form action={verifyImeiAction} className="space-y-4">
             <div>
-              <label htmlFor="imei" className="block text-sm font-medium text-gray-700 mb-1">
-                IMEI Number (15 digits)
+              <label htmlFor="imei" className="mb-1 block text-sm font-medium">
+                {t("imeiLabel")}
               </label>
               <input
                 type="text"
@@ -83,63 +87,46 @@ export default async function ImeiCheckPage({
                 required
                 pattern="\d{15}"
                 maxLength={15}
-                placeholder="e.g., 123456789012345"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono"
+                placeholder="123456789012345"
+                className="border-input bg-background focus:ring-primary w-full rounded-lg border px-3 py-2 font-mono focus:ring-2"
               />
-              <p className="text-xs text-gray-500 mt-1">
-                Dial *#06# on your phone to find your IMEI
-              </p>
+              <p className="text-muted-foreground mt-1 text-xs">{t("imeiHint")}</p>
             </div>
-
-            <button
-              type="submit"
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            >
-              Verify IMEI
+            <button type="submit" className="bg-primary text-primary-foreground w-full rounded-lg px-4 py-2 font-medium">
+              {t("submit")}
             </button>
           </form>
         </div>
 
-        {/* Information Cards */}
-        <div className="grid md:grid-cols-2 gap-4 mb-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-semibold text-blue-900 mb-2">What is IMEI?</h3>
-            <p className="text-sm text-blue-800">
-              IMEI (International Mobile Equipment Identity) is a unique 15-digit number that
-              identifies your mobile device. It&apos;s used for device registration and security.
-            </p>
-          </div>
-
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h3 className="font-semibold text-green-900 mb-2">PTA Registration</h3>
-            <p className="text-sm text-green-800">
-              In Pakistan, all mobile devices must be registered with PTA (Pakistan
-              Telecommunication Authority) to operate on local networks legally.
-            </p>
-          </div>
-
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <h3 className="font-semibold text-yellow-900 mb-2">CPID Status</h3>
-            <p className="text-sm text-yellow-800">
-              CPID (Compliant Device Identification) is a system to track imported devices
-              and ensure they meet regulatory requirements.
-            </p>
-          </div>
-
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <h3 className="font-semibold text-red-900 mb-2">Blacklist Check</h3>
-            <p className="text-sm text-red-800">
-              We check if the device has been reported stolen or blacklisted by carriers.
-              Avoid buying blacklisted devices as they may be blocked from networks.
-            </p>
-          </div>
+        <div className="mb-6 grid gap-4 md:grid-cols-2">
+          <InfoCard title={t("whatIsTitle")} body={t("whatIsBody")} />
+          <InfoCard title={t("blacklistTitle")} body={t("blacklistBody")} />
+          {showPakistanSignals ? (
+            <>
+              <InfoCard title={t("ptaTitle")} body={t("ptaBody")} />
+              <InfoCard title={t("cpidTitle")} body={t("cpidBody")} />
+            </>
+          ) : (
+            <InfoCard title={t("traTitle")} body={t("traBody")} />
+          )}
         </div>
 
-        {/* Verification Result */}
-        {verification && (
-          <ImeiVerificationResultCard verification={verification} />
-        )}
+        {verification ? (
+          <ImeiVerificationResultCard
+            verification={verification}
+            showPakistanSignals={showPakistanSignals}
+          />
+        ) : null}
       </div>
+    </div>
+  );
+}
+
+function InfoCard({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="bg-muted/50 rounded-lg border p-4">
+      <h3 className="mb-2 font-semibold">{title}</h3>
+      <p className="text-muted-foreground text-sm">{body}</p>
     </div>
   );
 }

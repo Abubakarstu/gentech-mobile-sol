@@ -1,21 +1,25 @@
+import { getServerTranslations } from "@/lib/i18n/get-server-translations";
+
 import type { ListingCardData } from "@/types/marketplace";
 import { ListingCard } from "./listing-card";
 
-export function ListingsGrid({
+export async function ListingsGrid({
   listings,
   favoriteIds = [],
   isAuthenticated = false,
-  emptyMessage = "No listings yet. Be the first to post one.",
+  emptyMessage,
 }: {
   listings: ListingCardData[];
   favoriteIds?: string[];
   isAuthenticated?: boolean;
   emptyMessage?: string;
 }) {
+  const t = await getServerTranslations("marketplace");
+
   if (listings.length === 0) {
     return (
       <p className="text-muted-foreground rounded-xl border border-dashed p-10 text-center text-sm">
-        {emptyMessage}
+        {emptyMessage ?? t("noListings")}
       </p>
     );
   }

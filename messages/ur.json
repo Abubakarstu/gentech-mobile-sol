@@ -19,7 +19,8 @@
     "back": "واپس",
     "confirm": "تصدیق کریں",
     "yes": "ہاں",
-    "no": "نہیں"
+    "no": "نہیں",
+    "seeAll": "سب دیکھیں"
   },
   "navigation": {
     "home": "ہوم",
@@ -36,16 +37,58 @@
     "account": "اکاؤنٹ",
     "admin": "ایڈمن",
     "logout": "لاگ آؤٹ",
-    "inspection": "فون معائنہ"
+    "inspection": "فون معائنہ",
+    "savedSearches": "محفوظ تلاشیں",
+    "inspections": "معائنے",
+    "inspector": "انسپکٹر",
+    "dealerPanel": "ڈیلر پینل",
+    "profile": "پروفائل"
   },
   "homepage": {
-    "heroTitle": "موبائل فون خریدیں اور فروخت کریں",
-    "heroSubtitle": "موبائل فونز کے لیے تیز، محفوظ اور آسان مارکیٹ پلیس",
+    "heroTitle": "اپنا اگلا فون اپنے قریب تلاش کریں۔",
+    "heroSubtitle": "{country} بھر کے قابل اعتماد فروخت کنندگان سے ہزاروں فونز اور ایکسیسریز۔",
     "featuredListings": "نمایاں لسٹنگز",
+    "featuredDescription": "قابل اعتماد فروخت کنندگان کی منتخب پیشکشیں",
     "recentListings": "حالیہ لسٹنگز",
+    "recentDescription": "آپ کے قریب تازہ اشتہارات",
     "browseByCategory": "زمرہ کے مطابق دیکھیں",
     "browseByBrand": "برانڈ کے مطابق دیکھیں",
-    "viewAll": "سب دیکھیں"
+    "viewAll": "سب دیکھیں",
+    "popular": "مقبول:"
+  },
+  "howItWorks": {
+    "title": "یہ کیسے کام کرتا ہے",
+    "step1Title": "دریافت کریں",
+    "step1Body": "برانڈ، قیمت اور شہر کے مطابق ہزاروں فونز اور ایکسیسریز دیکھیں۔",
+    "step2Title": "بات چیت کریں",
+    "step2Body": "فروخت کنندگان کو براہ راست پیغام بھیجیں، سوالات پوچھیں اور مناسب قیمت طے کریں۔",
+    "step3Title": "سودا مکمل کریں",
+    "step3Body": "محفوظ جگہ پر ملیں، ڈیوائس چیک کریں اور اعتماد کے ساتھ سودا مکمل کریں۔"
+  },
+  "cta": {
+    "title": "فروخت کے لیے فون ہے؟",
+    "body": "دو منٹ سے بھی کم وقت میں اپنا اشتہار لگائیں اور اپنے قریب ہزاروں خریداروں تک پہنچیں — بالکل مفت۔",
+    "button": "اپنا اشتہار لگائیں"
+  },
+  "search": {
+    "placeholder": "iPhone، Samsung، Pixel تلاش کریں…",
+    "allCities": "تمام شہر",
+    "button": "تلاش",
+    "groupListings": "لسٹنگز",
+    "groupCategories": "زمرے",
+    "groupBrands": "برانڈز",
+    "popular": "مقبول:"
+  },
+  "marketplace": {
+    "title": "مارکیٹ پلیس",
+    "description": "{country} میں فروخت کے لیے دستیاب فونز اور ایکسیسریز دیکھیں۔",
+    "results": "{count, plural, =0 {کوئی نتیجہ نہیں} one {1 نتیجہ} other {# نتائج}}",
+    "resultsFor": "\"{query}\" کے لیے",
+    "previewData": "نمائشی ڈیٹا — لائیو لسٹنگز دیکھنے کے لیے ڈیٹا بیس مربوط کریں",
+    "comparePhones": "فونز کا موازنہ کریں",
+    "checkValue": "قیمت جانچیں",
+    "verifyImei": "IMEI تصدیق کریں",
+    "noListings": "ابھی کوئی لسٹنگ نہیں ہے۔ سب سے پہلے اشتہار لگائیں۔"
   },
   "listings": {
     "title": "لسٹنگز",
@@ -62,9 +105,16 @@
     "sold": "فروخت ہو گیا",
     "new": "نیا",
     "used": "استعمال شدہ",
-    "refurbished": "ریفر بشڈ"
+    "refurbished": "ریفر بشڈ",
+    "ptaApproved": "PTA منظور شدہ",
+    "cpidApproved": "CPID منظور شدہ",
+    "inspected": "معائنہ شدہ",
+    "verifiedSeller": "تصدیق شدہ فروخت کنندہ",
+    "ramLabel": "{value} جی بی ریم",
+    "batteryLabel": "بیٹری ہیلتھ {value}%",
+    "adsCount": "{count, plural, one {1 اشتہار} other {# اشتہارات}}"
   },
-  "search": {
+  "searchPage": {
     "placeholder": "موبائل فونز تلاش کریں...",
     "noResults": "کوئی نتائج نہیں ملے",
     "resultsCount": "{count} نتائج ملے",
@@ -83,8 +133,18 @@
     "ram": "RAM",
     "color": "رنگ",
     "ptaStatus": "PTA اسٹیٹس",
+    "cpidStatus": "CPID اسٹیٹس",
     "batteryHealth": "بیٹری ہیلتھ",
-    "warranty": "گارنٹی"
+    "warranty": "گارنٹی",
+    "any": "کوئی بھی",
+    "applyPrice": "قیمت لاگو کریں",
+    "apply": "لاگو کریں",
+    "minPercent": "کم سے کم %",
+    "gb": " جی بی",
+    "trust": "اعتماد اور تصدیق",
+    "inspectedOnly": "صرف معائنہ شدہ",
+    "verifiedSellersOnly": "صرف تصدیق شدہ فروخت کنندگان",
+    "dealersOnly": "صرف ڈیلرز"
   },
   "productDetails": {
     "specifications": "تفصیلات",
@@ -94,7 +154,10 @@
     "reportListing": "لسٹنگ رپورٹ کریں",
     "similarListings": "ملتی جلتی لسٹنگز",
     "memberSince": "رکن بنے",
-    "verified": "تصدیق شدہ"
+    "verified": "تصدیق شدہ",
+    "negotiable": "قابل مذاکرہ",
+    "warranty": "گارنٹی موجود ہے",
+    "phoneHistory": "فون کی تاریخ"
   },
   "authentication": {
     "signIn": "سائن ان",
@@ -196,13 +259,187 @@
     "privacyPolicy": "پرائیویسی پالیسی",
     "helpCenter": "ہیلپ سینٹر",
     "followUs": "ہمیں فالو کریں",
-    "allRightsReserved": "جملہ حقوق محفوظ ہیں"
+    "allRightsReserved": "جملہ حقوق محفوظ ہیں",
+    "tagline": "{country} میں موبائل فون خریدیں اور فروخت کریں۔"
   },
   "country": {
     "selectCountry": "ملک منتخب کریں",
     "bahrain": "بحرین",
     "pakistan": "پاکستان",
     "currency": "کرنسی",
-    "language": "زبان"
+    "language": "زبان",
+    "country": "ملک"
+  },
+  "condition": {
+    "NEW": "نیا",
+    "OPEN_BOX": "کھولا ہوا",
+    "USED": "استعمال شدہ",
+    "REFURBISHED": "ریفر بشڈ",
+    "FOR_PARTS": "پرزوں کے لیے"
+  },
+  "categories": {
+    "smartphones": "اسمارٹ فونز",
+    "tablets": "ٹیبلٹس",
+    "smart-watches": "اسمارٹ واچز",
+    "earphones-headphones": "ہیڈ فونز",
+    "chargers-cables": "چارجز اور کیبلز",
+    "power-banks": "پاور بینک",
+    "cases-covers": "کیسز اور کور",
+    "feature-phones": "فیچر فونز"
+  },
+  "imei": {
+    "title": "IMEI تصدیق",
+    "description": "ڈیوائس کی رجسٹریشن حیثیت چیک کریں اور یقینی بنائیں کہ IMEI درست اور بلیک لسٹ نہیں ہے۔",
+    "formTitle": "IMEI نمبر درج کریں",
+    "imeiLabel": "IMEI نمبر (15 ہندسے)",
+    "imeiHint": "IMEI معلوم کرنے کے لیے اپنے فون پر *#06# ڈائل کریں",
+    "submit": "IMEI تصدیق کریں",
+    "invalid": "درست 15 ہندسوں کا IMEI درج کریں۔ IMEI معلوم کرنے کے لیے فون پر *#06# ڈائل کریں۔",
+    "rateLimited": "IMEI چیک کی بہت زیادہ کوششیں ہو گئی ہیں۔ ایک منٹ بعد دوبارہ کوشش کریں۔",
+    "unavailable": "اس ماحول میں تصدیقی سروس دستیاب نہیں ہے، اس لیے کوئی نتیجہ تیار نہیں ہوا۔ غیر موجودگی کو رجسٹریشن یا صفائی کا ثبوت نہ سمجھیں۔",
+    "whatIsTitle": "IMEI کیا ہے؟",
+    "whatIsBody": "IMEI (International Mobile Equipment Identity) ایک منفرد 15 ہندسوں کا نمبر ہے جو آپ کی موبائل ڈیوائس کی شناخت کرتا ہے۔ یہ رجسٹریشن اور سیکیورٹی کے لیے استعمال ہوتا ہے۔",
+    "blacklistTitle": "بلیک لسٹ چیک",
+    "blacklistBody": "ہم چیک کرتے ہیں کہ آیا ڈیوائس چوری یا بلیک لسٹ کی اطلاع شدہ ہے۔ بلیک لسٹ ڈیوائسز خریدنے سے گریز کریں کیونکہ وہ نیٹ ورکس پر بلاک ہو سکتی ہیں۔",
+    "ptaTitle": "PTA رجسٹریشن",
+    "ptaBody": "پاکستان میں تمام موبائل ڈیوائسز کا مقامی نیٹ ورکس پر قانونی طور پر کام کرنے کے لیے PTA (پاکستان ٹیلی کمیونیکیشن اتھارٹی) کے ساتھ رجسٹر ہونا ضروری ہے۔",
+    "cpidTitle": "CPID اسٹیٹس",
+    "cpidBody": "CPID درآمد شدہ ڈیوائسز کو ٹریک کرنے اور ان کی ضابطہ کار ضروریات کی تعمیل یقینی بنانے کا نظام ہے۔",
+    "traTitle": "ریگولیٹری تعمیل",
+    "traBody": "خریدنے سے پہلے اپنے ملک کی ضروریات کے مطابق ڈیوائس کی حیثیت چیک کریں تاکہ ایکٹیویشن یا استعمال کے مسائل سے بچا جا سکے۔",
+    "result": {
+      "title": "تصدیقی نتیجہ",
+      "risk": "خطرہ",
+      "highRisk": "زیادہ",
+      "lowRisk": "کم",
+      "unknownRisk": "نامعلوم",
+      "simulated": "نمائشی",
+      "simulatedTitle": "نمائشی نتیجہ",
+      "simulatedBody": "یہ ایک نمائشی نتیجہ ہے، سرکاری ریگولیٹری تصدیق نہیں۔",
+      "stale": "یہ نتیجہ پرانا ہو سکتا ہے۔ خریدنے سے پہلے دوبارہ تصدیق کریں۔",
+      "ptaStatus": "PTA اسٹیٹس",
+      "ptaAuthority": "پاکستان ٹیلی کمیونیکیشن اتھارٹی",
+      "cpidStatus": "CPID اسٹیٹس",
+      "cpidAuthority": "Compliant Device Identification",
+      "stolenCheck": "چوری کی اطلاع",
+      "blacklistCheck": "بلیک لسٹ چیک",
+      "flagged": "پرچم لگایا گیا",
+      "clear": "صاف",
+      "deviceInfo": "ڈیوائس کی معلومات",
+      "brand": "برانڈ",
+      "model": "ماڈل",
+      "color": "رنگ",
+      "lastVerified": "آخری تصدیق",
+      "simulatedAt": "نمائش کا وقت",
+      "source": "ماخذ",
+      "simulatedSource": "نمائش"
+    }
+  },
+  "sell": {
+    "checkValue": "قیمت جانچیں",
+    "checkValueHint": "قیمت کا تخمینہ حاصل کریں",
+    "verifyImei": "IMEI تصدیق کریں",
+    "verifyImeiHint": "ڈیوائس کی حیثیت چیک کریں"
+  },
+  "accountPage": {
+    "cityPlaceholder": "مثال: {city}",
+    "title": "میرا پروفائل",
+    "description": "اپنے اکاؤنٹ کی تفصیلات کا انتظام کریں",
+    "editProfile": "پروفائل ترمیم کریں",
+    "editDescription": "اپنا نام، مقام اور تعارف اپ ڈیٹ کریں۔",
+    "emailVerified": "ای میل تصدیق شدہ",
+    "emailNotVerified": "ای میل تصدیق نہیں ہوئی"
+  },
+  "categoriesPage": {
+    "title": "تمام زمرے",
+    "description": "تمام فونز اور ایکسیسریز کے زمرے دیکھیں۔",
+    "subtitle": "اپنے قریب لسٹنگز دیکھنے کے لیے ایک زمرہ منتخب کریں۔"
+  },
+  "sort": {
+    "label": "ترتیب",
+    "recent": "پہلے نیا",
+    "price_asc": "قیمت: کم سے زیادہ",
+    "price_desc": "قیمت: زیادہ سے کم",
+    "popular": "زیادہ مقبول"
+  },
+  "status": {
+    "PTA_APPROVED": "PTA منظور شدہ",
+    "NON_PTA": "غیر PTA",
+    "CPID": "CPID",
+    "FACTORY_UNLOCKED": "فیکٹری ان لاک",
+    "CARRIER_LOCKED": "نیٹ ورک لاک",
+    "UNKNOWN": "نامعلوم",
+    "VERIFICATION_PENDING": "تصدیق زیر التوا",
+    "CPID_APPROVED": "CPID منظور شدہ",
+    "NON_CPID": "غیر CPID",
+    "NO_WARRANTY": "بغیر گارنٹی",
+    "MANUFACTURER": "مینوفیکچرر گارنٹی",
+    "SELLER": "فروخت کنندہ گارنٹی",
+    "THIRD_PARTY": "تھرڈ پارٹی گارنٹی"
+  },
+  "pagination": {
+    "aria": "لسٹنگ کے صفحات",
+    "previous": "پچھلا صفحہ",
+    "next": "اگلا صفحہ"
+  },
+  "savedSearch": {
+    "title": "یہ تلاش محفوظ کریں",
+    "button": "تلاش محفوظ کریں",
+    "saved": "تلاش محفوظ ہو گئی",
+    "description": "جب نئی لسٹنگز آپ کی تلاش سے میل کھائیں گی تو ہم آپ کو بتائیں گے۔",
+    "error": "یہ تلاش محفوظ نہیں ہو سکی۔"
+  },
+  "uiActions": {
+    "book": "بک کریں",
+    "myInspections": "میرے معائنے",
+    "packages": "پیکجز",
+    "checkpoints": "{count}+ چیک پوائنٹس",
+    "browseMarketplace": "مارکیٹ پلیس دیکھیں",
+    "createListing": "لسٹنگ بنائیں",
+    "calculateValue": "قیمت حساب کریں",
+    "selectModel": "ماڈل منتخب کریں",
+    "unavailableBahrainTitle": "ابھی بحرین میں دستیاب نہیں",
+    "unavailableBahrainBody": "یہ ٹول فی الحال پاکستان مارکیٹ کے ڈیٹا پر کام کرتا ہے۔ بحرین کی لسٹنگز دیکھیں۔",
+    "preview": "نمائشی",
+    "estimatedValue": "تخمینی مارکیٹ ویلیو",
+    "storageLabel": "اسٹوریج",
+    "ramLabel": "RAM",
+    "conditionLabel": "حالت",
+    "batteryLabel": "بیٹری",
+    "basedOnListings": "{count} فعال لسٹنگز کی بنیاد پر",
+    "howItWorks": "یہ کیسے کام کرتا ہے"
+  },
+  "authPage": {
+    "signInTitle": "دوبارہ خوش آمدید",
+    "signInDescription": "جاری رکھنے کے لیے اپنے اکاؤنٹ میں سائن ان کریں",
+    "signUpTitle": "اپنا اکاؤنٹ بنائیں",
+    "signUpDescription": "سیکنڈوں میں مارکیٹ پلیس سے جڑیں",
+    "forgotTitle": "کیا آپ کا پاس ورڈ بھول گیا ہے؟",
+    "forgotDescription": "اپنا ای میل درج کریں، ہم آپ کو ری سیٹ لنک بھیج دیں گے",
+    "resetTitle": "اپنا پاس ورڈ ری سیٹ کریں",
+    "resetDescription": "اپنے اکاؤنٹ کے لیے نیا پاس ورڈ منتخب کریں",
+    "verifyTitle": "اپنی ای میل تصدیق کریں",
+    "verifyDescription": "تصدیق لنک کے لیے اپنا ان باکس چیک کریں"
+  },
+  "dashboardPage": {
+    "previewMode": "نمائشی",
+    "yourMarketplace": "مارکیٹ پلیس",
+    "unverified": "غیر مجاز",
+    "greeting": "آپ کو دیکھ کر خوشی ہوئی، {name}۔",
+    "demoBody": "GenTech ڈیش بورڈ کا نمائشی جائزہ دیکھیں۔ ڈیمو موڈ میں مارکیٹ پلیس کی کارروائیاں بند ہیں۔",
+    "liveBody": "آپ کی اگلی تلاش یا فروخت یہاں سے شروع ہوتی ہے۔ اپنی لسٹنگز، پیغامات اور محفوظ تلاشیں چیک کرتے رہیں۔",
+    "postListing": "فروخت کریں",
+    "explorePhones": "مارکیٹ پلیس",
+    "demoValue": "نمائشی",
+    "previewNote": "جائزہ",
+    "manageAds": "میری لسٹنگز",
+    "unread": "{count} نہ پڑھے ہوئے",
+    "viewConversations": "پیغامات",
+    "yourSavedFilters": "محفوظ تلاشیں",
+    "trackRequests": "معائنے",
+    "getInspected": "فون معائنہ",
+    "sellingOverview": "جائزہ",
+    "manageListings": "میری لسٹنگز",
+    "verified": "تصدیق شدہ"
   }
 }

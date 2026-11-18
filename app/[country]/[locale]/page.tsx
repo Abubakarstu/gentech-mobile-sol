@@ -1,6 +1,13 @@
-import { getTranslations } from "next-intl/server";
+import type { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import {
+  getCountryFromParam,
+  getLocaleFromParam,
+  getRegionForCountry,
+} from "@/lib/countries/server";
 import { getCountryConfig } from "@/lib/countries";
+import { ROUTES } from "@/lib/constants";
 import { getListingFeed } from "@/features/listings/services/listing.service";
 import { getCategoriesWithCounts } from "@/features/marketplace/services/category.service";
 import { HomeHero } from "@/features/marketplace/components/home-hero";
@@ -13,21 +20,38 @@ import { getActiveLocationTree } from "@/features/locations/services/location.se
 import { getCurrentUser } from "@/lib/session";
 import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
 
-export default async function LocalizedHomepage({
-  params,
-}: {
-  params: Promise<{ country: string; locale: string }>;
-}) {
-  const { country, locale } = await params;
-  const t = await getTranslations("homepage");
-  const countryConfig = getCountryConfig(country.toUpperCase() as "BH" | "PK");
-  const region = country.toUpperCase() === "BH" ? "BAHRAIN" : "PAKISTAN";
+export const dynamic = "force-dynamic";
 
-  // Real listings + real category counts from the DB (both fail-soft).
+type PageProps = {
+  params: Promise<{ country: string; locale: string }>;
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { country, locale } = await params;
+  const countryCode = getCountryFromParam(country);
+  const resolvedLocale = getLocaleFromParam(locale, countryCode);
+  setRequestLocale(resolvedLocale);
+  const config = getCountryConfig(countryCode);
+  const t = await getTranslations({ locale: resolvedLocale, namespace: "homepage" });
+
+  return {
+    title: t("heroTitle"),
+    description: t("heroSubtitle", { country: config.nativeName }),
+  };
+}
+
+export default async function LocalizedHomepage({ params }: PageProps) {
+  const { country, locale: localeParam } = await params;
+  const countryCode = getCountryFromParam(country);
+  const locale = getLocaleFromParam(localeParam, countryCode);
+  setRequestLocale(locale);
+  const region = getRegionForCountry(countryCode);
+  const t = await getTranslations({ locale, namespace: "homepage" });
+
   const [feed, categories, locations, user] = await Promise.all([
     getListingFeed({ sort: "recent", page: 1, pageSize: 8 }, region),
-    getCategoriesWithCounts(8),
-    getActiveLocationTree(),
+    getCategoriesWithCounts(8, region),
+    getActiveLocationTree(countryCode),
     getCurrentUser(),
   ]);
 
@@ -44,18 +68,22 @@ export default async function LocalizedHomepage({
 
   return (
     <>
-      <HomeHero popularCategories={[]} locations={locations} />
+      <HomeHero
+        country={countryCode}
+        popularCategories={categories}
+        locations={locations}
+      />
 
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <SectionHeader title={t("browseByCategory")} href={`/${country}/${locale}/marketplace`} />
+        <SectionHeader title={t("browseByCategory")} href={ROUTES.marketplace} />
         <CategoryGrid categories={categories} />
       </section>
 
       <section className="mx-auto max-w-6xl px-4 pb-12">
         <SectionHeader
           title={t("featuredListings")}
-          description={t("heroSubtitle")}
-          href={`/${country}/${locale}/marketplace?featured=1`}
+          description={t("featuredDescription")}
+          href={`${ROUTES.marketplace}?featured=1`}
         />
         <ListingsGrid
           listings={featured}
@@ -69,8 +97,8 @@ export default async function LocalizedHomepage({
       <section className="mx-auto max-w-6xl px-4 py-12">
         <SectionHeader
           title={t("recentListings")}
-          description={t("heroSubtitle")}
-          href={`/${country}/${locale}/marketplace`}
+          description={t("recentDescription")}
+          href={ROUTES.marketplace}
         />
         <ListingsGrid
           listings={latest}

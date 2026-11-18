@@ -1,50 +1,50 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { isReadOnlyDemoEnabled } from "@/lib/demo-mode";
 import { getAvailableLocales, getDefaultLocale, isValidCountryCode } from "@/lib/countries";
-import type { CountryCode } from "@/lib/countries/types";
+import {
+  COUNTRY_HEADER,
+  LOCALE_HEADER,
+  type CountryCode,
+  type LocaleCode,
+} from "@/lib/countries/types";
 import { DEFAULT_COUNTRY } from "@/lib/constants";
 
-/**
- * Security middleware that adds HTTP security headers to all responses.
- * Also handles country/locale routing for i18n.
- */
-export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+const COUNTRY_SEGMENTS: Record<string, CountryCode> = { bh: "BH", pk: "PK" };
+const LOCALE_SEGMENTS: readonly LocaleCode[] = ["ar", "ur", "en"];
 
-  // Skip API routes, static files, and Next.js internals
-  if (
+/** Only these public routes have localized equivalents; admin tools stay global. */
+const LOCALIZED_ROUTES = new Set([
+  "marketplace",
+  "categories",
+  "listings",
+  "sell",
+  "checkout",
+  "payment",
+  "imei-check",
+  "compare",
+  "valuation",
+  "inspection",
+  "sign-in",
+  "sign-up",
+  "forgot-password",
+  "reset-password",
+  "verify-email",
+  "dashboard",
+  "account",
+]);
+
+function isStaticOrApi(pathname: string): boolean {
+  return (
     pathname.startsWith("/api/") ||
     pathname.startsWith("/_next/") ||
     pathname.startsWith("/favicon") ||
-    pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico|css|js)$/)
-  ) {
-    // Still add security headers
-    const response = NextResponse.next();
-    addSecurityHeaders(response, request);
-    return response;
-  }
+    pathname.match(/\.(svg|png|jpg|jpeg|gif|webp|ico|css|js)$/) !== null
+  );
+}
 
-  // Check if already has country/locale prefix
-  const segments = pathname.split("/").filter(Boolean);
-  const firstSegment = segments[0]?.toLowerCase() ?? "";
-  const secondSegment = segments[1]?.toLowerCase() ?? "";
-
-  const validCountries = ["bh", "pk"];
-  const validLocales = ["ar", "ur", "en"];
-
-  const hasCountryPrefix = validCountries.includes(firstSegment);
-  const hasLocalePrefix = hasCountryPrefix && validLocales.includes(secondSegment);
-
-  if (hasCountryPrefix && hasLocalePrefix) {
-    // Already localized — add security headers and continue
-    const response = NextResponse.next();
-    addSecurityHeaders(response, request);
-    return response;
-  }
-
-  // Saved manual preference wins; otherwise use the deployment platform's
-  // geolocation header (Vercel first, Cloudflare second). Never overwrite the
-  // saved preference with an inferred country.
+/** Manual preference wins; geo inference never overwrites it. */
+function resolveCountryLocale(request: NextRequest): { country: CountryCode; locale: LocaleCode } {
   const savedCountry = request.cookies.get("gentech_country")?.value?.trim().toUpperCase() ?? "";
   let country: CountryCode = DEFAULT_COUNTRY;
 
@@ -58,39 +58,27 @@ export function middleware(request: NextRequest) {
     )
       .trim()
       .toUpperCase();
-    if (geoCountry && isValidCountryCode(geoCountry)) {
-      country = geoCountry;
-    }
+    if (geoCountry && isValidCountryCode(geoCountry)) country = geoCountry;
   }
 
-  // Determine locale from cookie or the detected country's default
-  const localeCookie = request.cookies.get("gentech_locale")?.value?.toLowerCase() ?? "";
-  let locale = getDefaultLocale(country);
+  const savedLocale = request.cookies.get("gentech_locale")?.value?.trim().toLowerCase() ?? "";
+  const locale =
+    LOCALE_SEGMENTS.find((value) => value === savedLocale) &&
+    getAvailableLocales(country).includes(savedLocale as LocaleCode)
+      ? (savedLocale as LocaleCode)
+      : getDefaultLocale(country);
 
-  if (localeCookie && validLocales.includes(localeCookie)) {
-    // Validate locale is available for this country
-    if (getAvailableLocales(country).includes(localeCookie)) {
-      locale = localeCookie;
-    }
-  }
-
-  // Build redirect URL
-  const newUrl = request.nextUrl.clone();
-  newUrl.pathname = `/${country.toLowerCase()}/${locale}${pathname === "/" ? "" : pathname}`;
-
-  const blockedDemoMutation =
-    isReadOnlyDemoEnabled() && !["GET", "HEAD"].includes(request.method);
-
-  if (blockedDemoMutation) {
-    return NextResponse.json({ error: "This read-only demo does not accept changes." }, { status: 403 });
-  }
-
-  const response = NextResponse.redirect(newUrl);
-  addSecurityHeaders(response, request);
-  return response;
+  return { country, locale };
 }
 
-function addSecurityHeaders(response: NextResponse, request: NextRequest) {
+function withContextHeaders(request: NextRequest, country: CountryCode, locale: LocaleCode) {
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set(COUNTRY_HEADER, country);
+  requestHeaders.set(LOCALE_HEADER, locale);
+  return requestHeaders;
+}
+
+function addSecurityHeaders(response: NextResponse) {
   const cspHeader = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
@@ -123,6 +111,82 @@ function addSecurityHeaders(response: NextResponse, request: NextRequest) {
       "max-age=31536000; includeSubDomains; preload",
     );
   }
+}
+
+/** Adds country/locale context and security headers to a pass-through response. */
+function passThrough(request: NextRequest, country: CountryCode, locale: LocaleCode) {
+  const response = NextResponse.next({ request: { headers: withContextHeaders(request, country, locale) } });
+  addSecurityHeaders(response);
+  return response;
+}
+
+/** Keeps the query string while moving a public route under its country prefix. */
+function localizedRedirect(
+  request: NextRequest,
+  country: CountryCode,
+  locale: LocaleCode,
+  pathname = request.nextUrl.pathname,
+) {
+  const newUrl = request.nextUrl.clone();
+  newUrl.pathname = `/${country.toLowerCase()}/${locale}${pathname === "/" ? "" : pathname}`;
+  const response = NextResponse.redirect(newUrl);
+  addSecurityHeaders(response);
+  return response;
+}
+
+export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (isStaticOrApi(pathname)) {
+    const response = NextResponse.next();
+    addSecurityHeaders(response);
+    return response;
+  }
+
+  if (isReadOnlyDemoEnabled() && !["GET", "HEAD"].includes(request.method)) {
+    const response = NextResponse.json(
+      { error: "This read-only demo does not accept changes." },
+      { status: 403 },
+    );
+    addSecurityHeaders(response);
+    return response;
+  }
+
+  const { country, locale } = resolveCountryLocale(request);
+  const segments = pathname.split("/").filter(Boolean);
+  const firstSegment = segments[0]?.toLowerCase() ?? "";
+  const secondSegment = segments[1]?.toLowerCase() ?? "";
+  const routeCountry = COUNTRY_SEGMENTS[firstSegment];
+
+  if (routeCountry) {
+    const routeLocale = LOCALE_SEGMENTS.find((value) => value === secondSegment);
+
+    if (routeLocale && getAvailableLocales(routeCountry).includes(routeLocale)) {
+      return passThrough(request, routeCountry, routeLocale);
+    }
+
+    // /bh, /bh/ur, /bh/unknown and /bh/marketplace all normalise to the
+    // country's default locale so mixed content can never render.
+    const fallbackLocale = getDefaultLocale(routeCountry);
+    const remaining = routeLocale ? segments.slice(2) : segments.slice(1);
+    const newUrl = request.nextUrl.clone();
+    newUrl.pathname = `/${routeCountry.toLowerCase()}/${fallbackLocale}${
+      remaining.length > 0 ? `/${remaining.join("/")}` : ""
+    }`;
+    const response = NextResponse.redirect(newUrl);
+    addSecurityHeaders(response);
+    return response;
+  }
+
+  if (pathname === "/") return localizedRedirect(request, country, locale);
+
+  // Payment return URLs from the legacy inspection flow are intentionally global.
+  const isLegacyPaymentReturn = firstSegment === "inspection" && secondSegment === "pay";
+  if (!isLegacyPaymentReturn && LOCALIZED_ROUTES.has(firstSegment)) {
+    return localizedRedirect(request, country, locale);
+  }
+
+  return passThrough(request, country, locale);
 }
 
 export const config = {

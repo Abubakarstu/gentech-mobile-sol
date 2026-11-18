@@ -6,6 +6,8 @@ import { AnalyticsScripts } from "@/features/analytics/components/analytics-scri
 import { PageViewTracker } from "@/features/analytics/components/page-view-tracker";
 import { APP } from "@/lib/constants";
 import { APP_URL } from "@/lib/app-url";
+import { getRequestCountryLocale } from "@/lib/countries/server";
+import { isRtlLocale } from "@/lib/countries/types";
 import "./globals.css";
 
 const geistSans = { variable: "font-sans" };
@@ -41,14 +43,17 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { locale } = await getRequestCountryLocale();
+
   return (
     <html
-      lang="en"
+      lang={locale}
+      dir={isRtlLocale(locale) ? "rtl" : "ltr"}
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >

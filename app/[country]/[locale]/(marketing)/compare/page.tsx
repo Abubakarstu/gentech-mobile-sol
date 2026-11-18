@@ -1,70 +1,69 @@
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { PhoneComparisonTable } from '@/features/phone-intelligence/components/phone-comparison-table';
-import { comparisonService } from '@/features/phone-intelligence/services/comparison.service';
-import type { PhoneSpecComparison } from '@/features/phone-intelligence/schemas/comparison.schema';
+import type { Metadata } from "next";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
-export const metadata: Metadata = {
-  title: 'Compare Phones - GenTech',
-  description: 'Compare mobile phone specifications side by side. Make informed decisions with detailed specs for display, camera, battery, and more.',
-  robots: {
-    index: true,
-    follow: true,
-  },
+import {
+  getCountryFromParam,
+  getLocaleFromParam,
+} from "@/lib/countries/server";
+import { ROUTES } from "@/lib/constants";
+import { withCountryLocalePrefix } from "@/lib/localized-path";
+import { PhoneComparisonTable } from "@/features/phone-intelligence/components/phone-comparison-table";
+import { comparisonService } from "@/features/phone-intelligence/services/comparison.service";
+import type { PhoneSpecComparison } from "@/features/phone-intelligence/schemas/comparison.schema";
+
+type PageProps = {
+  params: Promise<{ country: string; locale: string }>;
+  searchParams?: Promise<{ phones?: string }>;
 };
 
-export default async function ComparePage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ phones?: string }>;
-}) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { country, locale } = await params;
+  const countryCode = getCountryFromParam(country);
+  const resolvedLocale = getLocaleFromParam(locale, countryCode);
+  const t = await getTranslations({ locale: resolvedLocale, namespace: "marketplace" });
+  return {
+    title: `${t("comparePhones")} · GenTech`,
+    description: t("description"),
+    robots: { index: true, follow: true },
+  };
+}
+
+export default async function ComparePage({ params, searchParams }: PageProps) {
+  const { country, locale: localeParam } = await params;
+  const countryCode = getCountryFromParam(country);
+  const locale = getLocaleFromParam(localeParam, countryCode);
+  const t = await getTranslations({ locale, namespace: "marketplace" });
+  const tUi = await getTranslations({ locale, namespace: "uiActions" });
+
   const resolvedSearchParams = searchParams ? await searchParams : {};
-  const phoneIds = resolvedSearchParams.phones?.split(',').filter(Boolean) || [];
+  const phoneIds = resolvedSearchParams.phones?.split(",").filter(Boolean) ?? [];
 
   let phones: PhoneSpecComparison[] = [];
   if (phoneIds.length >= 2) {
     phones = await comparisonService.getComparisonSpecs(phoneIds);
   }
 
+  const marketplaceHref = withCountryLocalePrefix(ROUTES.marketplace, countryCode, locale);
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Compare Phones</h1>
-        <p className="text-gray-600">
-          Compare mobile phone specifications side by side to make the best choice
-        </p>
+        <h1 className="mb-2 text-3xl font-bold">{t("comparePhones")}</h1>
+        <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
       {phones.length >= 2 ? (
         <PhoneComparisonTable phones={phones} />
       ) : (
-        <div className="bg-white rounded-lg shadow-md p-12 text-center border border-gray-200">
-          <div className="text-gray-400 mb-4">
-            <svg
-              className="w-16 h-16 mx-auto"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
-            Select Phones to Compare
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Choose at least 2 phones from the marketplace to compare their specifications
-          </p>
+        <div className="bg-card rounded-lg border p-12 text-center shadow-md">
+          <h2 className="mb-2 text-xl font-semibold">{t("noListings")}</h2>
+          <p className="text-muted-foreground mb-6">{t("description")}</p>
           <Link
-            href="/marketplace"
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            href={marketplaceHref}
+            className="bg-primary text-primary-foreground inline-flex items-center rounded-lg px-4 py-2"
           >
-            Browse Marketplace
+            {tUi("browseMarketplace")}
           </Link>
         </div>
       )}

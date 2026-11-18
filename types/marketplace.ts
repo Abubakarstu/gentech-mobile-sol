@@ -1,4 +1,5 @@
 import type { ListingCondition } from "@/lib/constants";
+import type { Region } from "@/lib/generated/prisma/enums";
 
 /** Lightweight category for nav/grid display. */
 export interface CategoryItem {
@@ -23,6 +24,7 @@ export interface ListingCardData {
   slug: string;
   price: number;
   currency?: string;
+  region?: Region;
   condition: ListingCondition;
   city: string;
   brand?: string;
@@ -126,6 +128,7 @@ export interface ListingDetail {
   description: string;
   price: number;
   currency: string;
+  region?: Region;
   condition: ListingCondition;
   negotiable: boolean;
   city: string;

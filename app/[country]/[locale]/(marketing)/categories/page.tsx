@@ -1,23 +1,39 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
+import {
+  getCountryFromParam,
+  getLocaleFromParam,
+  getRegionForCountry,
+} from "@/lib/countries/server";
 import { getCategoriesWithCounts } from "@/features/marketplace/services/category.service";
 import { CategoryGrid } from "@/features/marketplace/components/category-grid";
 
-export const metadata: Metadata = {
-  title: "Categories",
-  description: "Browse all phone and accessory categories.",
+type PageProps = {
+  params: Promise<{ country: string; locale: string }>;
 };
 
-export default async function CategoriesPage() {
-  const categories = await getCategoriesWithCounts();
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { country, locale } = await params;
+  const countryCode = getCountryFromParam(country);
+  const resolvedLocale = getLocaleFromParam(locale, countryCode);
+  const t = await getTranslations({ locale: resolvedLocale, namespace: "categoriesPage" });
+
+  return { title: t("title"), description: t("description") };
+}
+
+export default async function CategoriesPage({ params }: PageProps) {
+  const { country, locale: localeParam } = await params;
+  const countryCode = getCountryFromParam(country);
+  const locale = getLocaleFromParam(localeParam, countryCode);
+  const t = await getTranslations({ locale, namespace: "categoriesPage" });
+  const categories = await getCategoriesWithCounts(undefined, getRegionForCountry(countryCode));
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
       <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">All categories</h1>
-        <p className="text-muted-foreground mt-1">
-          Pick a category to start browsing listings near you.
-        </p>
+        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("subtitle")}</p>
       </header>
       <CategoryGrid categories={categories} />
     </div>

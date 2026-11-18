@@ -3,9 +3,11 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
-import { LISTING_CONDITION_LABELS, WARRANTY_TYPE, PTA_STATUS, CPID_STATUS } from "@/lib/constants";
+import { LISTING_CONDITIONS, PTA_STATUS, CPID_STATUS, WARRANTY_TYPE } from "@/lib/constants";
+import { useLocalizedRouteInfo } from "@/lib/localized-routing";
 import type {
   BrandItem,
   CategoryItem,
@@ -36,6 +38,41 @@ function FilterGroup({ title, children }: { title: string; children: React.React
   );
 }
 
+function StatusLinks({
+  values,
+  active,
+  buildHref,
+  keyName,
+  translate,
+}: {
+  values: readonly string[];
+  active?: string;
+  buildHref: (patch: Record<string, string | null>) => string;
+  keyName: string;
+  translate: (key: string) => string;
+}) {
+  return (
+    <ul className="space-y-0.5">
+      {values.map((value) => {
+        const isActive = active === value;
+        return (
+          <li key={value}>
+            <Link
+              href={buildHref({ [keyName]: isActive ? null : value })}
+              className={cn(
+                "hover:bg-accent block rounded-md px-2 py-1.5",
+                isActive && "bg-accent font-medium",
+              )}
+            >
+              {translate(value)}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 function PriceRangeFilter({
   min,
   max,
@@ -47,6 +84,7 @@ function PriceRangeFilter({
 }) {
   const router = useRouter();
   const buildHref = useListingHref();
+  const t = useTranslations("filters");
   const [minPrice, setMinPrice] = React.useState(min?.toString() ?? "");
   const [maxPrice, setMaxPrice] = React.useState(max?.toString() ?? "");
 
@@ -61,7 +99,7 @@ function PriceRangeFilter({
       <div className="flex items-center gap-2">
         <div className="grid gap-1">
           <Label htmlFor="minPrice" className="text-muted-foreground text-xs">
-            Min
+            {t("minPrice")}
           </Label>
           <Input
             id="minPrice"
@@ -74,40 +112,30 @@ function PriceRangeFilter({
         </div>
         <div className="grid gap-1">
           <Label htmlFor="maxPrice" className="text-muted-foreground text-xs">
-            Max
+            {t("maxPrice")}
           </Label>
           <Input
             id="maxPrice"
             inputMode="numeric"
             value={maxPrice}
             onChange={(event) => setMaxPrice(event.target.value.replace(/\D/g, ""))}
-            placeholder="Any"
+            placeholder={t("any")}
             className="h-9"
           />
         </div>
       </div>
       <Button type="submit" variant="outline" size="sm" className="w-full">
-        Apply price
+        {t("applyPrice")}
       </Button>
     </form>
   );
 }
 
-function BatteryHealthFilter({
-  value,
-  onApply,
-}: {
-  value?: number;
-  onApply?: () => void;
-}) {
+function BatteryHealthFilter({ value, onApply }: { value?: number; onApply?: () => void }) {
   const router = useRouter();
   const buildHref = useListingHref();
+  const t = useTranslations("filters");
   const [batteryHealthMin, setBatteryHealthMin] = React.useState(value?.toString() ?? "");
-
-  function applyBatteryHealth() {
-    router.push(buildHref({ batteryHealthMin: batteryHealthMin || null }));
-    onApply?.();
-  }
 
   return (
     <div className="flex items-center gap-2">
@@ -115,12 +143,20 @@ function BatteryHealthFilter({
         inputMode="numeric"
         value={batteryHealthMin}
         onChange={(event) => setBatteryHealthMin(event.target.value.replace(/\D/g, "").slice(0, 3))}
-        placeholder="Min %"
-        aria-label="Minimum battery health"
+        placeholder={t("minPercent")}
+        aria-label={t("batteryHealth")}
         className="h-9"
       />
-      <Button type="button" variant="outline" size="sm" onClick={applyBatteryHealth}>
-        Apply
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          router.push(buildHref({ batteryHealthMin: batteryHealthMin || null }));
+          onApply?.();
+        }}
+      >
+        {t("apply")}
       </Button>
     </div>
   );
@@ -136,27 +172,31 @@ export function MarketplaceFilters({
 }: Props) {
   const router = useRouter();
   const buildHref = useListingHref();
-
-  const conditionEntries = Object.entries(LISTING_CONDITION_LABELS);
+  const t = useTranslations("filters");
+  const tCondition = useTranslations("condition");
+  const tStatus = useTranslations("status");
+  const tCategories = useTranslations("categories");
+  const { country } = useLocalizedRouteInfo();
+  const showPakistanSignals = country === "PK";
 
   return (
     <div className="text-sm">
-      <FilterGroup title="Category">
+      <FilterGroup title={t("category")}>
         <ul className="space-y-0.5">
-          {categories.map((c) => {
-            const active = filters.category === c.slug;
+          {categories.map((category) => {
+            const active = filters.category === category.slug;
             return (
-              <li key={c.id}>
+              <li key={category.id}>
                 <Link
-                  href={buildHref({ category: active ? null : c.slug })}
+                  href={buildHref({ category: active ? null : category.slug })}
                   className={cn(
                     "hover:bg-accent flex items-center justify-between rounded-md px-2 py-1.5",
                     active && "bg-accent font-medium",
                   )}
                 >
-                  {c.name}
-                  {typeof c.count === "number" ? (
-                    <span className="text-muted-foreground text-xs">{c.count}</span>
+                  {tCategories.has(category.slug) ? tCategories(category.slug) : category.name}
+                  {typeof category.count === "number" ? (
+                    <span className="text-muted-foreground text-xs">{category.count}</span>
                   ) : null}
                 </Link>
               </li>
@@ -165,40 +205,40 @@ export function MarketplaceFilters({
         </ul>
       </FilterGroup>
 
-      <FilterGroup title="Brand">
+      <FilterGroup title={t("brand")}>
         <div className="flex flex-wrap gap-1.5">
-          {brands.map((b) => {
-            const active = filters.brand === b.slug;
+          {brands.map((brand) => {
+            const active = filters.brand === brand.slug;
             return (
               <Link
-                key={b.id}
-                href={buildHref({ brand: active ? null : b.slug })}
+                key={brand.id}
+                href={buildHref({ brand: active ? null : brand.slug })}
                 className={cn(
                   "rounded-full border px-2.5 py-1 text-xs transition-colors",
                   active ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent",
                 )}
               >
-                {b.name}
+                {brand.name}
               </Link>
             );
           })}
         </div>
       </FilterGroup>
 
-      <FilterGroup title="Condition">
+      <FilterGroup title={t("condition")}>
         <ul className="space-y-0.5">
-          {conditionEntries.map(([value, label]) => {
-            const active = filters.condition === value;
+          {Object.values(LISTING_CONDITIONS).map((condition) => {
+            const active = filters.condition === condition;
             return (
-              <li key={value}>
+              <li key={condition}>
                 <Link
-                  href={buildHref({ condition: active ? null : value })}
+                  href={buildHref({ condition: active ? null : condition })}
                   className={cn(
                     "hover:bg-accent block rounded-md px-2 py-1.5",
                     active && "bg-accent font-medium",
                   )}
                 >
-                  {label}
+                  {tCondition(condition)}
                 </Link>
               </li>
             );
@@ -206,7 +246,7 @@ export function MarketplaceFilters({
         </ul>
       </FilterGroup>
 
-      <FilterGroup title="Price">
+      <FilterGroup title={t("priceRange")}>
         <PriceRangeFilter
           key={`${filters.minPrice ?? ""}-${filters.maxPrice ?? ""}`}
           min={filters.minPrice}
@@ -215,21 +255,21 @@ export function MarketplaceFilters({
         />
       </FilterGroup>
 
-      <FilterGroup title="City">
+      <FilterGroup title={t("city")}>
         <select
           value={filters.city ?? ""}
-          onChange={(e) => {
-            router.push(buildHref({ city: e.target.value || null }));
+          onChange={(event) => {
+            router.push(buildHref({ city: event.target.value || null }));
             onApply?.();
           }}
-          aria-label="Filter by city"
+          aria-label={t("city")}
           className="border-input bg-background h-9 w-full rounded-md border px-2 text-sm"
         >
-          <option value="">All cities</option>
-          {locations.flatMap((country) =>
-            country.cities.map((city) => (
+          <option value="">{t("allCities")}</option>
+          {locations.flatMap((countryEntry) =>
+            countryEntry.cities.map((city) => (
               <option key={city.id} value={city.name}>
-                {city.name} · {country.name}
+                {city.name}
               </option>
             )),
           )}
@@ -237,7 +277,7 @@ export function MarketplaceFilters({
       </FilterGroup>
 
       {filterOptions.storage.length > 0 ? (
-        <FilterGroup title="Storage">
+        <FilterGroup title={t("storage")}>
           <div className="flex flex-wrap gap-1.5">
             {filterOptions.storage.map((storage) => {
               const active = filters.storage === storage;
@@ -252,7 +292,7 @@ export function MarketplaceFilters({
                       : "hover:bg-accent",
                   )}
                 >
-                  {storage.match(/^(?:\d+(?:\.\d+)?)$/) ? `${storage}GB` : storage}
+                  {/^\d+(?:\.\d+)?$/.test(storage) ? `${storage}${t("gb")}` : storage}
                 </Link>
               );
             })}
@@ -261,7 +301,7 @@ export function MarketplaceFilters({
       ) : null}
 
       {filterOptions.ram.length > 0 ? (
-        <FilterGroup title="RAM">
+        <FilterGroup title={t("ram")}>
           <div className="flex flex-wrap gap-1.5">
             {filterOptions.ram.map((ram) => {
               const active = filters.ram === ram;
@@ -276,7 +316,7 @@ export function MarketplaceFilters({
                       : "hover:bg-accent",
                   )}
                 >
-                  {ram.match(/^(?:\d+(?:\.\d+)?)$/) ? `${ram}GB` : ram}
+                  {/^\d+(?:\.\d+)?$/.test(ram) ? `${ram}${t("gb")}` : ram}
                 </Link>
               );
             })}
@@ -285,7 +325,7 @@ export function MarketplaceFilters({
       ) : null}
 
       {filterOptions.colors.length > 0 ? (
-        <FilterGroup title="Color">
+        <FilterGroup title={t("color")}>
           <div className="flex flex-wrap gap-1.5">
             {filterOptions.colors.map((color) => {
               const active = filters.color === color;
@@ -308,7 +348,7 @@ export function MarketplaceFilters({
         </FilterGroup>
       ) : null}
 
-      <FilterGroup title="Battery Health">
+      <FilterGroup title={t("batteryHealth")}>
         <BatteryHealthFilter
           key={filters.batteryHealthMin ?? "any"}
           value={filters.batteryHealthMin}
@@ -316,106 +356,72 @@ export function MarketplaceFilters({
         />
       </FilterGroup>
 
-      <FilterGroup title="PTA Status">
-        <ul className="space-y-0.5">
-          {Object.entries(PTA_STATUS).map(([value, label]) => {
-            const active = filters.ptaStatus === value;
-            return (
-              <li key={value}>
-                <Link
-                  href={buildHref({ ptaStatus: active ? null : value })}
-                  className={cn(
-                    "hover:bg-accent block rounded-md px-2 py-1.5",
-                    active && "bg-accent font-medium",
-                  )}
-                >
-                  {label.replace(/_/g, " ")}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+      {showPakistanSignals ? (
+        <>
+          <FilterGroup title={t("ptaStatus")}>
+            <StatusLinks
+              values={Object.values(PTA_STATUS)}
+              active={filters.ptaStatus}
+              buildHref={buildHref}
+              keyName="ptaStatus"
+              translate={(value) => tStatus(value)}
+            />
+          </FilterGroup>
+          <FilterGroup title={t("cpidStatus")}>
+            <StatusLinks
+              values={Object.values(CPID_STATUS)}
+              active={filters.cpidStatus}
+              buildHref={buildHref}
+              keyName="cpidStatus"
+              translate={(value) => tStatus(value)}
+            />
+          </FilterGroup>
+        </>
+      ) : null}
+
+      <FilterGroup title={t("warranty")}>
+        <StatusLinks
+          values={Object.values(WARRANTY_TYPE)}
+          active={filters.warranty}
+          buildHref={buildHref}
+          keyName="warranty"
+          translate={(value) => tStatus(value)}
+        />
       </FilterGroup>
 
-      <FilterGroup title="CPID Status">
+      <FilterGroup title={t("trust")}>
         <ul className="space-y-0.5">
-          {Object.entries(CPID_STATUS).map(([value, label]) => {
-            const active = filters.cpidStatus === value;
-            return (
-              <li key={value}>
-                <Link
-                  href={buildHref({ cpidStatus: active ? null : value })}
-                  className={cn(
-                    "hover:bg-accent block rounded-md px-2 py-1.5",
-                    active && "bg-accent font-medium",
-                  )}
-                >
-                  {label.replace(/_/g, " ")}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </FilterGroup>
-
-      <FilterGroup title="Warranty">
-        <ul className="space-y-0.5">
-          {Object.entries(WARRANTY_TYPE).map(([value, label]) => {
-            const active = filters.warranty === value;
-            return (
-              <li key={value}>
-                <Link
-                  href={buildHref({ warranty: active ? null : value })}
-                  className={cn(
-                    "hover:bg-accent block rounded-md px-2 py-1.5",
-                    active && "bg-accent font-medium",
-                  )}
-                >
-                  {label.replace(/_/g, " ")}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </FilterGroup>
-
-      <FilterGroup title="Trust">
-        <ul className="space-y-0.5">
-          <li>
-            <Link
-              href={buildHref({ isInspected: filters.isInspected ? null : "true" })}
-              className={cn(
-                "hover:bg-accent block rounded-md px-2 py-1.5",
-                filters.isInspected && "bg-accent font-medium",
-              )}
-            >
-              Inspected only
-            </Link>
-          </li>
-          <li>
-            <Link
-              href={buildHref({ isVerifiedSeller: filters.isVerifiedSeller ? null : "true" })}
-              className={cn(
-                "hover:bg-accent block rounded-md px-2 py-1.5",
-                filters.isVerifiedSeller && "bg-accent font-medium",
-              )}
-            >
-              Verified sellers only
-            </Link>
-          </li>
-          <li>
-            <Link
-              href={buildHref({ isDealer: filters.isDealer ? null : "true" })}
-              className={cn(
-                "hover:bg-accent block rounded-md px-2 py-1.5",
-                filters.isDealer && "bg-accent font-medium",
-              )}
-            >
-              Dealers only
-            </Link>
-          </li>
+          <TrustLink label={t("inspectedOnly")} active={filters.isInspected} buildHref={buildHref} keyName="isInspected" />
+          <TrustLink label={t("verifiedSellersOnly")} active={filters.isVerifiedSeller} buildHref={buildHref} keyName="isVerifiedSeller" />
+          <TrustLink label={t("dealersOnly")} active={filters.isDealer} buildHref={buildHref} keyName="isDealer" />
         </ul>
       </FilterGroup>
     </div>
+  );
+}
+
+function TrustLink({
+  label,
+  active,
+  buildHref,
+  keyName,
+}: {
+  label: string;
+  active?: boolean;
+  buildHref: (patch: Record<string, string | null>) => string;
+  keyName: string;
+}) {
+  return (
+    <li>
+      <Link
+        href={buildHref({ [keyName]: active ? null : "true" })}
+        className={cn(
+          "hover:bg-accent block rounded-md px-2 py-1.5",
+          active && "bg-accent font-medium",
+        )}
+      >
+        {label}
+      </Link>
+    </li>
   );
 }

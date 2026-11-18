@@ -2,12 +2,13 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { LISTING_STATUSES } from "@/lib/constants";
-import { DEMO_CATEGORIES } from "@/features/marketplace/data/fixtures";
+import { getDemoCategories } from "@/features/marketplace/data/fixtures";
+import type { Region } from "@/lib/generated/prisma/enums";
 import type { CategoryItem } from "@/types/marketplace";
 
-/** Demo categories with their fake `count` stripped — used only as a layout fallback. */
-function demoCategoriesWithoutCounts(): CategoryItem[] {
-  return DEMO_CATEGORIES.map((c) => ({ id: c.id, name: c.name, slug: c.slug, icon: c.icon }));
+/** Demo categories with their synthetic counts stripped — layout fallback only. */
+function demoCategoriesWithoutCounts(region?: Region): CategoryItem[] {
+  return getDemoCategories(region).map(({ id, name, slug, icon }) => ({ id, name, slug, icon }));
 }
 
 /**
@@ -16,22 +17,32 @@ function demoCategoriesWithoutCounts(): CategoryItem[] {
  * rather than showing a misleading number. Falls back to the demo layout (no counts)
  * when the database is empty or unreachable.
  */
-export async function getCategoriesWithCounts(limit?: number): Promise<CategoryItem[]> {
+export async function getCategoriesWithCounts(
+  limit?: number,
+  region?: Region,
+): Promise<CategoryItem[]> {
   try {
     const [categories, groups] = await Promise.all([
       prisma.category.findMany({
-        where: { isActive: true },
+        where: {
+          isActive: true,
+          ...(region ? { OR: [{ region }, { region: null }] } : {}),
+        },
         orderBy: [{ position: "asc" }, { name: "asc" }],
         select: { id: true, name: true, slug: true, icon: true },
       }),
       prisma.listing.groupBy({
         by: ["categoryId"],
-        where: { status: LISTING_STATUSES.ACTIVE, deletedAt: null },
+        where: {
+          status: LISTING_STATUSES.ACTIVE,
+          deletedAt: null,
+          ...(region ? { region } : {}),
+        },
         _count: { _all: true },
       }),
     ]);
 
-    if (categories.length === 0) return demoCategoriesWithoutCounts();
+    if (categories.length === 0) return demoCategoriesWithoutCounts(region);
 
     const countByCategory = new Map(groups.map((g) => [g.categoryId, g._count._all]));
 
@@ -56,6 +67,6 @@ export async function getCategoriesWithCounts(limit?: number): Promise<CategoryI
       "[marketplace] could not load category counts — using demo layout.",
       error instanceof Error ? error.message : error,
     );
-    return demoCategoriesWithoutCounts();
+    return demoCategoriesWithoutCounts(region);
   }
 }

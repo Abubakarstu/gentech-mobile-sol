@@ -3,6 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
   Bookmark,
   ClipboardCheck,
@@ -18,6 +19,7 @@ import { toast } from "sonner";
 
 import { signOut } from "@/lib/auth-client";
 import { ROUTES, USER_ROLES, type UserRole } from "@/lib/constants";
+import { useLocalizedHref } from "@/lib/localized-routing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,13 +61,27 @@ export function UserMenu({
   isDemoDealer = false,
 }: UserMenuProps) {
   const router = useRouter();
+  const t = useTranslations("navigation");
+  const tCommon = useTranslations("common");
   const [pending, setPending] = React.useState(false);
+
+  const homeHref = useLocalizedHref(ROUTES.home);
+  const dashboardHref = useLocalizedHref(ROUTES.dashboard);
+  const listingsHref = useLocalizedHref(ROUTES.myListings);
+  const messagesHref = useLocalizedHref(ROUTES.messages);
+  const favoritesHref = useLocalizedHref(ROUTES.favorites);
+  const savedSearchesHref = useLocalizedHref(ROUTES.savedSearches);
+  const inspectionsHref = useLocalizedHref(ROUTES.inspections);
+  const accountHref = useLocalizedHref(ROUTES.account);
+  const inspectorHref = useLocalizedHref(ROUTES.inspector);
+  const adminHref = useLocalizedHref(ROUTES.admin);
+  const dealerHref = useLocalizedHref(`${ROUTES.dashboard}/dealer`);
 
   async function handleSignOut() {
     setPending(true);
     if (isDemoSession) {
       await fetch("/api/demo-login", { method: "DELETE" });
-      router.push(ROUTES.home);
+      router.push(homeHref);
       router.refresh();
       return;
     }
@@ -73,11 +89,11 @@ export function UserMenu({
     await signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push(ROUTES.home);
+          router.push(homeHref);
           router.refresh();
         },
         onError: () => {
-          toast.error("Could not sign out. Please try again.");
+          toast.error(t("logout"));
           setPending(false);
         },
       },
@@ -92,7 +108,7 @@ export function UserMenu({
             variant="ghost"
             size="icon"
             className="rounded-full"
-            aria-label="Open account menu"
+            aria-label={t("account")}
           />
         }
       >
@@ -109,69 +125,64 @@ export function UserMenu({
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        {isDemoSession ? (
-          <DropdownMenuItem render={<Link href={ROUTES.dashboard} />}>
-            <LayoutDashboard className="size-4" />
-            Dashboard
-          </DropdownMenuItem>
-        ) : (
+        <DropdownMenuItem render={<Link href={dashboardHref} />}>
+          <LayoutDashboard className="size-4" />
+          {t("dashboard")}
+        </DropdownMenuItem>
+        {isDemoSession ? null : (
           <>
-            <DropdownMenuItem render={<Link href={ROUTES.dashboard} />}>
-              <LayoutDashboard className="size-4" />
-              Dashboard
-            </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={ROUTES.myListings} />}>
+            <DropdownMenuItem render={<Link href={listingsHref} />}>
               <Package className="size-4" />
-              My Listings
+              {t("myListings")}
             </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={ROUTES.messages} />}>
+            <DropdownMenuItem render={<Link href={messagesHref} />}>
               <MessageSquare className="size-4" />
-              Messages
+              {t("messages")}
             </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={ROUTES.favorites} />}>
+            <DropdownMenuItem render={<Link href={favoritesHref} />}>
               <Heart className="size-4" />
-              Favorites
+              {t("favorites")}
             </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={ROUTES.savedSearches} />}>
+            <DropdownMenuItem render={<Link href={savedSearchesHref} />}>
               <Bookmark className="size-4" />
-              Saved Searches
+              {t("savedSearches")}
             </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={ROUTES.inspections} />}>
+            <DropdownMenuItem render={<Link href={inspectionsHref} />}>
               <ShieldCheck className="size-4" />
-              My Inspections
+              {t("inspections")}
             </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={ROUTES.account} />}>
+            <DropdownMenuItem render={<Link href={accountHref} />}>
               <UserIcon className="size-4" />
-              Profile
+              {t("profile")}
             </DropdownMenuItem>
             {role === USER_ROLES.INSPECTOR || role === USER_ROLES.ADMIN ? (
-              <DropdownMenuItem render={<Link href={ROUTES.inspector} />}>
+              <DropdownMenuItem render={<Link href={inspectorHref} />}>
                 <ClipboardCheck className="size-4" />
-                Inspector
+                {t("inspector")}
               </DropdownMenuItem>
             ) : null}
             {role === USER_ROLES.ADMIN ? (
-              <DropdownMenuItem render={<Link href={ROUTES.admin} />}>
+              <DropdownMenuItem render={<Link href={adminHref} />}>
                 <LayoutDashboard className="size-4" />
-                Admin
+                {t("admin")}
               </DropdownMenuItem>
             ) : null}
             {isDemoDealer ? (
-              <DropdownMenuItem render={<Link href={`${ROUTES.dashboard}/dealer`} />}>
+              <DropdownMenuItem render={<Link href={dealerHref} />}>
                 <LayoutDashboard className="size-4" />
-                Dealer panel
+                {t("dealerPanel")}
               </DropdownMenuItem>
             ) : null}
           </>
         )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onSelect={(e) => e.preventDefault()}
+          onSelect={(event) => event.preventDefault()}
           disabled={pending}
           onClick={handleSignOut}
         >
           <LogOut className="size-4" />
-          {pending ? "Signing out…" : "Sign out"}
+          {pending ? tCommon("loading") : t("logout")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 
+import { getCountryFromParam, getLocaleFromParam } from "@/lib/countries/server";
 import { getEnabledSocialProviders } from "@/features/auth/server/enabled-providers";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
@@ -10,15 +12,25 @@ const demoOnly = process.env.NODE_ENV === "production" && isReadOnlyDemoEnabled(
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Sign in",
-  robots: { index: false, follow: false },
-};
+type PageProps = { params: Promise<{ country: string; locale: string }> };
 
-export default function SignInPage() {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { country, locale } = await params;
+  const countryCode = getCountryFromParam(country);
+  const resolvedLocale = getLocaleFromParam(locale, countryCode);
+  const t = await getTranslations({ locale: resolvedLocale, namespace: "authentication" });
+  return { title: t("signIn"), robots: { index: false, follow: false } };
+}
+
+export default async function SignInPage({ params }: PageProps) {
+  const { country, locale: localeParam } = await params;
+  const countryCode = getCountryFromParam(country);
+  const locale = getLocaleFromParam(localeParam, countryCode);
+  const t = await getTranslations({ locale, namespace: "authPage" });
   const providers = getEnabledSocialProviders();
+
   return (
-    <AuthCard title="Welcome back" description="Sign in to your account to continue">
+    <AuthCard title={t("signInTitle")} description={t("signInDescription")}>
       <SignInForm providers={providers} demoAccessEnabled={demoAccessEnabled} demoOnly={demoOnly} />
     </AuthCard>
   );

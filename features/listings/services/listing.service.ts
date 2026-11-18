@@ -18,7 +18,7 @@ import {
   searchListings,
   searchListingsRanked,
 } from "../repositories/listing.repository";
-import { DEMO_LISTINGS } from "@/features/marketplace/data/fixtures";
+import { getDemoListings } from "@/features/marketplace/data/fixtures";
 import { searchDemoListings } from "../data/demo-source";
 import { getDemoListingDetail, getDemoRelated } from "../data/demo-detail";
 
@@ -44,11 +44,11 @@ export async function getListingFeed(filters: ListingFilters, region?: Region): 
       "[listings] Database unavailable — serving demo data.",
       error instanceof Error ? error.message : error,
     );
-    return { ...searchDemoListings(filters), source: "demo" };
+    return { ...searchDemoListings(filters, region), source: "demo" };
   }
 }
 
-export async function getListingFilterOptions(): Promise<ListingFilterOptions> {
+export async function getListingFilterOptions(region?: Region): Promise<ListingFilterOptions> {
   try {
     return await getListingFilterOptionsRecord();
   } catch (error) {
@@ -56,10 +56,11 @@ export async function getListingFilterOptions(): Promise<ListingFilterOptions> {
       "[listings] Could not load attribute filter options; using preview values.",
       error instanceof Error ? error.message : error,
     );
+    const source = getDemoListings(region);
     const values = (key: "storage" | "ram" | "color") =>
       [
         ...new Set(
-          DEMO_LISTINGS.map((listing) => listing[key]).filter(
+          source.map((listing) => listing[key]).filter(
             (value): value is string => typeof value === "string" && value.trim().length > 0,
           ),
         ),
@@ -103,11 +104,11 @@ export async function getListingDetail(slug: string, region?: Region): Promise<L
       // Reachable DB but no such listing. It may still be a demo/preview card
       // (e.g. shown while the catalog is being populated) — resolve it to the
       // demo detail instead of 404ing. Unknown slugs still return null → 404.
-      const demo = getDemoListingDetail(slug);
+      const demo = getDemoListingDetail(slug, region);
       if (demo) {
         return {
           detail: demo,
-          related: getDemoRelated(demo.categorySlug, demo.id),
+          related: getDemoRelated(demo.categorySlug, demo.id, region ?? demo.region),
           source: "demo",
         };
       }
@@ -120,9 +121,13 @@ export async function getListingDetail(slug: string, region?: Region): Promise<L
       "[listings] Database unavailable for detail — serving demo data.",
       error instanceof Error ? error.message : error,
     );
-    const detail = getDemoListingDetail(slug);
+    const detail = getDemoListingDetail(slug, region);
     if (!detail) return null;
-    return { detail, related: getDemoRelated(detail.categorySlug, detail.id), source: "demo" };
+    return {
+      detail,
+      related: getDemoRelated(detail.categorySlug, detail.id, region ?? detail.region),
+      source: "demo",
+    };
   }
 }
 

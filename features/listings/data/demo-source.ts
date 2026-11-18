@@ -1,14 +1,16 @@
-import { DEMO_LISTINGS } from "@/features/marketplace/data/fixtures";
+import { getDemoListings } from "@/features/marketplace/data/fixtures";
+import type { Region } from "@/lib/generated/prisma/enums";
 import type { ListingCardData, ListingFilters, ListingSearchResult } from "@/types/marketplace";
 
 /**
  * In-memory listing search over demo fixtures. Mirrors the semantics of the Prisma
  * repository so the marketplace is fully interactive without a database connected.
  */
-export function searchDemoListings(filters: ListingFilters): ListingSearchResult {
+export function searchDemoListings(filters: ListingFilters, region?: Region): ListingSearchResult {
   const q = filters.q?.toLowerCase();
+  const source = getDemoListings(region);
 
-  let items = DEMO_LISTINGS.filter((l) => {
+  let items = source.filter((l) => {
     if (q && !`${l.title} ${l.brand ?? ""}`.toLowerCase().includes(q)) return false;
     if (filters.category && l.categorySlug !== filters.category) return false;
     if (filters.brand && l.brandSlug !== filters.brand) return false;

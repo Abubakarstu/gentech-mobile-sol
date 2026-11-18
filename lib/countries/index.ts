@@ -1,6 +1,6 @@
 import { bhConfig } from "./bh"
 import { pkConfig } from "./pk"
-import type { CountryCode, CountryConfig } from "./types"
+import type { CountryCode, CountryConfig, LocaleCode } from "./types"
 
 /**
  * Centralized country registry.
@@ -38,12 +38,12 @@ export function isValidCountryCode(code: string): code is CountryCode {
 }
 
 /** Get the default locale for a country. */
-export function getDefaultLocale(code: CountryCode): string {
+export function getDefaultLocale(code: CountryCode): LocaleCode {
   return getCountryConfig(code).defaultLocale
 }
 
 /** Get available locales for a country. */
-export function getAvailableLocales(code: CountryCode): string[] {
+export function getAvailableLocales(code: CountryCode): LocaleCode[] {
   return getCountryConfig(code).availableLocales
 }
 

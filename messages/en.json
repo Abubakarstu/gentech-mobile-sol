@@ -19,7 +19,8 @@
     "back": "Back",
     "confirm": "Confirm",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "seeAll": "See all"
   },
   "navigation": {
     "home": "Home",
@@ -36,16 +37,58 @@
     "account": "Account",
     "admin": "Admin",
     "logout": "Log Out",
-    "inspection": "Phone Inspection"
+    "inspection": "Phone Inspection",
+    "savedSearches": "Saved Searches",
+    "inspections": "Inspections",
+    "inspector": "Inspector",
+    "dealerPanel": "Dealer panel",
+    "profile": "Profile"
   },
   "homepage": {
-    "heroTitle": "Buy & Sell Mobile Phones",
-    "heroSubtitle": "Fast, safe, and simple marketplace for mobile phones",
+    "heroTitle": "Find your next phone, near you.",
+    "heroSubtitle": "Thousands of phones and accessories from trusted sellers across {country}.",
     "featuredListings": "Featured Listings",
+    "featuredDescription": "Hand-picked deals from trusted sellers",
     "recentListings": "Recent Listings",
+    "recentDescription": "Fresh ads posted near you",
     "browseByCategory": "Browse by Category",
     "browseByBrand": "Browse by Brand",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "popular": "Popular:"
+  },
+  "howItWorks": {
+    "title": "How it works",
+    "step1Title": "Discover",
+    "step1Body": "Browse thousands of phones and accessories, filtered by brand, price, and city.",
+    "step2Title": "Chat",
+    "step2Body": "Message sellers directly, ask questions, and agree on a fair price.",
+    "step3Title": "Deal",
+    "step3Body": "Meet safely, inspect the device, and close the deal with confidence."
+  },
+  "cta": {
+    "title": "Got a phone to sell?",
+    "body": "List it in under two minutes and reach thousands of buyers near you — for free.",
+    "button": "Post your ad"
+  },
+  "search": {
+    "placeholder": "Search iPhone, Samsung, Pixel…",
+    "allCities": "All cities",
+    "button": "Search",
+    "groupListings": "Listings",
+    "groupCategories": "Categories",
+    "groupBrands": "Brands",
+    "popular": "Popular:"
+  },
+  "marketplace": {
+    "title": "Marketplace",
+    "description": "Browse phones and accessories for sale across {country}.",
+    "results": "{count, plural, =0 {No results} one {1 result} other {# results}}",
+    "resultsFor": "for \"{query}\"",
+    "previewData": "Preview data — connect a database to see live listings",
+    "comparePhones": "Compare Phones",
+    "checkValue": "Check Value",
+    "verifyImei": "Verify IMEI",
+    "noListings": "No listings yet. Be the first to post one."
   },
   "listings": {
     "title": "Listings",
@@ -62,9 +105,16 @@
     "sold": "Sold",
     "new": "New",
     "used": "Used",
-    "refurbished": "Refurbished"
+    "refurbished": "Refurbished",
+    "ptaApproved": "PTA Approved",
+    "cpidApproved": "CPID Approved",
+    "inspected": "Inspected",
+    "verifiedSeller": "Verified Seller",
+    "ramLabel": "{value}GB RAM",
+    "batteryLabel": "{value}% Battery",
+    "adsCount": "{count, plural, one {1 ad} other {# ads}}"
   },
-  "search": {
+  "searchPage": {
     "placeholder": "Search mobile phones...",
     "noResults": "No results found",
     "resultsCount": "{count} results found",
@@ -83,8 +133,18 @@
     "ram": "RAM",
     "color": "Color",
     "ptaStatus": "PTA Status",
+    "cpidStatus": "CPID Status",
     "batteryHealth": "Battery Health",
-    "warranty": "Warranty"
+    "warranty": "Warranty",
+    "any": "Any",
+    "applyPrice": "Apply price",
+    "apply": "Apply",
+    "minPercent": "Min %",
+    "gb": "GB",
+    "trust": "Trust & verification",
+    "inspectedOnly": "Inspected only",
+    "verifiedSellersOnly": "Verified sellers only",
+    "dealersOnly": "Dealers only"
   },
   "productDetails": {
     "specifications": "Specifications",
@@ -94,7 +154,10 @@
     "reportListing": "Report Listing",
     "similarListings": "Similar Listings",
     "memberSince": "Member since",
-    "verified": "Verified"
+    "verified": "Verified",
+    "negotiable": "Negotiable",
+    "warranty": "Has warranty",
+    "phoneHistory": "Phone history"
   },
   "authentication": {
     "signIn": "Sign In",
@@ -196,13 +259,187 @@
     "privacyPolicy": "Privacy Policy",
     "helpCenter": "Help Center",
     "followUs": "Follow Us",
-    "allRightsReserved": "All rights reserved"
+    "allRightsReserved": "All rights reserved",
+    "tagline": "Buy & sell mobile phones across {country}."
   },
   "country": {
     "selectCountry": "Select Country",
     "bahrain": "Bahrain",
     "pakistan": "Pakistan",
     "currency": "Currency",
-    "language": "Language"
+    "language": "Language",
+    "country": "Country"
+  },
+  "condition": {
+    "NEW": "New",
+    "OPEN_BOX": "Open Box",
+    "USED": "Used",
+    "REFURBISHED": "Refurbished",
+    "FOR_PARTS": "For Parts"
+  },
+  "categories": {
+    "smartphones": "Smartphones",
+    "tablets": "Tablets",
+    "smart-watches": "Smart Watches",
+    "earphones-headphones": "Earphones",
+    "chargers-cables": "Chargers & Cables",
+    "power-banks": "Power Banks",
+    "cases-covers": "Cases & Covers",
+    "feature-phones": "Feature Phones"
+  },
+  "imei": {
+    "title": "IMEI Verification",
+    "description": "Check device registration status and verify that an IMEI is valid and not blacklisted.",
+    "formTitle": "Enter IMEI Number",
+    "imeiLabel": "IMEI Number (15 digits)",
+    "imeiHint": "Dial *#06# on your phone to find your IMEI",
+    "submit": "Verify IMEI",
+    "invalid": "Enter a valid 15-digit IMEI. Dial *#06# on the phone to find it.",
+    "rateLimited": "Too many IMEI checks. Wait a minute before trying again.",
+    "unavailable": "Verification is not available in this environment, so no status was produced. Do not treat an absent result as proof that the device is registered or clean.",
+    "whatIsTitle": "What is IMEI?",
+    "whatIsBody": "IMEI (International Mobile Equipment Identity) is a unique 15-digit number that identifies your mobile device. It's used for device registration and security.",
+    "blacklistTitle": "Blacklist Check",
+    "blacklistBody": "We check if the device has been reported stolen or blacklisted. Avoid buying blacklisted devices as they may be blocked from networks.",
+    "ptaTitle": "PTA Registration",
+    "ptaBody": "In Pakistan, all mobile devices must be registered with PTA (Pakistan Telecommunication Authority) to operate on local networks legally.",
+    "cpidTitle": "CPID Status",
+    "cpidBody": "CPID (Compliant Device Identification) is a system to track imported devices and ensure they meet regulatory requirements.",
+    "traTitle": "Regulatory compliance",
+    "traBody": "Check the device's status against your country's requirements before buying to avoid activation or usage issues.",
+    "result": {
+      "title": "Verification result",
+      "risk": "Risk",
+      "highRisk": "High",
+      "lowRisk": "Low",
+      "unknownRisk": "Unknown",
+      "simulated": "Simulated",
+      "simulatedTitle": "Simulated result",
+      "simulatedBody": "This is a simulated result, not an official regulatory verification.",
+      "stale": "This result may be outdated. Verify again before buying.",
+      "ptaStatus": "PTA status",
+      "ptaAuthority": "Pakistan Telecommunication Authority",
+      "cpidStatus": "CPID status",
+      "cpidAuthority": "Compliant Device Identification",
+      "stolenCheck": "Stolen report",
+      "blacklistCheck": "Blacklist check",
+      "flagged": "Flagged",
+      "clear": "Clear",
+      "deviceInfo": "Device information",
+      "brand": "Brand",
+      "model": "Model",
+      "color": "Color",
+      "lastVerified": "Last verified",
+      "simulatedAt": "Simulated at",
+      "source": "Source",
+      "simulatedSource": "Simulation"
+    }
+  },
+  "sell": {
+    "checkValue": "Check Value",
+    "checkValueHint": "Get price estimate",
+    "verifyImei": "Verify IMEI",
+    "verifyImeiHint": "Check device status"
+  },
+  "accountPage": {
+    "cityPlaceholder": "e.g. {city}",
+    "title": "My Profile",
+    "description": "Manage your account details",
+    "editProfile": "Edit profile",
+    "editDescription": "Update your name, location, and bio.",
+    "emailVerified": "Email verified",
+    "emailNotVerified": "Email not verified"
+  },
+  "categoriesPage": {
+    "title": "All Categories",
+    "description": "Browse all phone and accessory categories.",
+    "subtitle": "Pick a category to start browsing listings near you."
+  },
+  "sort": {
+    "label": "Sort",
+    "recent": "Newest first",
+    "price_asc": "Price: low to high",
+    "price_desc": "Price: high to low",
+    "popular": "Most popular"
+  },
+  "status": {
+    "PTA_APPROVED": "PTA approved",
+    "NON_PTA": "Non-PTA",
+    "CPID": "CPID",
+    "FACTORY_UNLOCKED": "Factory unlocked",
+    "CARRIER_LOCKED": "Carrier locked",
+    "UNKNOWN": "Unknown",
+    "VERIFICATION_PENDING": "Verification pending",
+    "CPID_APPROVED": "CPID approved",
+    "NON_CPID": "Non-CPID",
+    "NO_WARRANTY": "No warranty",
+    "MANUFACTURER": "Manufacturer warranty",
+    "SELLER": "Seller warranty",
+    "THIRD_PARTY": "Third-party warranty"
+  },
+  "pagination": {
+    "aria": "Listing pages",
+    "previous": "Previous page",
+    "next": "Next page"
+  },
+  "savedSearch": {
+    "title": "Save this search",
+    "button": "Save search",
+    "saved": "Search saved",
+    "description": "We will notify you when new listings match.",
+    "error": "Could not save this search."
+  },
+  "uiActions": {
+    "book": "Book",
+    "myInspections": "My inspections",
+    "packages": "Packages",
+    "checkpoints": "{count}+ checkpoints",
+    "browseMarketplace": "Browse marketplace",
+    "createListing": "Create listing",
+    "calculateValue": "Calculate value",
+    "selectModel": "Select a model",
+    "unavailableBahrainTitle": "Not available in Bahrain yet",
+    "unavailableBahrainBody": "This tool currently uses Pakistan marketplace data. Browse Bahrain listings instead.",
+    "preview": "Preview",
+    "estimatedValue": "Estimated market value",
+    "storageLabel": "Storage",
+    "ramLabel": "RAM",
+    "conditionLabel": "Condition",
+    "batteryLabel": "Battery",
+    "basedOnListings": "Based on {count} active listings",
+    "howItWorks": "How it works"
+  },
+  "authPage": {
+    "signInTitle": "Welcome back",
+    "signInDescription": "Sign in to your account to continue",
+    "signUpTitle": "Create your account",
+    "signUpDescription": "Join the marketplace in seconds",
+    "forgotTitle": "Forgot your password?",
+    "forgotDescription": "Enter your email and we will send you a reset link",
+    "resetTitle": "Reset your password",
+    "resetDescription": "Choose a new password for your account",
+    "verifyTitle": "Verify your email",
+    "verifyDescription": "Check your inbox for the verification link"
+  },
+  "dashboardPage": {
+    "previewMode": "Preview mode",
+    "yourMarketplace": "Your marketplace",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "greeting": "Good to see you, {name}.",
+    "demoBody": "Explore your GenTech dashboard preview. Marketplace actions are disabled in demo mode.",
+    "liveBody": "Your next great find or next sale starts here. Keep your listings, messages, and saved searches moving.",
+    "postListing": "Post a listing",
+    "explorePhones": "Explore phones",
+    "demoValue": "Demo",
+    "previewNote": "Preview mode: database actions are unavailable.",
+    "manageAds": "Manage your ads",
+    "unread": "{count} unread",
+    "viewConversations": "View conversations",
+    "yourSavedFilters": "Your saved filters",
+    "trackRequests": "Track your requests",
+    "getInspected": "Get a phone inspected",
+    "sellingOverview": "Selling overview",
+    "manageListings": "Manage listings"
   }
 }

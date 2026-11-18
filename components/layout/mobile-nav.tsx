@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { Menu, Plus, ShieldCheck, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { APP, ROUTES } from "@/lib/constants";
-import { useTranslations } from "next-intl";
+import { LocalizedLink } from "@/components/localized-link";
+import { useLocalizedRouteInfo } from "@/lib/localized-routing";
 import type { CategoryItem } from "@/types/marketplace";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { CategoryIcon } from "@/features/marketplace/components/category-icon";
@@ -21,9 +22,11 @@ interface MobileNavProps {
 
 export function MobileNav({ categories, isAuthenticated, isDemoSession = false }: MobileNavProps) {
   const t = useTranslations("navigation");
+  const tCategories = useTranslations("categories");
+  const { locale } = useLocalizedRouteInfo();
+  const isRtl = locale === "ar" || locale === "ur";
   const [open, setOpen] = React.useState(false);
 
-  // Lock body scroll while open.
   React.useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -31,13 +34,15 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
     };
   }, [open]);
 
+  const offscreen = isRtl ? "100%" : "-100%";
+
   return (
     <>
       <Button
         variant="ghost"
         size="icon"
         className="md:hidden"
-        aria-label="Open menu"
+        aria-label={t("categories")}
         aria-expanded={open}
         onClick={() => setOpen(true)}
       >
@@ -53,34 +58,36 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
             exit={{ opacity: 0 }}
           >
             <button
-              aria-label="Close menu"
+              aria-label={t("categories")}
               className="bg-background/80 absolute inset-0 backdrop-blur-sm"
               onClick={() => setOpen(false)}
             />
             <motion.aside
-              className="bg-background absolute inset-y-0 left-0 flex w-80 max-w-[85%] flex-col border-r shadow-xl"
-              initial={{ x: "-100%" }}
+              className={cn(
+                "bg-background absolute inset-y-0 flex w-80 max-w-[85%] flex-col border-r shadow-xl",
+                isRtl ? "right-0 border-r-0 border-l" : "left-0",
+              )}
+              initial={{ x: offscreen }}
               animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
+              exit={{ x: offscreen }}
               transition={{ type: "tween", duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              // Close the drawer when any link inside is activated.
               onClickCapture={(e) => {
                 if ((e.target as HTMLElement).closest("a")) setOpen(false);
               }}
             >
               <div className="flex items-center justify-between border-b p-4">
-                <Link href={ROUTES.home} className="flex items-center gap-2 font-semibold">
+                <LocalizedLink href={ROUTES.home} className="flex items-center gap-2 font-semibold">
                   <span className="bg-primary text-primary-foreground grid size-7 place-items-center rounded-md text-sm font-bold">
                     {APP.name.charAt(0)}
                   </span>
                   {APP.name}
-                </Link>
+                </LocalizedLink>
                 <div className="flex items-center gap-2">
                   <CountryLocaleSelector />
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label="Close"
+                    aria-label={t("categories")}
                     onClick={() => setOpen(false)}
                   >
                     <X className="size-5" />
@@ -89,36 +96,38 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
               </div>
 
               <nav className="flex-1 overflow-y-auto p-4">
-                <Link
+                <LocalizedLink
                   href={ROUTES.marketplace}
                   className="hover:bg-accent block rounded-md px-3 py-2 text-sm font-medium"
                 >
                   {t("marketplace")}
-                </Link>
-                <Link
+                </LocalizedLink>
+                <LocalizedLink
                   href={ROUTES.inspectionService}
                   className="hover:bg-accent flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium"
                 >
                   <ShieldCheck className="text-muted-foreground size-4" />
                   {t("inspection")}
-                </Link>
+                </LocalizedLink>
 
                 <p className="text-muted-foreground mt-4 px-3 text-xs font-semibold uppercase">
-                  Categories
+                  {t("categories")}
                 </p>
                 <ul className="mt-1 space-y-0.5">
                   {categories.map((category) => (
                     <li key={category.id}>
-                      <Link
-                        href={`${ROUTES.marketplace}?category=${category.slug}`}
+                      <LocalizedLink
+                        href={`/marketplace?category=${category.slug}`}
                         className="hover:bg-accent flex items-center gap-3 rounded-md px-3 py-2 text-sm"
                       >
                         <CategoryIcon
                           name={category.icon}
                           className="text-muted-foreground size-4"
                         />
-                        {category.name}
-                      </Link>
+                        {tCategories.has(category.slug)
+                          ? tCategories(category.slug)
+                          : category.name}
+                      </LocalizedLink>
                     </li>
                   ))}
                 </ul>
@@ -126,22 +135,25 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
 
               <div className="space-y-2 border-t p-4">
                 {!isDemoSession ? (
-                  <Link href={ROUTES.sell} className={cn(buttonVariants(), "w-full")}>
+                  <LocalizedLink href={ROUTES.sell} className={cn(buttonVariants(), "w-full")}>
                     <Plus className="size-4" />
-                    {t("sell")}                  </Link>
+                    {t("sell")}
+                  </LocalizedLink>
                 ) : null}
                 {!isAuthenticated ? (
-                  <Link
+                  <LocalizedLink
                     href={ROUTES.signIn}
                     className={cn(buttonVariants({ variant: "outline" }), "w-full")}
                   >
-                    {t("signIn")}                  </Link>
+                    {t("signIn")}
+                  </LocalizedLink>
                 ) : (
-                  <Link
+                  <LocalizedLink
                     href={ROUTES.dashboard}
                     className={cn(buttonVariants({ variant: "outline" }), "w-full")}
                   >
-                    {t("dashboard")}                  </Link>
+                    {t("dashboard")}
+                  </LocalizedLink>
                 )}
               </div>
             </motion.aside>

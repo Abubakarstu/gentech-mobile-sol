@@ -1,81 +1,90 @@
-'use client';
+"use client";
 
-import type { PhoneValuationResult } from '../schemas/valuation.schema';
+import { useLocale, useTranslations } from "next-intl";
+
+import { formatPrice } from "@/utils/format";
+import type { PhoneValuationResult } from "../schemas/valuation.schema";
 
 interface PhoneValuationCardProps {
   valuation: PhoneValuationResult;
+  currency?: "PKR" | "BHD";
 }
 
-export function PhoneValuationCard({ valuation }: PhoneValuationCardProps) {
+export function PhoneValuationCard({ valuation, currency = "PKR" }: PhoneValuationCardProps) {
+  const locale = useLocale();
+  const t = useTranslations("uiActions");
+  const tCondition = useTranslations("condition");
   const priceRange = valuation.estimatedPriceMax - valuation.estimatedPriceMin;
-  const avgPosition = ((valuation.estimatedPriceAvg - valuation.estimatedPriceMin) / priceRange) * 100;
+  const avgPosition = priceRange > 0
+    ? Math.min(100, Math.max(0, ((valuation.estimatedPriceAvg - valuation.estimatedPriceMin) / priceRange) * 100))
+    : 100;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-      <div className="flex items-center justify-between mb-4">
+    <div className="bg-card rounded-lg border p-6 shadow-md">
+      <div className="mb-4 flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">{valuation.modelName}</h3>
-          <p className="text-sm text-gray-500">{valuation.brandName}</p>
+          <h3 className="text-lg font-semibold">{valuation.modelName}</h3>
+          <p className="text-muted-foreground text-sm">{valuation.brandName}</p>
         </div>
-        {valuation.isPreview && (
-          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
-            Preview
+        {valuation.isPreview ? (
+          <span className="rounded bg-blue-100 px-2 py-1 text-xs font-medium text-blue-800">
+            {t("preview")}
           </span>
-        )}
+        ) : null}
       </div>
 
       <div className="space-y-4">
         <div>
-          <div className="flex justify-between text-sm text-gray-600 mb-1">
-            <span>Estimated Market Value</span>
+          <div className="mb-1 flex justify-between text-sm">
+            <span>{t("estimatedValue")}</span>
             <span className="font-semibold">
-              PKR {valuation.estimatedPriceAvg.toLocaleString()}
+              {formatPrice(valuation.estimatedPriceAvg, { currency, locale })}
             </span>
           </div>
-          <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="relative h-2 overflow-hidden rounded-full bg-gray-200">
             <div
-              className="absolute h-full bg-blue-600 rounded-full"
-              style={{ left: '0%', width: `${avgPosition}%` }}
+              className="absolute h-full bg-blue-600"
+              style={{ left: "0%", width: `${avgPosition}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
-            <span>PKR {valuation.estimatedPriceMin.toLocaleString()}</span>
-            <span>PKR {valuation.estimatedPriceMax.toLocaleString()}</span>
+          <div className="mt-1 flex justify-between text-xs">
+            <span>{formatPrice(valuation.estimatedPriceMin, { currency, locale })}</span>
+            <span>{formatPrice(valuation.estimatedPriceMax, { currency, locale })}</span>
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
-          {valuation.storage && (
+          {valuation.storage ? (
             <div>
-              <span className="text-gray-500">Storage:</span>
-              <span className="ml-2 font-medium">{valuation.storage}</span>
+              <span className="text-muted-foreground">{t("storageLabel")}:</span>
+              <span className="ms-2 font-medium">{valuation.storage}</span>
             </div>
-          )}
-          {valuation.ram && (
+          ) : null}
+          {valuation.ram ? (
             <div>
-              <span className="text-gray-500">RAM:</span>
-              <span className="ml-2 font-medium">{valuation.ram}</span>
+              <span className="text-muted-foreground">{t("ramLabel")}:</span>
+              <span className="ms-2 font-medium">{valuation.ram}</span>
             </div>
-          )}
-          {valuation.condition && (
+          ) : null}
+          {valuation.condition ? (
             <div>
-              <span className="text-gray-500">Condition:</span>
-              <span className="ml-2 font-medium">{valuation.condition}</span>
+              <span className="text-muted-foreground">{t("conditionLabel")}:</span>
+              <span className="ms-2 font-medium">{tCondition(valuation.condition)}</span>
             </div>
-          )}
-          {valuation.batteryHealth !== null && (
+          ) : null}
+          {valuation.batteryHealth !== null ? (
             <div>
-              <span className="text-gray-500">Battery:</span>
-              <span className="ml-2 font-medium">{valuation.batteryHealth}%</span>
+              <span className="text-muted-foreground">{t("batteryLabel")}:</span>
+              <span className="ms-2 font-medium">{valuation.batteryHealth}%</span>
             </div>
-          )}
+          ) : null}
         </div>
 
-        {valuation.sampleCount !== null && (
-          <div className="text-xs text-gray-500 border-t pt-3">
-            Based on {valuation.sampleCount} active listings
+        {valuation.sampleCount !== null ? (
+          <div className="border-t pt-3 text-xs">
+            {t("basedOnListings", { count: valuation.sampleCount })}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );

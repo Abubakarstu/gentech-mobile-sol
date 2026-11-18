@@ -79,6 +79,10 @@ export const ROUTES = {
   notifications: "/dashboard/notifications",
   inspections: "/dashboard/inspections",
   account: "/account",
+  // Public utility pages
+  imeiCheck: "/imei-check",
+  comparison: "/compare",
+  valuation: "/valuation",
   // Inspection service (public)
   inspectionService: "/inspection",
   // Inspector workspace

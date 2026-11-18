@@ -1,9 +1,9 @@
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
-import { getCountryConfig, isValidCountryCode } from "@/lib/countries";
-import { isRtlLocale } from "@/lib/countries/types";
+import { isLocaleAvailable, isValidCountryCode } from "@/lib/countries";
+import { isRtlLocale, type LocaleCode } from "@/lib/countries/types";
 import { DirectionSetter } from "@/components/direction-setter";
 
 const VALID_LOCALES = ["ar", "ur", "en"] as const;
@@ -31,19 +31,22 @@ export default async function CountryLocaleLayout({
 }) {
   const { country, locale } = await params;
 
-  // Validate country and locale
-  if (!isValidCountryCode(country.toUpperCase())) {
+  // Validate country and locale as a pair — /bh/ur and /pk/ar are not valid.
+  const countryCode = country.toUpperCase();
+  if (!isValidCountryCode(countryCode)) {
     notFound();
   }
-  if (!isValidLocale(locale)) {
+  if (!isValidLocale(locale) || !isLocaleAvailable(countryCode, locale)) {
     notFound();
   }
 
-  const messages = await getMessages();
-  const isRtl = isRtlLocale(locale as ValidLocale);
+  const resolvedLocale = locale as LocaleCode;
+  setRequestLocale(resolvedLocale);
+  const messages = await getMessages({ locale: resolvedLocale });
+  const isRtl = isRtlLocale(resolvedLocale);
 
   return (
-    <NextIntlClientProvider messages={messages}>
+    <NextIntlClientProvider locale={resolvedLocale} messages={messages}>
       <DirectionSetter locale={locale} isRtl={isRtl} />
       {children}
     </NextIntlClientProvider>

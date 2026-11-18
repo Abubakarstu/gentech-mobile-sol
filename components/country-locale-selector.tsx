@@ -2,13 +2,15 @@
 
 import * as React from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Globe } from "lucide-react";
 
 import { getCountryConfig, getAllCountries } from "@/lib/countries";
 import type { CountryCode, LocaleCode } from "@/lib/countries/types";
+import { useLocalizedRouteInfo } from "@/lib/localized-routing";
 import { setCountryCookieClient, setLocaleCookieClient } from "@/lib/country-cookie-client";
 
-const LOCALE_LABELS: Record<string, string> = {
+const LOCALE_LABELS: Record<LocaleCode, string> = {
   ar: "العربية",
   ur: "اردو",
   en: "English",
@@ -17,91 +19,95 @@ const LOCALE_LABELS: Record<string, string> = {
 export function CountryLocaleSelector() {
   const router = useRouter();
   const pathname = usePathname();
+  const t = useTranslations("country");
+  const { country: routeCountry, locale: routeLocale } = useLocalizedRouteInfo();
   const [isOpen, setIsOpen] = React.useState(false);
 
-  // Parse current country and locale from pathname
-  const segments = pathname.split("/").filter(Boolean);
-  const currentCountry = (segments[0]?.toUpperCase() || "PK") as CountryCode;
-  const currentLocale = segments[1] || (currentCountry === "BH" ? "ar" : "ur");
+  const currentCountry = routeCountry ?? "PK";
   const config = getCountryConfig(currentCountry);
+  const currentLocale = routeLocale ?? config.defaultLocale;
 
-  const handleCountryChange = (country: CountryCode) => {
+  function replacePrefix(country: CountryCode, locale: LocaleCode) {
+    return pathname.replace(
+      /^\/[a-z]{2}(?:\/[a-z]{2})?(?=\/|$)/i,
+      `/${country.toLowerCase()}/${locale}`,
+    );
+  }
+
+  function handleCountryChange(country: CountryCode) {
+    const nextConfig = getCountryConfig(country);
+    const nextLocale = nextConfig.defaultLocale as LocaleCode;
     setCountryCookieClient(country);
-    const newConfig = getCountryConfig(country);
-    const newLocale = newConfig.defaultLocale;
-    setLocaleCookieClient(newLocale);
-    // Replace country and locale in URL
-    const newPath = pathname.replace(/^\/[^/]+\/[^/]+/, `/${country.toLowerCase()}/${newLocale}`);
-    router.push(newPath);
+    setLocaleCookieClient(nextLocale);
+    router.push(replacePrefix(country, nextLocale));
     setIsOpen(false);
-  };
+  }
 
-  const handleLocaleChange = (locale: LocaleCode) => {
+  function handleLocaleChange(locale: LocaleCode) {
     setLocaleCookieClient(locale);
-    const newPath = pathname.replace(/^\/[^/]+\/[^/]+/, `/${currentCountry.toLowerCase()}/${locale}`);
-    router.push(newPath);
+    router.push(replacePrefix(currentCountry, locale));
     setIsOpen(false);
-  };
+  }
 
   return (
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm hover:bg-accent"
-        aria-label="Select country and language"
+        aria-label={t("selectCountry")}
       >
         <Globe className="size-4" />
         <span>{config.flag}</span>
-        <span className="hidden sm:inline">{config.name}</span>
+        <span className="hidden sm:inline">{config.nativeName}</span>
         <span className="text-muted-foreground">|</span>
         <span className="hidden sm:inline">{LOCALE_LABELS[currentLocale]}</span>
         <span className="text-muted-foreground">|</span>
         <span className="hidden sm:inline">{config.defaultCurrency}</span>
       </button>
 
-      {isOpen && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-64 rounded-lg border bg-popover p-3 shadow-lg">
+      {isOpen ? (
+        <div className="absolute top-full right-0 z-50 mt-2 w-64 rounded-lg border bg-popover p-3 shadow-lg">
           <div className="space-y-3">
-            {/* Country selection */}
             <div>
-              <p className="mb-2 text-xs font-medium text-muted-foreground">Country</p>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">{t("country")}</p>
               <div className="space-y-1">
-                {getAllCountries().map((c) => (
+                {getAllCountries().map((item) => (
                   <button
-                    key={c.code}
-                    onClick={() => handleCountryChange(c.code)}
+                    key={item.code}
+                    onClick={() => handleCountryChange(item.code)}
                     className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent ${
-                      c.code === currentCountry ? "bg-accent" : ""
+                      item.code === currentCountry ? "bg-accent" : ""
                     }`}
                   >
-                    <span>{c.flag}</span>
-                    <span>{c.name}</span>
-                    <span className="ml-auto text-xs text-muted-foreground">{c.defaultCurrency}</span>
+                    <span>{item.flag}</span>
+                    <span>{item.nativeName}</span>
+                    <span className="text-muted-foreground ms-auto text-xs">
+                      {item.defaultCurrency}
+                    </span>
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Language selection */}
             <div>
-              <p className="mb-2 text-xs font-medium text-muted-foreground">Language</p>
+              <p className="text-muted-foreground mb-2 text-xs font-medium">{t("language")}</p>
               <div className="space-y-1">
-                {config.availableLocales.map((loc) => (
+                {config.availableLocales.map((item) => (
                   <button
-                    key={loc}
-                    onClick={() => handleLocaleChange(loc)}
+                    key={item}
+                    onClick={() => handleLocaleChange(item)}
                     className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent ${
-                      loc === currentLocale ? "bg-accent" : ""
+                      item === currentLocale ? "bg-accent" : ""
                     }`}
                   >
-                    <span>{LOCALE_LABELS[loc]}</span>
+                    <span>{LOCALE_LABELS[item]}</span>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

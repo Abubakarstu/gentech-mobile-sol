@@ -15,6 +15,10 @@ export type CountryCode = "BH" | "PK"
 /** Supported locale codes. */
 export type LocaleCode = "ar" | "ur" | "en"
 
+/** Request headers populated by middleware for server-rendered locale metadata. */
+export const COUNTRY_HEADER = "x-gentech-country"
+export const LOCALE_HEADER = "x-gentech-locale"
+
 /** Whether a locale uses RTL text direction. */
 export function isRtlLocale(locale: LocaleCode): boolean {
   return locale === "ar" || locale === "ur"

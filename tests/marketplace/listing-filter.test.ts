@@ -51,7 +51,7 @@ describe("marketplace listing filters", () => {
     const result = searchDemoListings(filters);
 
     expect(result.total).toBe(1);
-    expect(result.items.map((listing) => listing.slug)).toEqual(["samsung-galaxy-s24-ultra-512gb"]);
+    expect(result.items.map((listing) => listing.slug)).toEqual(["pk-samsung-galaxy-s24-ultra-512gb"]);
   });
 
   it("matches completed inspection status and PTA against preview attributes", () => {
@@ -60,6 +60,6 @@ describe("marketplace listing filters", () => {
     );
 
     expect(inspected.total).toBe(1);
-    expect(inspected.items[0]?.slug).toBe("iphone-15-pro-max-256gb");
+    expect(inspected.items[0]?.slug).toBe("pk-iphone-15-pro-max-256gb");
   });
 });

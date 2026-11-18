@@ -1,15 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 
-import {
-  ROUTES,
-  LISTING_CONDITION_LABELS,
-  PTA_STATUS,
-  CPID_STATUS,
-  WARRANTY_TYPE,
-} from "@/lib/constants";
+import { ROUTES } from "@/lib/constants";
+import { useLocalizedRouteInfo, useLocalizedHref } from "@/lib/localized-routing";
 import { formatPrice } from "@/utils/format";
 import type { BrandItem, CategoryItem, ListingFilters } from "@/types/marketplace";
 import { useListingHref } from "@/features/listings/hooks/use-listing-href";
@@ -22,65 +18,79 @@ interface Props {
 
 export function ActiveFilters({ filters, categories, brands }: Props) {
   const buildHref = useListingHref();
+  const clearHref = useLocalizedHref(ROUTES.marketplace);
+  const { country, locale } = useLocalizedRouteInfo();
+  const t = useTranslations("searchPage");
+  const tFilters = useTranslations("filters");
+  const tCategories = useTranslations("categories");
+  const tCondition = useTranslations("condition");
+  const tStatus = useTranslations("status");
+  const tListings = useTranslations("listings");
+  const showPakistanSignals = country === "PK";
+  const language = locale ?? "en";
+  const currency = country === "BH" ? "BHD" : "PKR";
 
   const chips: Array<{ label: string; patch: Record<string, null> }> = [];
 
   if (filters.q) chips.push({ label: `“${filters.q}”`, patch: { q: null } });
   if (filters.category) {
-    const name = categories.find((c) => c.slug === filters.category)?.name ?? filters.category;
+    const slug = filters.category;
+    const name = tCategories.has(slug) ? tCategories(slug) : (categories.find((c) => c.slug === slug)?.name ?? slug);
     chips.push({ label: name, patch: { category: null } });
   }
   if (filters.brand) {
-    const name = brands.find((b) => b.slug === filters.brand)?.name ?? filters.brand;
+    const name = brands.find((brand) => brand.slug === filters.brand)?.name ?? filters.brand;
     chips.push({ label: name, patch: { brand: null } });
   }
   if (filters.condition) {
-    chips.push({ label: LISTING_CONDITION_LABELS[filters.condition], patch: { condition: null } });
+    chips.push({ label: tCondition(filters.condition), patch: { condition: null } });
   }
   if (filters.city) chips.push({ label: filters.city, patch: { city: null } });
   if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
-    const min = filters.minPrice !== undefined ? formatPrice(filters.minPrice) : "Any";
-    const max = filters.maxPrice !== undefined ? formatPrice(filters.maxPrice) : "Any";
+    const min = filters.minPrice !== undefined ? formatPrice(filters.minPrice, { currency, locale: language }) : tFilters("any");
+    const max = filters.maxPrice !== undefined ? formatPrice(filters.maxPrice, { currency, locale: language }) : tFilters("any");
     chips.push({ label: `${min} – ${max}`, patch: { minPrice: null, maxPrice: null } });
   }
   if (filters.storage) {
     const value = /^\d+(?:\.\d+)?$/.test(filters.storage)
-      ? `${filters.storage}GB`
+      ? `${filters.storage}${tFilters("gb")}`
       : filters.storage;
-    chips.push({ label: `${value} Storage`, patch: { storage: null } });
+    chips.push({ label: `${value} ${tFilters("storage")}`, patch: { storage: null } });
   }
   if (filters.ram) {
-    const value = /^\d+(?:\.\d+)?$/.test(filters.ram) ? `${filters.ram}GB` : filters.ram;
-    chips.push({ label: `${value} RAM`, patch: { ram: null } });
+    const value = /^\d+(?:\.\d+)?$/.test(filters.ram) ? `${filters.ram}${tFilters("gb")}` : filters.ram;
+    chips.push({ label: `${value} ${tFilters("ram")}`, patch: { ram: null } });
   }
-  if (filters.color) chips.push({ label: `Color: ${filters.color}`, patch: { color: null } });
-  if (filters.batteryHealthMin !== undefined)
+  if (filters.color) chips.push({ label: `${tFilters("color")}: ${filters.color}`, patch: { color: null } });
+  if (filters.batteryHealthMin !== undefined) {
     chips.push({
-      label: `Battery ${filters.batteryHealthMin}%+`,
+      label: `${tFilters("batteryHealth")} ${filters.batteryHealthMin}%+`,
       patch: { batteryHealthMin: null },
     });
-  if (filters.ptaStatus) {
-    const label =
-      PTA_STATUS[filters.ptaStatus as keyof typeof PTA_STATUS]?.replace(/_/g, " ") ??
-      filters.ptaStatus;
-    chips.push({ label: `PTA: ${label}`, patch: { ptaStatus: null } });
   }
-  if (filters.cpidStatus) {
-    const label =
-      CPID_STATUS[filters.cpidStatus as keyof typeof CPID_STATUS]?.replace(/_/g, " ") ??
-      filters.cpidStatus;
-    chips.push({ label: `CPID: ${label}`, patch: { cpidStatus: null } });
+  if (showPakistanSignals && filters.ptaStatus) {
+    chips.push({
+      label: `${tFilters("ptaStatus")}: ${tStatus(filters.ptaStatus)}`,
+      patch: { ptaStatus: null },
+    });
+  }
+  if (showPakistanSignals && filters.cpidStatus) {
+    chips.push({
+      label: `${tFilters("cpidStatus")}: ${tStatus(filters.cpidStatus)}`,
+      patch: { cpidStatus: null },
+    });
   }
   if (filters.warranty) {
-    const label =
-      WARRANTY_TYPE[filters.warranty as keyof typeof WARRANTY_TYPE]?.replace(/_/g, " ") ??
-      filters.warranty;
-    chips.push({ label: `Warranty: ${label}`, patch: { warranty: null } });
+    chips.push({
+      label: `${tFilters("warranty")}: ${tStatus(filters.warranty)}`,
+      patch: { warranty: null },
+    });
   }
-  if (filters.isInspected) chips.push({ label: "Inspected", patch: { isInspected: null } });
-  if (filters.isVerifiedSeller)
-    chips.push({ label: "Verified Seller", patch: { isVerifiedSeller: null } });
-  if (filters.isDealer) chips.push({ label: "Dealer", patch: { isDealer: null } });
+  if (filters.isInspected) chips.push({ label: tListings("inspected"), patch: { isInspected: null } });
+  if (filters.isVerifiedSeller) {
+    chips.push({ label: tListings("verifiedSeller"), patch: { isVerifiedSeller: null } });
+  }
+  if (filters.isDealer) chips.push({ label: tFilters("dealersOnly"), patch: { isDealer: null } });
 
   if (chips.length === 0) return null;
 
@@ -97,10 +107,10 @@ export function ActiveFilters({ filters, categories, brands }: Props) {
         </Link>
       ))}
       <Link
-        href={ROUTES.marketplace}
+        href={clearHref}
         className="text-muted-foreground hover:text-foreground text-xs underline-offset-4 hover:underline"
       >
-        Clear all
+        {t("clearFilters")}
       </Link>
     </div>
   );

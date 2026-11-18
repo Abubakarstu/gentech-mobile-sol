@@ -2,9 +2,12 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 
-export async function getActiveLocationTree() {
+export async function getActiveLocationTree(countryCode?: string) {
   return prisma.country.findMany({
-    where: { isActive: true },
+    where: {
+      isActive: true,
+      ...(countryCode ? { code: countryCode } : {}),
+    },
     orderBy: [{ position: "asc" }, { name: "asc" }],
     select: {
       id: true,

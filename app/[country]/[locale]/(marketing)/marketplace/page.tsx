@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
 
+import {
+  getCountryFromParam,
+  getLocaleFromParam,
+  getRegionForCountry,
+} from "@/lib/countries/server";
+import { getCountryConfig } from "@/lib/countries";
+import { ROUTES } from "@/lib/constants";
+import { LocalizedLink } from "@/components/localized-link";
 import { parseListingFilters } from "@/features/listings/schemas/filters";
-import { getListingFeed } from "@/features/listings/services/listing.service";
+import { getListingFeed, getListingFilterOptions } from "@/features/listings/services/listing.service";
 import { getCurrentUser } from "@/lib/session";
 import { ListingsGrid } from "@/features/marketplace/components/listings-grid";
 import { MarketplaceFilters } from "@/features/listings/components/marketplace-filters";
@@ -19,55 +27,66 @@ import {
   getMarketplaceBrands,
   getMarketplaceCategories,
 } from "@/features/marketplace/services/catalog.service";
-import { getListingFilterOptions } from "@/features/listings/services/listing.service";
 import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
 
 /** True when the user has narrowed the feed in some way worth saving. */
 function hasActiveFilters(filters: ListingFilters): boolean {
   return Boolean(
     filters.q ||
-    filters.category ||
-    filters.brand ||
-    filters.condition ||
-    filters.city ||
-    filters.minPrice !== undefined ||
-    filters.maxPrice !== undefined ||
-    filters.storage ||
-    filters.ram ||
-    filters.batteryHealthMin !== undefined ||
-    filters.ptaStatus ||
-    filters.cpidStatus ||
-    filters.warranty ||
-    filters.isInspected ||
-    filters.isVerifiedSeller ||
-    filters.isDealer ||
-    filters.color,
+      filters.category ||
+      filters.brand ||
+      filters.condition ||
+      filters.city ||
+      filters.minPrice !== undefined ||
+      filters.maxPrice !== undefined ||
+      filters.storage ||
+      filters.ram ||
+      filters.batteryHealthMin !== undefined ||
+      filters.ptaStatus ||
+      filters.cpidStatus ||
+      filters.warranty ||
+      filters.isInspected ||
+      filters.isVerifiedSeller ||
+      filters.isDealer ||
+      filters.color,
   );
 }
 
-export const metadata: Metadata = {
-  title: "Marketplace",
-  description: "Browse phones and accessories for sale across Pakistan.",
-};
-
-export default async function MarketplacePage({
-  params,
-  searchParams,
-}: {
+type PageProps = {
   params: Promise<{ country: string; locale: string }>;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { country, locale } = await params;
-  const region = country.toUpperCase() === "BH" ? "BAHRAIN" : "PAKISTAN";
+  const countryCode = getCountryFromParam(country);
+  const resolvedLocale = getLocaleFromParam(locale, countryCode);
+  const config = getCountryConfig(countryCode);
+  const t = await getTranslations({ locale: resolvedLocale, namespace: "marketplace" });
+
+  return {
+    title: t("title"),
+    description: t("description", { country: config.nativeName }),
+  };
+}
+
+export default async function MarketplacePage({ params, searchParams }: PageProps) {
+  const { country, locale: localeParam } = await params;
+  const countryCode = getCountryFromParam(country);
+  const locale = getLocaleFromParam(localeParam, countryCode);
+  const region = getRegionForCountry(countryCode);
+  const t = await getTranslations({ locale, namespace: "marketplace" });
   const filters = parseListingFilters(await searchParams);
+
   const [feed, user, locations, categories, brands, filterOptions] = await Promise.all([
     getListingFeed(filters, region),
     getCurrentUser(),
-    getActiveLocationTree(),
-    getMarketplaceCategories(),
+    getActiveLocationTree(countryCode),
+    getMarketplaceCategories(region),
     getMarketplaceBrands(),
-    getListingFilterOptions(),
+    getListingFilterOptions(region),
   ]);
+
   const canSaveSearch = hasActiveFilters(filters);
   const isAuthenticated = Boolean(user && user.id !== "demo:user");
   const favoriteIds =
@@ -82,15 +101,10 @@ export default async function MarketplacePage({
     <div className="mx-auto max-w-6xl px-4 py-6">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Marketplace</h1>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
           <p className="text-muted-foreground text-sm">
-            {feed.total.toLocaleString()} {feed.total === 1 ? "result" : "results"}
-            {filters.q ? (
-              <>
-                {" for "}
-                <span className="text-foreground font-medium">“{filters.q}”</span>
-              </>
-            ) : null}
+            {t("results", { count: feed.total })}
+            {filters.q ? ` ${t("resultsFor", { query: filters.q })}` : ""}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -108,21 +122,29 @@ export default async function MarketplacePage({
 
       {feed.source === "demo" ? (
         <Badge variant="outline" className="mb-4 text-amber-600 dark:text-amber-400">
-          Preview data — connect a database to see live listings
+          {t("previewData")}
         </Badge>
       ) : null}
 
-      {/* Phone Intelligence Quick Links */}
       <div className="mb-4 flex flex-wrap gap-3">
-        <Link href={`/${country}/${locale}/compare`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          Compare Phones
-        </Link>
-        <Link href={`/${country}/${locale}/valuation`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          Check Value
-        </Link>
-        <Link href={`/${country}/${locale}/imei-check`} className={buttonVariants({ variant: "outline", size: "sm" })}>
-          Verify IMEI
-        </Link>
+        <LocalizedLink
+          href={ROUTES.comparison}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          {t("comparePhones")}
+        </LocalizedLink>
+        <LocalizedLink
+          href={ROUTES.valuation}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          {t("checkValue")}
+        </LocalizedLink>
+        <LocalizedLink
+          href={ROUTES.imeiCheck}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          {t("verifyImei")}
+        </LocalizedLink>
       </div>
 
       <div className="mb-4">
@@ -130,7 +152,6 @@ export default async function MarketplacePage({
       </div>
 
       <div className="flex gap-6">
-        {/* Desktop sidebar */}
         <aside className="hidden w-60 shrink-0 lg:block">
           <div className="bg-card sticky top-20 rounded-xl border p-4">
             <MarketplaceFilters
@@ -143,7 +164,6 @@ export default async function MarketplacePage({
           </div>
         </aside>
 
-        {/* Results */}
         <div className="min-w-0 flex-1">
           <ListingsGrid
             listings={feed.items}
