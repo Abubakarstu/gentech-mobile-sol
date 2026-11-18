@@ -9,6 +9,7 @@ import {
 } from "@/lib/countries/server";
 import { ROUTES } from "@/lib/constants";
 import { withCountryLocalePrefix } from "@/lib/localized-path";
+import { localizedSeoMetadata } from "@/lib/seo/metadata";
 import { formatPrice } from "@/utils/format";
 import { getCurrentUser } from "@/lib/session";
 import { getInspectionPlans } from "@/features/inspections/services/inspection.service";
@@ -23,7 +24,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const countryCode = getCountryFromParam(country);
   const resolvedLocale = getLocaleFromParam(locale, countryCode);
   const t = await getTranslations({ locale: resolvedLocale, namespace: "navigation" });
-  return { title: t("inspection"), description: t("inspection") };
+  return {
+    ...localizedSeoMetadata({
+      path: ROUTES.inspectionService,
+      country: countryCode,
+      locale: resolvedLocale,
+    }),
+    title: t("inspection"),
+    description: t("inspection"),
+  };
 }
 
 export default async function InspectionServicePage({ params }: PageProps) {

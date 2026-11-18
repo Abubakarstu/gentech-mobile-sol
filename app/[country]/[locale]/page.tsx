@@ -19,6 +19,7 @@ import { CtaBand } from "@/features/marketplace/components/cta-band";
 import { getActiveLocationTree } from "@/features/locations/services/location.service";
 import { getCurrentUser } from "@/lib/session";
 import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
+import { localizedSeoMetadata } from "@/lib/seo/metadata";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const t = await getTranslations({ locale: resolvedLocale, namespace: "homepage" });
 
   return {
+    ...localizedSeoMetadata({ path: ROUTES.home, country: countryCode, locale: resolvedLocale }),
     title: t("heroTitle"),
     description: t("heroSubtitle", {
       country: getCountryName(countryCode, resolvedLocale),

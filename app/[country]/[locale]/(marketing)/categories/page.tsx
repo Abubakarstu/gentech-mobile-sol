@@ -6,6 +6,8 @@ import {
   getLocaleFromParam,
   getRegionForCountry,
 } from "@/lib/countries/server";
+import { ROUTES } from "@/lib/constants";
+import { localizedSeoMetadata } from "@/lib/seo/metadata";
 import { getCategoriesWithCounts } from "@/features/marketplace/services/category.service";
 import { CategoryGrid } from "@/features/marketplace/components/category-grid";
 
@@ -19,7 +21,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const resolvedLocale = getLocaleFromParam(locale, countryCode);
   const t = await getTranslations({ locale: resolvedLocale, namespace: "categoriesPage" });
 
-  return { title: t("title"), description: t("description") };
+  return {
+    ...localizedSeoMetadata({
+      path: ROUTES.categories,
+      country: countryCode,
+      locale: resolvedLocale,
+    }),
+    title: t("title"),
+    description: t("description"),
+  };
 }
 
 export default async function CategoriesPage({ params }: PageProps) {

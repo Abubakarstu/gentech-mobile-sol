@@ -6,7 +6,9 @@ import {
   getCountryFromParam,
   getLocaleFromParam,
 } from "@/lib/countries/server";
+import { ROUTES } from "@/lib/constants";
 import { withCountryLocalePrefix } from "@/lib/localized-path";
+import { localizedSeoMetadata } from "@/lib/seo/metadata";
 import { PhoneValuationCard } from "@/features/phone-intelligence/components/phone-valuation-card";
 import { phoneModelRepository } from "@/features/phone-intelligence/repositories/phone-model.repository";
 import { valuationService } from "@/features/phone-intelligence/services/valuation.service";
@@ -23,9 +25,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const resolvedLocale = getLocaleFromParam(locale, countryCode);
   const t = await getTranslations({ locale: resolvedLocale, namespace: "marketplace" });
   return {
+    ...localizedSeoMetadata({
+      path: ROUTES.valuation,
+      country: countryCode,
+      locale: resolvedLocale,
+    }),
     title: `${t("checkValue")} · GenTech`,
     description: t("description"),
-    robots: { index: true, follow: true },
   };
 }
 

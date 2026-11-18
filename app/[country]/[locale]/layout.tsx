@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -23,29 +22,6 @@ export function generateStaticParams() {
     }
   }
   return params;
-}
-
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<LocalizedParams>;
-}): Promise<Metadata> {
-  const { country, locale } = await params;
-  const countryCode = country.toUpperCase();
-  if (!isValidCountryCode(countryCode) || !isSupportedLocale(locale)) return {};
-
-  const canonical = `/${countryCode.toLowerCase()}/${locale}`;
-  const languages: Record<string, string> = {};
-  for (const code of getCountryCodes()) {
-    for (const language of getAllSupportedLocales()) {
-      languages[`${language}-${code}`] = `/${code.toLowerCase()}/${language}`;
-    }
-  }
-  languages["x-default"] = "/";
-
-  return {
-    alternates: { canonical, languages },
-  };
 }
 
 export default async function CountryLocaleLayout({

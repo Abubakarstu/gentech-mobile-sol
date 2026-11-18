@@ -15,6 +15,8 @@ import {
   USER_LOCALE_COOKIE,
   resolveLocalization,
 } from "@/lib/localization/detect";
+import { isNonCanonicalQueryVariant } from "@/lib/seo/metadata";
+import { isPrivateSeoPath, normalizeLocalizedPath } from "@/lib/seo/robots";
 
 const COUNTRY_SEGMENTS: Record<string, CountryCode> = { bh: "BH", pk: "PK" };
 
@@ -89,7 +91,25 @@ function withContextHeaders(request: NextRequest, country: CountryCode, locale: 
   return requestHeaders;
 }
 
-function addSecurityHeaders(response: NextResponse) {
+function robotsDirective(pathname: string, searchParams: URLSearchParams): string | null {
+  if (isPrivateSeoPath(pathname)) return "noindex, nofollow";
+
+  const normalized = normalizeLocalizedPath(pathname);
+  if (
+    normalized === "/marketplace" &&
+    isNonCanonicalQueryVariant(Object.fromEntries(searchParams.entries()))
+  ) {
+    return "noindex, follow";
+  }
+
+  return null;
+}
+
+function addSecurityHeaders(
+  response: NextResponse,
+  pathname = "",
+  searchParams?: URLSearchParams,
+) {
   const cspHeader = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
@@ -113,6 +133,8 @@ function addSecurityHeaders(response: NextResponse) {
   response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   // Preferences are per visitor; caches must vary on language and cookies.
   response.headers.set("Vary", "Accept-Language, Cookie");
+  const directive = robotsDirective(pathname, searchParams ?? new URLSearchParams());
+  if (directive) response.headers.set("X-Robots-Tag", directive);
   response.headers.set(
     "Permissions-Policy",
     "camera=(), microphone=(), geolocation=(), interest-cohort=()",
@@ -131,7 +153,7 @@ function passThrough(request: NextRequest, country: CountryCode, locale: LocaleC
   const response = NextResponse.next({
     request: { headers: withContextHeaders(request, country, locale) },
   });
-  addSecurityHeaders(response);
+  addSecurityHeaders(response, request.nextUrl.pathname, request.nextUrl.searchParams);
   return response;
 }
 
@@ -145,7 +167,7 @@ function localizedRedirect(
   const newUrl = request.nextUrl.clone();
   newUrl.pathname = `/${country.toLowerCase()}/${locale}${pathname === "/" ? "" : pathname}`;
   const response = NextResponse.redirect(newUrl);
-  addSecurityHeaders(response);
+  addSecurityHeaders(response, pathname, request.nextUrl.searchParams);
   return response;
 }
 
@@ -154,7 +176,7 @@ export function middleware(request: NextRequest) {
 
   if (isStaticOrApi(pathname)) {
     const response = NextResponse.next();
-    addSecurityHeaders(response);
+    addSecurityHeaders(response, pathname, request.nextUrl.searchParams);
     return response;
   }
 
@@ -163,7 +185,7 @@ export function middleware(request: NextRequest) {
       { error: "This read-only demo does not accept changes." },
       { status: 403 },
     );
-    addSecurityHeaders(response);
+    addSecurityHeaders(response, pathname, request.nextUrl.searchParams);
     return response;
   }
 
@@ -188,7 +210,7 @@ export function middleware(request: NextRequest) {
       remaining.length > 0 ? `/${remaining.join("/")}` : ""
     }`;
     const response = NextResponse.redirect(newUrl);
-    addSecurityHeaders(response);
+    addSecurityHeaders(response, pathname, request.nextUrl.searchParams);
     return response;
   }
 

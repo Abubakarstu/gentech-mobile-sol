@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { getCountryFromParam, getLocaleFromParam } from "@/lib/countries/server";
+import { ROUTES } from "@/lib/constants";
+import { localizedSeoMetadata } from "@/lib/seo/metadata";
 import { ImeiVerificationResultCard } from "@/features/phone-intelligence/components/imei-verification-result";
 import {
   verifyImeiAction,
@@ -27,9 +29,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const t = await getTranslations({ locale: resolvedLocale, namespace: "imei" });
 
   return {
+    ...localizedSeoMetadata({
+      path: ROUTES.imeiCheck,
+      country: countryCode,
+      locale: resolvedLocale,
+    }),
     title: t("title"),
     description: t("description"),
-    robots: { index: true, follow: true },
   };
 }
 

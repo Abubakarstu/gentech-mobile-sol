@@ -7,7 +7,11 @@ import {
   getRegionForCountry,
 } from "@/lib/countries/server";
 import { getCountryName } from "@/lib/countries";
+import { APP_URL } from "@/lib/app-url";
 import { ROUTES } from "@/lib/constants";
+import { localizedPath, isNonCanonicalQueryVariant, localizedSeoMetadata } from "@/lib/seo/metadata";
+import { buildItemListStructuredData } from "@/lib/seo/structured-data";
+import { JsonLd } from "@/components/seo/json-ld";
 import { LocalizedLink } from "@/components/localized-link";
 import { parseListingFilters } from "@/features/listings/schemas/filters";
 import { getListingFeed, getListingFilterOptions } from "@/features/listings/services/listing.service";
@@ -57,13 +61,20 @@ type PageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { country, locale } = await params;
   const countryCode = getCountryFromParam(country);
   const resolvedLocale = getLocaleFromParam(locale, countryCode);
   const t = await getTranslations({ locale: resolvedLocale, namespace: "marketplace" });
+  const hasQueryVariants = isNonCanonicalQueryVariant(await searchParams);
 
   return {
+    ...localizedSeoMetadata({
+      path: ROUTES.marketplace,
+      country: countryCode,
+      locale: resolvedLocale,
+      robots: hasQueryVariants ? { index: false, follow: true } : undefined,
+    }),
     title: t("title"),
     description: t("description", {
       country: getCountryName(countryCode, resolvedLocale),
@@ -97,6 +108,20 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
           feed.items.map((listing) => listing.id),
         )
       : [];
+
+  const itemListJsonLd =
+    feed.items.length > 0
+      ? buildItemListStructuredData(
+          t("title"),
+          localizedPath(ROUTES.marketplace, countryCode, locale),
+          APP_URL,
+          feed.items.map((listing) => ({
+            name: listing.title,
+            path: localizedPath(`/listings/${listing.slug}`, countryCode, locale),
+            image: listing.imageUrl,
+          })),
+        )
+      : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -174,6 +199,7 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
           <ListingsPagination page={feed.page} totalPages={feed.totalPages} />
         </div>
       </div>
+      {itemListJsonLd ? <JsonLd data={itemListJsonLd} /> : null}
     </div>
   );
 }

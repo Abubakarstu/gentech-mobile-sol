@@ -4,10 +4,12 @@ import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsScripts } from "@/features/analytics/components/analytics-scripts";
 import { PageViewTracker } from "@/features/analytics/components/page-view-tracker";
+import { JsonLd } from "@/components/seo/json-ld";
 import { APP } from "@/lib/constants";
 import { APP_URL } from "@/lib/app-url";
 import { getRequestCountryLocale } from "@/lib/countries/server";
 import { isRtlLocale } from "@/lib/countries/types";
+import { buildSiteStructuredData } from "@/lib/seo/structured-data";
 import "./globals.css";
 
 const geistSans = { variable: "font-sans" };
@@ -57,6 +59,9 @@ export default async function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <JsonLd data={buildSiteStructuredData(APP_URL)} />
+      </head>
       <body className="flex min-h-full flex-col">
         <Providers>
           {children}

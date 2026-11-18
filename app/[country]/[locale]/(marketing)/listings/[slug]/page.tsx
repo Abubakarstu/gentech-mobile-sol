@@ -31,8 +31,19 @@ import { FavoriteButton } from "@/features/marketplace/components/favorite-butto
 import { ListingsGrid } from "@/features/marketplace/components/listings-grid";
 import { SectionHeader } from "@/features/marketplace/components/section-header";
 import { ViewListingTracker } from "@/features/analytics/components/view-listing-tracker";
+import { JsonLd } from "@/components/seo/json-ld";
 import { LocalizedLink } from "@/components/localized-link";
 import { Badge } from "@/components/ui/badge";
+import {
+  absoluteUrl,
+  localizedPath,
+  localizedSeoMetadata,
+  truncateDescription,
+} from "@/lib/seo/metadata";
+import {
+  buildBreadcrumbStructuredData,
+  buildListingStructuredData,
+} from "@/lib/seo/structured-data";
 import { getActiveLocationTree } from "@/features/locations/services/location.service";
 import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
 import type { Region } from "@/lib/generated/prisma/enums";
@@ -49,16 +60,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const locale = getLocaleFromParam(localeParam, countryCode);
   const tErrors = await getTranslations({ locale, namespace: "errors" });
   const result = await loadListing(slug, getRegionForCountry(countryCode));
-  if (!result) return { title: tErrors("notFound") };
+  if (!result) return { title: tErrors("notFound"), robots: { index: false, follow: false } };
 
   const { detail } = result;
-  const description = detail.description.slice(0, 160);
+  const description = truncateDescription(detail.description);
   const images = detail.images[0]?.url ? [detail.images[0].url] : undefined;
+  const listingPath = `/listings/${detail.slug}`;
 
   return {
+    ...localizedSeoMetadata({
+      path: listingPath,
+      country: countryCode,
+      locale,
+      openGraph: { title: detail.title, description, images },
+    }),
     title: detail.title,
     description,
-    openGraph: { title: detail.title, description, type: "website", images },
   };
 }
 
@@ -89,21 +106,33 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
         : Promise.resolve([]),
     ]);
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    name: detail.title,
-    description: detail.description,
-    image: detail.images.map((image) => image.url),
-    brand: detail.brand ? { "@type": "Brand", name: detail.brand } : undefined,
-    offers: {
-      "@type": "Offer",
-      price: detail.price,
-      priceCurrency: detail.currency,
-      availability: "https://schema.org/InStock",
-      url: `${APP_URL}/${country.toLowerCase()}/${locale}/listings/${detail.slug}`,
-    },
-  };
+  const listingPath = `/listings/${detail.slug}`;
+  const jsonLd = [
+    buildListingStructuredData(detail, absoluteUrl(listingPath, APP_URL)),
+    buildBreadcrumbStructuredData(
+      [
+        { name: tNavigation("home"), path: localizedPath(ROUTES.home, countryCode, locale) },
+        {
+          name: tNavigation("marketplace"),
+          path: localizedPath(ROUTES.marketplace, countryCode, locale),
+        },
+        ...(detail.categorySlug
+          ? [
+              {
+                name: detail.categoryName ?? detail.categorySlug,
+                path: localizedPath(
+                  `${ROUTES.marketplace}?category=${encodeURIComponent(detail.categorySlug)}`,
+                  countryCode,
+                  locale,
+                ),
+              },
+            ]
+          : []),
+        { name: detail.title, path: localizedPath(listingPath, countryCode, locale) },
+      ],
+      APP_URL,
+    ),
+  ];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -295,10 +324,7 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
         </section>
       ) : null}
 
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
     </div>
   );
 }

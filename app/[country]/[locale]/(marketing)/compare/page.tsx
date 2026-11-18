@@ -8,6 +8,7 @@ import {
 } from "@/lib/countries/server";
 import { ROUTES } from "@/lib/constants";
 import { withCountryLocalePrefix } from "@/lib/localized-path";
+import { localizedSeoMetadata } from "@/lib/seo/metadata";
 import { PhoneComparisonTable } from "@/features/phone-intelligence/components/phone-comparison-table";
 import { comparisonService } from "@/features/phone-intelligence/services/comparison.service";
 import type { PhoneSpecComparison } from "@/features/phone-intelligence/schemas/comparison.schema";
@@ -23,9 +24,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const resolvedLocale = getLocaleFromParam(locale, countryCode);
   const t = await getTranslations({ locale: resolvedLocale, namespace: "marketplace" });
   return {
+    ...localizedSeoMetadata({
+      path: ROUTES.comparison,
+      country: countryCode,
+      locale: resolvedLocale,
+    }),
     title: `${t("comparePhones")} · GenTech`,
     description: t("description"),
-    robots: { index: true, follow: true },
   };
 }
 
