@@ -63,7 +63,7 @@ export function ListingCard({
             </div>
           )}
 
-          <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+          <div className="absolute top-2 start-2 flex flex-wrap gap-1 pe-10 sm:pe-0">
             {listing.isFeatured ? (
               <Badge className="bg-amber-500 text-white hover:bg-amber-500">{t("featured")}</Badge>
             ) : null}
@@ -142,7 +142,7 @@ export function ListingCard({
         listingId={listing.id}
         initialIsFavorite={isFavorite}
         isAuthenticated={isAuthenticated}
-        className="absolute top-2 right-2"
+        className="absolute top-2 end-2"
       />
     </article>
   );

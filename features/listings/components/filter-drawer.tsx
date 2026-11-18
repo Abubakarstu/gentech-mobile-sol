@@ -2,7 +2,10 @@
 
 import * as React from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { SlidersHorizontal, X } from "lucide-react";
+
+import { useLocalizedRouteInfo } from "@/lib/localized-routing";
 
 import type {
   BrandItem,
@@ -23,6 +26,9 @@ export function FilterDrawer(props: {
   filterOptions: ListingFilterOptions;
 }) {
   const [open, setOpen] = React.useState(false);
+  const tCommon = useTranslations("common");
+  const { locale } = useLocalizedRouteInfo();
+  const isRtl = locale === "ar" || locale === "ur";
 
   React.useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -31,11 +37,20 @@ export function FilterDrawer(props: {
     };
   }, [open]);
 
+  React.useEffect(() => {
+    if (!open) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
   return (
     <>
       <Button variant="outline" size="sm" className="lg:hidden" onClick={() => setOpen(true)}>
         <SlidersHorizontal className="size-4" />
-        Filters
+        {tCommon("filter")}
       </Button>
 
       <AnimatePresence>
@@ -47,26 +62,29 @@ export function FilterDrawer(props: {
             exit={{ opacity: 0 }}
           >
             <button
-              aria-label="Close filters"
+              aria-label={tCommon("close")}
               className="bg-background/80 absolute inset-0 backdrop-blur-sm"
               onClick={() => setOpen(false)}
             />
             <motion.aside
-              className="bg-background absolute inset-y-0 right-0 flex w-80 max-w-[88%] flex-col border-l shadow-xl"
-              initial={{ x: "100%" }}
+              role="dialog"
+              aria-modal="true"
+              aria-label={tCommon("filter")}
+              className="bg-background absolute inset-y-0 end-0 flex w-80 max-w-[88%] flex-col border-s shadow-xl"
+              initial={{ x: isRtl ? "-100%" : "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: "100%" }}
+              exit={{ x: isRtl ? "-100%" : "100%" }}
               transition={{ type: "tween", duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
               onClickCapture={(e) => {
                 if ((e.target as HTMLElement).closest("a")) setOpen(false);
               }}
             >
               <div className="flex items-center justify-between border-b p-4">
-                <h2 className="font-semibold">Filters</h2>
+                <h2 className="font-semibold">{tCommon("filter")}</h2>
                 <Button
                   variant="ghost"
                   size="icon"
-                  aria-label="Close"
+                  aria-label={tCommon("close")}
                   onClick={() => setOpen(false)}
                 >
                   <X className="size-5" />

@@ -56,7 +56,7 @@ export function FavoriteButton({
       disabled={pending}
       onClick={toggleFavorite}
       className={cn(
-        "bg-background/80 hover:bg-background grid size-9 place-items-center rounded-full backdrop-blur transition-colors disabled:opacity-70",
+        "bg-background/80 hover:bg-background grid size-11 place-items-center rounded-full backdrop-blur transition-colors disabled:opacity-70 sm:size-9",
         className,
       )}
     >

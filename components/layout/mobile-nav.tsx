@@ -23,6 +23,7 @@ interface MobileNavProps {
 export function MobileNav({ categories, isAuthenticated, isDemoSession = false }: MobileNavProps) {
   const t = useTranslations("navigation");
   const tCategories = useTranslations("categories");
+  const tCommon = useTranslations("common");
   const { locale } = useLocalizedRouteInfo();
   const isRtl = locale === "ar" || locale === "ur";
   const [open, setOpen] = React.useState(false);
@@ -32,6 +33,15 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
     return () => {
       document.body.style.overflow = "";
     };
+  }, [open]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
   const offscreen = isRtl ? "100%" : "-100%";
@@ -58,15 +68,15 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
             exit={{ opacity: 0 }}
           >
             <button
-              aria-label={t("categories")}
+              aria-label={tCommon("close")}
               className="bg-background/80 absolute inset-0 backdrop-blur-sm"
               onClick={() => setOpen(false)}
             />
             <motion.aside
-              className={cn(
-                "bg-background absolute inset-y-0 flex w-80 max-w-[85%] flex-col border-r shadow-xl",
-                isRtl ? "right-0 border-r-0 border-l" : "left-0",
-              )}
+              role="dialog"
+              aria-modal="true"
+              aria-label={t("categories")}
+              className="bg-background absolute inset-y-0 start-0 flex w-80 max-w-[85%] flex-col border-e shadow-xl"
               initial={{ x: offscreen }}
               animate={{ x: 0 }}
               exit={{ x: offscreen }}
@@ -87,7 +97,7 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
                   <Button
                     variant="ghost"
                     size="icon"
-                    aria-label={t("categories")}
+                    aria-label={tCommon("close")}
                     onClick={() => setOpen(false)}
                   >
                     <X className="size-5" />

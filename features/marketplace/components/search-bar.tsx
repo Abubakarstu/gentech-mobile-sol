@@ -114,9 +114,9 @@ export function SearchBar({
       >
         <div className="relative flex-1">
           {pending ? (
-            <Loader2 className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 animate-spin" />
+            <Loader2 className="text-muted-foreground pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2 animate-spin" />
           ) : (
-            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <Search className="text-muted-foreground pointer-events-none absolute top-1/2 start-3 size-4 -translate-y-1/2" />
           )}
           <Input
             value={query}
@@ -125,11 +125,14 @@ export function SearchBar({
               setOpen(true);
             }}
             onFocus={() => setOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setOpen(false);
+            }}
             placeholder={placeholder ?? t("placeholder")}
             aria-label={t("button")}
             autoComplete="off"
             className={cn(
-              "pl-9",
+              "ps-9",
               variant === "hero" &&
                 "h-11 border-0 bg-transparent shadow-none focus-visible:ring-0",
             )}
@@ -161,7 +164,7 @@ export function SearchBar({
       </form>
 
       {showDropdown && results ? (
-        <div className="bg-popover absolute top-full z-50 mt-2 w-full overflow-hidden rounded-xl border shadow-lg">
+        <div className="bg-popover absolute top-full z-50 mt-2 max-h-[min(60vh,22rem)] w-full overflow-y-auto overscroll-contain rounded-xl border shadow-lg">
           {results.listings.length > 0 ? (
             <Group label={t("groupListings")}>
               {results.listings.map((listing) => (
@@ -169,7 +172,7 @@ export function SearchBar({
                   key={listing.slug}
                   type="button"
                   onClick={() => navigate(`/listings/${listing.slug}`)}
-                  className="hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-left text-sm"
+                  className="hover:bg-accent flex w-full items-center gap-2 px-3 py-2 text-start text-sm"
                 >
                   <Smartphone className="text-muted-foreground size-4 shrink-0" />
                   <span className="truncate">{listing.title}</span>
