@@ -18,7 +18,7 @@ let googleApis: any = null;
 async function getGoogleApis() {
   if (googleApis) return googleApis;
   try {
-    // @ts-ignore - googleapis may not be installed
+    // @ts-expect-error - googleapis is optional and may not be installed
     const mod = await import("googleapis");
     googleApis = mod.google;
     return googleApis;

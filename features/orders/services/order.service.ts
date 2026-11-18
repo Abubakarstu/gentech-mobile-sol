@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { calculateTax } from "@/lib/tax";
 import { calculateShipping } from "@/features/shipping/services/shipping.service";
 import type { CountryCode } from "@/lib/countries/types";
@@ -138,13 +139,13 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
           region: region as any,
           currency,
           status: "PENDING",
-          subtotal: new (require("@/lib/generated/prisma/client").Prisma.Decimal)(subtotal),
-          shipping: new (require("@/lib/generated/prisma/client").Prisma.Decimal)(shipping),
-          taxRate: new (require("@/lib/generated/prisma/client").Prisma.Decimal)(taxResult.taxRate),
-          taxAmount: new (require("@/lib/generated/prisma/client").Prisma.Decimal)(taxResult.taxAmount),
+          subtotal: new Prisma.Decimal(subtotal),
+          shipping: new Prisma.Decimal(shipping),
+          taxRate: new Prisma.Decimal(taxResult.taxRate),
+          taxAmount: new Prisma.Decimal(taxResult.taxAmount),
           taxName: taxResult.taxName,
-          discount: new (require("@/lib/generated/prisma/client").Prisma.Decimal)(0),
-          total: new (require("@/lib/generated/prisma/client").Prisma.Decimal)(total),
+          discount: new Prisma.Decimal(0),
+          total: new Prisma.Decimal(total),
           shippingMethod: shippingMethodName,
           estimatedDays,
           deliveryAddress: input.deliveryAddress as any,
@@ -161,10 +162,10 @@ export async function createOrder(input: CreateOrderInput): Promise<OrderResult>
             orderId: newOrder.id,
             listingId: item.listingId,
             title: item.title,
-            unitPrice: new (require("@/lib/generated/prisma/client").Prisma.Decimal)(item.unitPrice),
+            unitPrice: new Prisma.Decimal(item.unitPrice),
             currency: item.currency,
             quantity: item.quantity,
-            lineTotal: new (require("@/lib/generated/prisma/client").Prisma.Decimal)(item.lineTotal),
+            lineTotal: new Prisma.Decimal(item.lineTotal),
           },
         });
       }

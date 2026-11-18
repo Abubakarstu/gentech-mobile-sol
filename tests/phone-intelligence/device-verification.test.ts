@@ -7,8 +7,8 @@ const mockedEnv = vi.hoisted(() => ({
 vi.mock("@/lib/env", () => ({ env: mockedEnv.env }));
 
 async function getDeviceVerificationProvider() {
-  const module = await import("@/features/phone-intelligence/providers");
-  return module.getDeviceVerificationProvider();
+  const providers = await import("@/features/phone-intelligence/providers");
+  return providers.getDeviceVerificationProvider();
 }
 
 function imeiEndingWith(digit: string): string {

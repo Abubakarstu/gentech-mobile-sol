@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { PhoneValuationCard } from '@/features/phone-intelligence/components/phone-valuation-card';
 import { phoneModelRepository } from '@/features/phone-intelligence/repositories/phone-model.repository';
 import { valuationService } from '@/features/phone-intelligence/services/valuation.service';
@@ -160,12 +161,12 @@ export default async function ValuationPage({
             <p className="text-sm text-yellow-800 mb-3">
               Once you have your valuation, you can create a listing with just a few clicks.
             </p>
-            <a
+            <Link
               href="/dashboard/listings/create"
               className="inline-flex items-center px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium"
             >
               Create Listing
-            </a>
+            </Link>
           </div>
         </div>
       </div>

@@ -38,8 +38,8 @@ const configuredPayFast = {
 };
 
 async function getPaymentProvider() {
-  const module = await import("@/features/inspections/payments");
-  return module.getPaymentProvider();
+  const payments = await import("@/features/inspections/payments");
+  return payments.getPaymentProvider();
 }
 
 describe("payment provider selection", () => {

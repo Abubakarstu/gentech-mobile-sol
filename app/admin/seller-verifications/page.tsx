@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { ROUTES } from "@/lib/constants";
@@ -29,7 +30,7 @@ export default async function AdminSellerVerificationsPage({
 
       {/* Country filter */}
       <div className="flex gap-2">
-        <a
+        <Link
           href="/admin/seller-verifications?country=BH"
           className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${
             country === "BH"
@@ -38,8 +39,8 @@ export default async function AdminSellerVerificationsPage({
           }`}
         >
           🇧🇭 Bahrain
-        </a>
-        <a
+        </Link>
+        <Link
           href="/admin/seller-verifications?country=PK"
           className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${
             country === "PK"
@@ -48,7 +49,7 @@ export default async function AdminSellerVerificationsPage({
           }`}
         >
           🇵🇰 Pakistan
-        </a>
+        </Link>
       </div>
 
       {verifications.length === 0 ? (

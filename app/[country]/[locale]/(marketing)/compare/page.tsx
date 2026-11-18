@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { PhoneComparisonTable } from '@/features/phone-intelligence/components/phone-comparison-table';
 import { comparisonService } from '@/features/phone-intelligence/services/comparison.service';
 import type { PhoneSpecComparison } from '@/features/phone-intelligence/schemas/comparison.schema';
@@ -59,12 +60,12 @@ export default async function ComparePage({
           <p className="text-gray-600 mb-6">
             Choose at least 2 phones from the marketplace to compare their specifications
           </p>
-          <a
+          <Link
             href="/marketplace"
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Browse Marketplace
-          </a>
+          </Link>
         </div>
       )}
     </div>
