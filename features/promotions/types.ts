@@ -56,6 +56,7 @@ export interface CreatePromotionPlanInput {
   durationDays: number;
   maxSlots?: number | null;
   isActive?: boolean;
+  region?: "BAHRAIN" | "PAKISTAN";
 }
 
 export interface CreateListingPromotionInput {

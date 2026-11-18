@@ -71,11 +71,27 @@ export const env = createEnv({
     PAYFAST_EASYPAISA_ACCOUNT_TYPE: z.string().min(1).optional(),
     PAYFAST_MODE: z.enum(["disabled", "sandbox", "live"]).default("disabled"),
     PAYFAST_LIVE_ENABLED: z.enum(["true", "false"]).default("false"),
+    // Test-only: allows the built-in simulated gateway in a production build
+    // (preview/staging) when PayFast credentials are not configured. Never enable
+    // this on a public production deployment — it marks inspections paid without
+    // a real charge. Real PayFast credentials always take precedence.
+    PAYMENTS_TEST_MODE: z.enum(["true", "false"]).default("false"),
+
+    // --- PTA / CPID device verification ---
+    // Test-only: allows simulated PTA/CPID results in a production build. Results
+    // are stored and displayed as simulated; never enable on public production.
+    // A real provider adapter must be registered before accurate checks exist.
+    DEVICE_VERIFICATION_TEST_MODE: z.enum(["true", "false"]).default("false"),
   },
 
   client: {
     NEXT_PUBLIC_APP_NAME: z.string().min(1).default("GenTech"),
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().min(1).optional(),
+
+    // --- Region (optional; defaults to PAKISTAN per-user) ---
+    // Set at runtime via user profile; not a global app config.
+    // Only exposed to client if explicitly needed for UI locale/etc.
+    NEXT_PUBLIC_REGION: z.string().min(1).optional(),
 
     // --- Analytics (optional; each provider loads only when its id is set) ---
     NEXT_PUBLIC_GTM_ID: z.string().min(1).optional(),
@@ -91,6 +107,7 @@ export const env = createEnv({
   experimental__runtimeEnv: {
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    NEXT_PUBLIC_REGION: process.env.NEXT_PUBLIC_REGION,
     NEXT_PUBLIC_GTM_ID: process.env.NEXT_PUBLIC_GTM_ID,
     NEXT_PUBLIC_GA4_ID: process.env.NEXT_PUBLIC_GA4_ID,
     NEXT_PUBLIC_META_PIXEL_ID: process.env.NEXT_PUBLIC_META_PIXEL_ID,

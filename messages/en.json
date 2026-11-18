@@ -1,0 +1,208 @@
+{
+  "common": {
+    "appName": "GenTech",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "next": "Next",
+    "previous": "Previous",
+    "submit": "Submit",
+    "close": "Close",
+    "back": "Back",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "navigation": {
+    "home": "Home",
+    "marketplace": "Marketplace",
+    "categories": "Categories",
+    "sell": "Sell",
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "dashboard": "Dashboard",
+    "myListings": "My Listings",
+    "favorites": "Favorites",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "account": "Account",
+    "admin": "Admin",
+    "logout": "Log Out",
+    "inspection": "Phone Inspection"
+  },
+  "homepage": {
+    "heroTitle": "Buy & Sell Mobile Phones",
+    "heroSubtitle": "Fast, safe, and simple marketplace for mobile phones",
+    "featuredListings": "Featured Listings",
+    "recentListings": "Recent Listings",
+    "browseByCategory": "Browse by Category",
+    "browseByBrand": "Browse by Brand",
+    "viewAll": "View All"
+  },
+  "listings": {
+    "title": "Listings",
+    "noListings": "No listings found",
+    "price": "Price",
+    "condition": "Condition",
+    "city": "City",
+    "brand": "Brand",
+    "category": "Category",
+    "postedBy": "Posted by",
+    "views": "views",
+    "negotiable": "Negotiable",
+    "featured": "Featured",
+    "sold": "Sold",
+    "new": "New",
+    "used": "Used",
+    "refurbished": "Refurbished"
+  },
+  "search": {
+    "placeholder": "Search mobile phones...",
+    "noResults": "No results found",
+    "resultsCount": "{count} results found",
+    "filters": "Filters",
+    "clearFilters": "Clear filters"
+  },
+  "filters": {
+    "priceRange": "Price Range",
+    "minPrice": "Min Price",
+    "maxPrice": "Max Price",
+    "condition": "Condition",
+    "brand": "Brand",
+    "category": "Category",
+    "city": "City",
+    "storage": "Storage",
+    "ram": "RAM",
+    "color": "Color",
+    "ptaStatus": "PTA Status",
+    "batteryHealth": "Battery Health",
+    "warranty": "Warranty"
+  },
+  "productDetails": {
+    "specifications": "Specifications",
+    "description": "Description",
+    "sellerInfo": "Seller Information",
+    "contactSeller": "Contact Seller",
+    "reportListing": "Report Listing",
+    "similarListings": "Similar Listings",
+    "memberSince": "Member since",
+    "verified": "Verified"
+  },
+  "authentication": {
+    "signIn": "Sign In",
+    "signUp": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "resetPassword": "Reset Password",
+    "fullName": "Full Name",
+    "createAccount": "Create Account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "verifyEmail": "Verify Email",
+    "emailVerificationSent": "Verification email sent",
+    "invalidCredentials": "Invalid email or password",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "profile": {
+    "myProfile": "My Profile",
+    "editProfile": "Edit Profile",
+    "phone": "Phone",
+    "city": "City",
+    "address": "Address",
+    "bio": "Bio",
+    "saveChanges": "Save Changes",
+    "profileUpdated": "Profile updated successfully"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "overview": "Overview",
+    "myListings": "My Listings",
+    "favorites": "Favorites",
+    "savedSearches": "Saved Searches",
+    "messages": "Messages",
+    "notifications": "Notifications",
+    "inspections": "Inspections",
+    "account": "Account"
+  },
+  "cart": {
+    "cart": "Cart",
+    "emptyCart": "Your cart is empty",
+    "total": "Total",
+    "checkout": "Checkout",
+    "remove": "Remove",
+    "quantity": "Quantity"
+  },
+  "checkout": {
+    "checkout": "Checkout",
+    "shippingAddress": "Shipping Address",
+    "paymentMethod": "Payment Method",
+    "orderSummary": "Order Summary",
+    "placeOrder": "Place Order",
+    "processing": "Processing...",
+    "success": "Order placed successfully"
+  },
+  "payment": {
+    "paymentMethods": "Payment Methods",
+    "selectPayment": "Select Payment Method",
+    "cardNumber": "Card Number",
+    "expiryDate": "Expiry Date",
+    "cvv": "CVV",
+    "payNow": "Pay Now",
+    "paymentFailed": "Payment failed",
+    "paymentSuccess": "Payment successful"
+  },
+  "shipping": {
+    "shippingAddress": "Shipping Address",
+    "deliveryMethod": "Delivery Method",
+    "estimatedDelivery": "Estimated Delivery",
+    "shippingCost": "Shipping Cost",
+    "freeShipping": "Free Shipping"
+  },
+  "notifications": {
+    "noNotifications": "No notifications",
+    "markAllRead": "Mark all as read",
+    "newMessage": "New message",
+    "listingSold": "Listing sold",
+    "priceDrop": "Price drop"
+  },
+  "validation": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email",
+    "minLength": "Minimum {min} characters required",
+    "maxLength": "Maximum {max} characters allowed",
+    "invalidPhone": "Please enter a valid phone number"
+  },
+  "errors": {
+    "notFound": "Page not found",
+    "serverError": "Server error",
+    "unauthorized": "Unauthorized",
+    "forbidden": "Forbidden",
+    "networkError": "Network error"
+  },
+  "footer": {
+    "aboutUs": "About Us",
+    "contactUs": "Contact Us",
+    "termsOfService": "Terms of Service",
+    "privacyPolicy": "Privacy Policy",
+    "helpCenter": "Help Center",
+    "followUs": "Follow Us",
+    "allRightsReserved": "All rights reserved"
+  },
+  "country": {
+    "selectCountry": "Select Country",
+    "bahrain": "Bahrain",
+    "pakistan": "Pakistan",
+    "currency": "Currency",
+    "language": "Language"
+  }
+}

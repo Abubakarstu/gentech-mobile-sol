@@ -8,8 +8,10 @@ import type {
   AdminUserRow,
   Paginated,
   PlatformStats,
+  RegionAnalytics,
 } from "@/features/admin/types";
 import {
+  getRegionAnalytics as loadRegionAnalytics,
   getPlatformStats,
   listCategories,
   listCategoryOptions,
@@ -45,6 +47,15 @@ export async function getStats(): Promise<PlatformStats> {
   }
 }
 
+export async function getRegionAnalyticsData(): Promise<RegionAnalytics> {
+  try {
+    return await loadRegionAnalytics();
+  } catch (error) {
+    console.warn("[admin] region analytics unavailable.", error instanceof Error ? error.message : error);
+    return { regions: [], generatedAt: new Date().toISOString() };
+  }
+}
+
 export async function getUsers(params: {
   q?: string;
   page: number;
@@ -60,6 +71,7 @@ export async function getUsers(params: {
 export async function getListings(params: {
   q?: string;
   status?: ListingStatus;
+  region?: "BAHRAIN" | "PAKISTAN" | "ALL";
   page: number;
 }): Promise<Paginated<AdminListingRow>> {
   try {

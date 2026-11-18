@@ -9,7 +9,10 @@ import {
   cancelPromotion,
   getActivePlans,
   getListingPromotionInfo,
+  getUserActivePromotions,
   pausePromotion,
+  checkoutPromotion,
+  recordPayment,
 } from "../services/promotion.service";
 import {
   createListingPromotionSchema,
@@ -60,7 +63,35 @@ export async function promoteListingAction(
 
   const parsed = createListingPromotionSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid promotion data." };
-  return { ok: false, error: PROMOTION_CHECKOUT_UNAVAILABLE };
+
+  // Check the listing exists and user owns it
+  const listing = await prisma.listing.findUnique({
+    where: { id: parsed.data.listingId },
+    select: { sellerId: true },
+  });
+
+  if (!listing || listing.sellerId !== user.id) {
+    return { ok: false, error: "You can only promote your own listings." };
+  }
+
+  // Start the checkout flow: create promotion in pending state, snapshot plan price, create payment
+  try {
+    const result = await checkoutPromotion(
+      parsed.data.listingId,
+      parsed.data.planId,
+      "jazzcash",
+    );
+    return { ok: true, promotionId: result.promotionId };
+  } catch (error: any) {
+    console.error("[promotions] promoteListing failed:", error);
+    if (error.message.includes("plan not found")) {
+      return { ok: false, error: "Promotion plan not found or inactive." };
+    }
+    if (error.message.includes("Could not start promotion checkout")) {
+      return { ok: false, error: error.message };
+    }
+    return { ok: false, error: GENERIC_ERROR };
+  }
 }
 
 /** Pauses an active promotion. User must own the listing. */
@@ -130,7 +161,18 @@ export async function recordPromotionPaymentAction(
 
   const parsed = createPromotionPaymentSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: "Invalid payment data." };
-  return { ok: false, error: PROMOTION_CHECKOUT_UNAVAILABLE };
+
+  try {
+    // Record the payment - the repository snapshots the plan price server-side,
+    // so the amount from input is ignored; we just pass the method.
+    // The promotionId comes from the input and is used for the payment record.
+    const paymentId = await recordPayment(input);
+
+    return { ok: true, paymentId };
+  } catch (error) {
+    console.error("[promotions] recordPromotionPayment failed:", error);
+    return { ok: false, error: GENERIC_ERROR };
+  }
 }
 
 /** Seller-submitted outcomes are never accepted as payment verification. */

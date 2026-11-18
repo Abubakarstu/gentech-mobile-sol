@@ -36,6 +36,11 @@ export const RATE_LIMIT_CONFIG = {
     requests: 30,
     windowMs: 60 * 1000, // 1 minute
   },
+  // Public IMEI checks - each miss hits a paid/rate-limited provider
+  imeiCheck: {
+    requests: 10,
+    windowMs: 60 * 1000, // 1 minute
+  },
   // Messaging - moderate limits to prevent spam
   messaging: {
     requests: 20,

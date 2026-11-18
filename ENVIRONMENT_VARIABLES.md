@@ -25,6 +25,8 @@
 | `PAYFAST_MERCHANT_ID`             | OPTIONAL  | NO          | YES      | NO              | YES     | PayFast merchant ID                                                                     |
 | `PAYFAST_SECURED_KEY`             | OPTIONAL  | NO          | YES      | NO              | YES     | PayFast secured key                                                                     |
 | `PAYFAST_API_BASE`                | OPTIONAL  | NO          | YES      | NO              | NO      | PayFast API base URL                                                                    |
+| `PAYMENTS_TEST_MODE`              | OPTIONAL  | NO          | YES      | NO              | NO      | Test-only: allow the built-in simulated gateway in a production build                   |
+| `DEVICE_VERIFICATION_TEST_MODE`   | OPTIONAL  | NO          | YES      | NO              | NO      | Test-only: allow simulated PTA/CPID results in a production build                      |
 | `NEXT_PUBLIC_APP_NAME`            | YES       | YES         | YES      | YES             | NO      | Application name (client)                                                               |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | OPTIONAL  | YES         | YES      | YES             | NO      | Google Maps API key                                                                     |
 | `NEXT_PUBLIC_GTM_ID`              | OPTIONAL  | YES         | YES      | YES             | NO      | Google Tag Manager container ID                                                         |
@@ -91,13 +93,21 @@ read-only demo mode and disables database access.
 - `PAYFAST_MODE` defaults to `disabled`. Use `sandbox` only with PayFast-issued sandbox credentials; `live` is additionally gated by `PAYFAST_LIVE_ENABLED=true`.
 - Inspection checkout processes payment details in memory and sends them to PayFast over HTTPS. GenTech does not persist PAN, CVV, PIN, or OTP. A short-lived authenticated continuation contains only the provider's temporary instrument token and transaction context.
 - The integration uses PayFast's direct token/tokenized-transaction/status API; it is not a hosted checkout and does not rely on a webhook. The server verifies transaction and basket references before changing payment state.
-- Without PayFast configuration, non-production inspection checkout may use the built-in sandbox; it never represents a real charge. Production fails closed instead of falling back to simulated success.
+- Without PayFast configuration, non-production inspection checkout uses the built-in sandbox; it never represents a real charge. Production fails closed instead of falling back to simulated success.
+- For pre-launch testing on a production build (e.g. a Vercel preview), set `PAYMENTS_TEST_MODE=true` to allow the same built-in sandbox there. It simulates JazzCash, Easypaisa, and card outcomes and marks the inspection paid without contacting a provider — **never leave it enabled on a public production deployment**, and it is ignored whenever real PayFast credentials are configured.
 - Promotion checkout is not yet connected to verified payment processing. Promotion creation and seller-submitted payment outcomes are disabled; do not activate or account for a promotion as paid based on client input.
 - Do not enable live processing until merchant sandbox testing (including OTP and 3-D Secure), PCI/compliance review, and production-secret configuration are complete. A database migration for payment states is additive and must be applied through the normal reviewed deployment process.
 - Do not add JazzCash, Easypaisa, NayaPay, Visa, Mastercard, or bank-transfer secrets as `NEXT_PUBLIC_*` variables. Use a server-side provider adapter and managed secret storage.
 - Visa and Mastercard acceptance must be enabled through an acquiring bank or supported payment gateway; they are card networks, not wallet adapters.
 - The merchant must confirm the PayFast API contract, account configuration, PCI responsibilities, refunds, and settlement reconciliation before live use.
 - Never persist full card numbers, CVV, PINs, or OTPs. Do not place payment details or secrets in client-visible environment variables, logs, analytics, or support tooling.
+
+### Device Verification (PTA / CPID)
+
+- PTA (DIRBS) and CPID lookups require a provider API contract and credentials that are not yet configured. Until a real adapter is registered, production returns **no status** rather than fabricating an approval.
+- Outside production the deterministic simulator runs automatically: the IMEI's last digit selects the scenario (`0/1/9` approved and clean, `2` PTA pending, `4` PTA rejected, `5` blacklisted, `6` stolen, `7` unknown, `8` rejected by both). Device brand/model/color are generated deterministically.
+- For staging/preview checks in a production build, set `DEVICE_VERIFICATION_TEST_MODE=true`. Simulated rows are stored with `isSimulated=true`, tagged `SIMULATED`, and rendered with a warning banner — never enable this on a public production deployment.
+- Cached results expire after 24 hours; if a refresh fails, the previous result is returned and flagged as stale.
 
 ### Maps
 

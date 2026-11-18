@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from 'next';
 import { PhoneValuationCard } from '@/features/phone-intelligence/components/phone-valuation-card';
 import { phoneModelRepository } from '@/features/phone-intelligence/repositories/phone-model.repository';

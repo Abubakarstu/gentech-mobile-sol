@@ -19,6 +19,12 @@ import type {
   InspectionRequestDto,
 } from "@/features/inspections/types";
 import { computeOverallScore, scoreToGrade } from "@/features/inspections/lib/grade";
+import {
+  CLAIMABLE_STATUSES,
+  SCHEDULABLE_STATUSES,
+  canSubmitInspectionReport,
+} from "@/features/inspections/lib/inspection-state";
+import { maskReportImei } from "@/features/inspections/lib/imei";
 import type {
   BookInspectionInput,
   InspectionPlanInput,
@@ -141,12 +147,6 @@ function toPlanDto(row: PlanRow): InspectionPlanDto {
   };
 }
 
-/** Masks IMEI to show only last 4 digits for public display. */
-function maskImei(imei: string | null): string | null {
-  if (!imei || imei.length < 4) return null;
-  return `************${imei.slice(-4)}`;
-}
-
 function toReportDto(row: ReportRow, includeFullImei: boolean = false): InspectionReportDto {
   return {
     id: row.id,
@@ -154,7 +154,7 @@ function toReportDto(row: ReportRow, includeFullImei: boolean = false): Inspecti
     grade: row.grade,
     verdict: row.verdict as InspectionVerdict,
     summary: row.summary,
-    imei: includeFullImei ? row.imei : maskImei(row.imei),
+    imei: includeFullImei ? row.imei : maskReportImei(row.imei),
     ptaApproved: row.ptaApproved,
     batteryHealth: row.batteryHealth,
     isPublished: row.isPublished,
@@ -457,26 +457,37 @@ export async function listInspectorQueue(
   return rows.map(toRequestDto);
 }
 
-/** Assigns the request to an inspector (only if currently unassigned). Returns success. */
+/** Assigns the request to an inspector (only if unassigned and still open). */
 export async function assignInspector(
   requestId: string,
   inspectorId: string,
 ): Promise<boolean> {
   const result = await prisma.inspectionRequest.updateMany({
-    where: { id: requestId, inspectorId: null },
+    where: {
+      id: requestId,
+      inspectorId: null,
+      status: { in: [...CLAIMABLE_STATUSES] },
+    },
     data: { inspectorId },
   });
   return result.count > 0;
 }
 
-/** Sets the scheduled slot + moves to SCHEDULED. Scoped to the assigned inspector. */
+/**
+ * Sets the scheduled slot + moves to SCHEDULED. Scoped to the assigned inspector
+ * and to non-terminal states, so a completed/cancelled request cannot regress.
+ */
 export async function scheduleRequest(
   requestId: string,
   inspectorId: string,
   scheduledAt: Date,
 ): Promise<boolean> {
   const result = await prisma.inspectionRequest.updateMany({
-    where: { id: requestId, inspectorId },
+    where: {
+      id: requestId,
+      inspectorId,
+      status: { in: [...SCHEDULABLE_STATUSES] },
+    },
     data: { status: INSPECTION_STATUSES.SCHEDULED, scheduledAt },
   });
   return result.count > 0;
@@ -682,26 +693,72 @@ export async function claimPaymentProcessing(
 // Reports
 // ---------------------------------------------------------------------------
 
+/** Why a graded report could not be created; mapped to a user message by the action. */
+export type InspectionReportOutcome =
+  | { ok: true; requesterId: string; listingId: string | null }
+  | {
+      ok: false;
+      reason: "NOT_ASSIGNED" | "ALREADY_REPORTED" | "NOT_REPORTABLE" | "UNPAID";
+    };
+
 /**
  * Creates the report for a request, computes its score/grade, and flips the request
- * to COMPLETED — all in one transaction. Scoped to the assigned inspector. Returns
- * the requester id (for notification) or null if the request wasn't theirs to report.
+ * to COMPLETED — all in one transaction. Scoped to the assigned inspector, refuses
+ * terminal requests, and requires the fee to be paid before the report is released.
  */
 export async function createReport(
   input: SubmitReportInput,
   inspectorId: string,
-): Promise<{ requesterId: string; listingId: string | null } | null> {
+): Promise<InspectionReportOutcome> {
   const request = await prisma.inspectionRequest.findUnique({
     where: { id: input.requestId },
-    select: { id: true, inspectorId: true, requesterId: true, listingId: true, report: { select: { id: true } } },
+    select: {
+      id: true,
+      inspectorId: true,
+      requesterId: true,
+      listingId: true,
+      status: true,
+      paymentStatus: true,
+      report: { select: { id: true } },
+    },
   });
-  if (!request || request.inspectorId !== inspectorId || request.report) return null;
+  if (!request || request.inspectorId !== inspectorId) {
+    return { ok: false, reason: "NOT_ASSIGNED" };
+  }
+  if (request.report) return { ok: false, reason: "ALREADY_REPORTED" };
+  if (
+    !canSubmitInspectionReport({
+      status: request.status as InspectionStatus,
+      paymentStatus: request.paymentStatus as InspectionPaymentStatus,
+    })
+  ) {
+    return {
+      ok: false,
+      reason:
+        request.paymentStatus === INSPECTION_PAYMENT_STATUSES.PAID
+          ? "NOT_REPORTABLE"
+          : "UNPAID",
+    };
+  }
 
   const overallScore = computeOverallScore(input.items);
   const grade = scoreToGrade(overallScore);
 
-  await prisma.$transaction([
-    prisma.inspectionReport.create({
+  // Claim completion inside the transaction so a concurrent cancellation or a
+  // double submission can never write a report against a stale state.
+  const completed = await prisma.$transaction(async (tx) => {
+    const claimed = await tx.inspectionRequest.updateMany({
+      where: {
+        id: input.requestId,
+        inspectorId,
+        status: { in: [...SCHEDULABLE_STATUSES] },
+        paymentStatus: INSPECTION_PAYMENT_STATUSES.PAID,
+      },
+      data: { status: INSPECTION_STATUSES.COMPLETED, completedAt: new Date() },
+    });
+    if (claimed.count === 0) return false;
+
+    await tx.inspectionReport.create({
       data: {
         requestId: input.requestId,
         overallScore,
@@ -731,12 +788,11 @@ export async function createReport(
           })),
         },
       },
-    }),
-    prisma.inspectionRequest.update({
-      where: { id: input.requestId },
-      data: { status: INSPECTION_STATUSES.COMPLETED, completedAt: new Date() },
-    }),
-  ]);
+    });
+    return true;
+  });
+
+  if (!completed) return { ok: false, reason: "ALREADY_REPORTED" };
 
   // Create phone history event for inspection completion
   if (request.listingId) {
@@ -758,7 +814,7 @@ export async function createReport(
     }).catch((error) => console.warn("[inspection] failed to create history event:", error));
   }
 
-  return { requesterId: request.requesterId, listingId: request.listingId };
+  return { ok: true, requesterId: request.requesterId, listingId: request.listingId };
 }
 
 /** Publishes/unpublishes a report so it shows on the listing. Requester-scoped. */

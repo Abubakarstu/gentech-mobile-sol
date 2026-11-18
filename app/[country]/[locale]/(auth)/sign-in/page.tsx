@@ -1,0 +1,25 @@
+import type { Metadata } from "next";
+
+import { getEnabledSocialProviders } from "@/features/auth/server/enabled-providers";
+import { AuthCard } from "@/features/auth/components/auth-card";
+import { SignInForm } from "@/features/auth/components/sign-in-form";
+import { isDemoModeEnabled, isReadOnlyDemoEnabled } from "@/lib/demo-mode";
+
+const demoAccessEnabled = isDemoModeEnabled();
+const demoOnly = process.env.NODE_ENV === "production" && isReadOnlyDemoEnabled();
+
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Sign in",
+  robots: { index: false, follow: false },
+};
+
+export default function SignInPage() {
+  const providers = getEnabledSocialProviders();
+  return (
+    <AuthCard title="Welcome back" description="Sign in to your account to continue">
+      <SignInForm providers={providers} demoAccessEnabled={demoAccessEnabled} demoOnly={demoOnly} />
+    </AuthCard>
+  );
+}

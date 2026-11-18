@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -566,7 +566,7 @@ export function LocationManager({ countries }: { countries: CountryWithCities[] 
                                   ) : null}
                                 </p>
                                 <p className="text-xs text-slate-500">
-                                  {city.areas.length} areas{city.popular ? " · Popular" : ""}
+                                  {city.areas.length} areas{city.popular ? " ┬╖ Popular" : ""}
                                 </p>
                               </div>
                             )}

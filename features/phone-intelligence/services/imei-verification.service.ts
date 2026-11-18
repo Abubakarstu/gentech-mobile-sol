@@ -1,103 +1,95 @@
-import { prisma } from '@/lib/prisma';
-import type { ImeiVerification } from '@/lib/generated/prisma/client';
+import "server-only";
+
+import type { ImeiVerification } from "@/lib/generated/prisma/client";
+import { getDeviceVerificationProvider } from "../providers";
+import {
+  findImeiVerification,
+  findImeiVerificationById,
+  findUserImeiVerifications,
+  saveImeiVerification,
+} from "../repositories/imei-verification.repository";
 import {
   imeiVerificationResultSchema,
   type ImeiVerificationInput,
   type ImeiVerificationResult,
-} from '../schemas/imei.schema';
+} from "../schemas/imei.schema";
+
+/** Regulatory status can change (blocked/stolen), so cached lookups expire. */
+export const IMEI_VERIFICATION_TTL_MS = 24 * 60 * 60 * 1000;
+
+function isStale(verification: ImeiVerification): boolean {
+  if (!verification.verifiedAt) return true;
+  return Date.now() - verification.verifiedAt.getTime() > IMEI_VERIFICATION_TTL_MS;
+}
 
 export class ImeiVerificationService {
   /**
-   * Verify IMEI status
-   * Note: This is a placeholder implementation. In production, this would integrate
-   * with the actual PTA/CPID verification APIs.
+   * Returns a fresh PTA/CPID lookup when a provider is available, otherwise the last
+   * cached result (flagged stale). Returns `null` when nothing can be verified — the
+   * caller must not invent an "approved" status.
    */
   async verifyImei(
     input: ImeiVerificationInput,
     userId?: string,
     ipAddress?: string,
-    userAgent?: string
-  ): Promise<ImeiVerificationResult> {
-    // Check if already verified
-    const existing = await prisma.imeiVerification.findUnique({
-      where: { imei: input.imei },
-    });
-
-    if (existing) {
-      return this.mapToResult(existing);
+    userAgent?: string,
+  ): Promise<ImeiVerificationResult | null> {
+    const cached = await findImeiVerification(input.imei);
+    if (cached && !isStale(cached)) {
+      return this.mapToResult(cached, false);
     }
 
-    // Simulate PTA verification (replace with actual API call in production)
-    const ptaResult = await this.checkPtaStatus(input.imei);
-    const cpidResult = await this.checkCpidStatus(input.imei);
+    const provider = getDeviceVerificationProvider();
+    if (!provider) {
+      return cached ? this.mapToResult(cached, true) : null;
+    }
 
-    // Create verification record
-    const verification = await prisma.imeiVerification.create({
-      data: {
-        imei: input.imei,
-        ptaStatus: ptaResult.status,
-        cpidStatus: cpidResult.status,
-        isStolen: ptaResult.isStolen,
-        isBlacklisted: ptaResult.isBlacklisted,
-        deviceModel: ptaResult.deviceModel,
-        deviceBrand: ptaResult.deviceBrand,
-        deviceColor: ptaResult.deviceColor,
-        verifiedAt: new Date(),
-        verifiedBy: userId,
-        verificationSource: 'PTA',
-        ipAddress,
-        userAgent,
-      },
+    let lookup;
+    try {
+      lookup = await provider.verify(input.imei);
+    } catch (error) {
+      console.error("[imei-verification] provider lookup failed:", error);
+      return cached ? this.mapToResult(cached, true) : null;
+    }
+
+    const saved = await saveImeiVerification({
+      imei: input.imei,
+      ptaStatus: lookup.ptaStatus,
+      cpidStatus: lookup.cpidStatus,
+      isStolen: lookup.isStolen,
+      isBlacklisted: lookup.isBlacklisted,
+      deviceModel: lookup.deviceModel,
+      deviceBrand: lookup.deviceBrand,
+      deviceColor: lookup.deviceColor,
+      verificationSource: provider.simulated ? "SIMULATED" : "PTA",
+      isSimulated: provider.simulated,
+      verifiedBy: userId ?? null,
+      ipAddress: ipAddress ?? null,
+      userAgent: userAgent ?? null,
     });
 
-    return this.mapToResult(verification);
+    return this.mapToResult(saved, false);
   }
 
-  /**
-   * Get verification by IMEI
-   */
+  /** Cached lookup for rendering a result page; does not call a provider. */
   async getVerification(imei: string): Promise<ImeiVerificationResult | null> {
-    const verification = await prisma.imeiVerification.findUnique({
-      where: { imei },
-    });
-
-    if (!verification) {
-      return null;
-    }
-
-    return this.mapToResult(verification);
+    const verification = await findImeiVerification(imei);
+    return verification ? this.mapToResult(verification, isStale(verification)) : null;
   }
 
-  /**
-   * Get verification by ID
-   */
   async getVerificationById(id: string): Promise<ImeiVerificationResult | null> {
-    const verification = await prisma.imeiVerification.findUnique({
-      where: { id },
-    });
-
-    if (!verification) {
-      return null;
-    }
-
-    return this.mapToResult(verification);
+    const verification = await findImeiVerificationById(id);
+    return verification ? this.mapToResult(verification, isStale(verification)) : null;
   }
 
-  /**
-   * Get user's verification history
-   */
   async getUserVerifications(userId: string) {
-    return prisma.imeiVerification.findMany({
-      where: { verifiedBy: userId },
-      orderBy: { createdAt: 'desc' },
-      take: 20,
-    });
+    return findUserImeiVerifications(userId);
   }
 
-  /**
-   * Map database record to result
-   */
-  private mapToResult(verification: ImeiVerification): ImeiVerificationResult {
+  private mapToResult(
+    verification: ImeiVerification,
+    stale: boolean,
+  ): ImeiVerificationResult {
     return imeiVerificationResultSchema.parse({
       id: verification.id,
       imei: verification.imei,
@@ -110,36 +102,10 @@ export class ImeiVerificationService {
       deviceColor: verification.deviceColor,
       verifiedAt: verification.verifiedAt,
       verificationSource: verification.verificationSource,
+      isSimulated: verification.isSimulated,
+      isStale: stale,
       lastCheckedAt: verification.updatedAt,
     });
-  }
-
-  /**
-   * Check PTA status (placeholder - replace with actual API call)
-   */
-  private async checkPtaStatus(imei: string) {
-    // TODO: Integrate with actual PTA API
-    // For now, return a mock response based on IMEI pattern
-    const isSimulatedApproved = imei.endsWith('1') || imei.endsWith('3') || imei.endsWith('5');
-
-    return {
-      status: isSimulatedApproved ? 'APPROVED' : 'UNKNOWN',
-      isStolen: false,
-      isBlacklisted: false,
-      deviceModel: null,
-      deviceBrand: null,
-      deviceColor: null,
-    };
-  }
-
-  /**
-   * Check CPID status (placeholder - replace with actual API call)
-   */
-  private async checkCpidStatus(_imei: string) {
-    // TODO: Integrate with actual CPID API
-    return {
-      status: 'UNKNOWN',
-    };
   }
 }
 

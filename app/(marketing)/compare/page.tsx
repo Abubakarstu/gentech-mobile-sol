@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from 'next';
 import { PhoneComparisonTable } from '@/features/phone-intelligence/components/phone-comparison-table';
 import { comparisonService } from '@/features/phone-intelligence/services/comparison.service';

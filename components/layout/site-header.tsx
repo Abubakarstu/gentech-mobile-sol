@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Plus, ShieldCheck } from "lucide-react";
 
 import { APP, ROUTES, USER_ROLES, type UserRole } from "@/lib/constants";
+import { getTranslations } from "next-intl/server";
 import { cn } from "@/lib/utils";
 import { getCurrentSession } from "@/lib/session";
 import {
@@ -10,6 +11,7 @@ import {
 } from "@/features/notifications/services/notification.service";
 import { buttonVariants } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { CountryLocaleSelector } from "@/components/country-locale-selector";
 import { UserMenu } from "@/components/layout/user-menu";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
@@ -24,6 +26,7 @@ import { getActiveLocationTree } from "@/features/locations/services/location.se
 export async function SiteHeader() {
   const session = await getCurrentSession();
   const user = session?.user;
+  const t = await getTranslations("navigation");
   const isDemoSession = user?.id.startsWith("demo:") ?? false;
 
   const [unreadNotifications, recentNotifications, locations] = await Promise.all([
@@ -67,7 +70,7 @@ export async function SiteHeader() {
             )}
           >
             <ShieldCheck className="size-4" />
-            Inspection
+            {t("inspection")}
           </Link>
 
           {!isDemoSession ? (
@@ -76,9 +79,11 @@ export async function SiteHeader() {
               className={cn(buttonVariants({ size: "sm" }), "hidden rounded-full sm:inline-flex")}
             >
               <Plus className="size-4" />
-              Post Ad
+              {t("sell")}
             </Link>
           ) : null}
+
+          <CountryLocaleSelector />
 
           <ThemeToggle />
 
@@ -106,7 +111,7 @@ export async function SiteHeader() {
                 "hidden sm:inline-flex",
               )}
             >
-              Sign in
+              {t("signIn")}
             </Link>
           )}
         </nav>

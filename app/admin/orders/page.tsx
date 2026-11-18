@@ -1,72 +1,182 @@
-import type { Metadata } from "next";
-import { AlertTriangle, ShoppingCart, Truck } from "lucide-react";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Orders & fulfilment — Admin",
-  robots: { index: false, follow: false },
+import { ROUTES } from "@/lib/constants";
+import { requireAdmin } from "@/features/admin/lib/require-admin";
+import { prisma } from "@/lib/prisma";
+import { getAllowedTransitions } from "@/features/orders/services/order-status.service";
+import { OrderStatusUpdate } from "@/components/orders/order-status-update";
+
+const STATUS_LABELS: Record<string, string> = {
+  PENDING: "Pending",
+  CONFIRMED: "Confirmed",
+  PROCESSING: "Processing",
+  SHIPPED: "Shipped",
+  DELIVERED: "Delivered",
+  CANCELLED: "Cancelled",
+  REFUNDED: "Refunded",
 };
 
-export default function AdminOrdersPage() {
+const STATUS_COLORS: Record<string, string> = {
+  PENDING: "text-yellow-400",
+  CONFIRMED: "text-blue-400",
+  PROCESSING: "text-purple-400",
+  SHIPPED: "text-indigo-400",
+  DELIVERED: "text-green-400",
+  CANCELLED: "text-red-400",
+  REFUNDED: "text-orange-400",
+};
+
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const admin = await requireAdmin();
+  if (!admin) redirect(ROUTES.dashboard);
+
+  const sp = await searchParams;
+  const country = (sp.country as string) || "ALL";
+  const status = (sp.status as string) || "ALL";
+  const q = (sp.q as string) || "";
+
+  const where: any = {};
+  if (country !== "ALL") {
+    where.region = country === "BH" ? "BAHRAIN" : "PAKISTAN";
+  }
+  if (status !== "ALL") {
+    where.status = status;
+  }
+  if (q) {
+    where.OR = [
+      { orderNumber: { contains: q, mode: "insensitive" } },
+      { customer: { name: { contains: q, mode: "insensitive" } } },
+      { customer: { email: { contains: q, mode: "insensitive" } } },
+    ];
+  }
+
+  const orders = await prisma.order.findMany({
+    where,
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    include: {
+      customer: { select: { name: true, email: true } },
+      items: { select: { title: true, quantity: true } },
+    },
+  });
+
   return (
-    <div className="space-y-7">
+    <div className="space-y-5">
       <header>
-        <p className="text-xs font-semibold tracking-[0.16em] text-emerald-400 uppercase">
-          Marketplace operations
-        </p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-white">Orders & fulfilment</h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
-          The current product is a buyer-to-seller listing marketplace. This order workspace is
-          prepared for a future managed-checkout flow, not a live order ledger.
-        </p>
+        <h1 className="text-2xl font-bold">Orders</h1>
+        <p className="text-sm text-slate-400">Manage and review orders.</p>
       </header>
-      <div className="rounded-xl border border-amber-400/20 bg-amber-400/[0.06] p-4">
-        <div className="flex gap-3">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-300" />
-          <p className="text-xs leading-5 text-amber-100/80">
-            <strong className="font-semibold text-amber-200">
-              No order or shipment model is connected.
-            </strong>{" "}
-            Listings and messages do not prove a sale. Before enabling checkout, define order state
-            transitions, buyer/seller obligations, payment authorization/capture, cancellation,
-            refund, dispute, delivery evidence, and accounting events.
-          </p>
+
+      {/* Filters */}
+      <div className="flex flex-wrap gap-3">
+        {/* Country filter */}
+        <div className="flex gap-2">
+          {["ALL", "BH", "PK"].map((c) => (
+            <a
+              key={c}
+              href={`/admin/orders?country=${c}${status !== "ALL" ? `&status=${status}` : ""}${q ? `&q=${q}` : ""}`}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${
+                country === c
+                  ? "border-emerald-300/25 bg-emerald-300/10 text-emerald-200"
+                  : "border-white/[0.07] text-slate-400"
+              }`}
+            >
+              {c === "ALL" ? "All" : c === "BH" ? "🇧🇭 Bahrain" : "🇵🇰 Pakistan"}
+            </a>
+          ))}
+        </div>
+
+        {/* Status filter */}
+        <div className="flex gap-2">
+          {["ALL", "PENDING", "CONFIRMED", "PROCESSING", "SHIPPED", "DELIVERED"].map((s) => (
+            <a
+              key={s}
+              href={`/admin/orders?status=${s}${country !== "ALL" ? `&country=${country}` : ""}${q ? `&q=${q}` : ""}`}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-medium ${
+                status === s
+                  ? "border-emerald-300/25 bg-emerald-300/10 text-emerald-200"
+                  : "border-white/[0.07] text-slate-400"
+              }`}
+            >
+              {s === "ALL" ? "All Status" : STATUS_LABELS[s]}
+            </a>
+          ))}
         </div>
       </div>
-      <div className="grid gap-3 md:grid-cols-2">
-        {[
-          {
-            icon: ShoppingCart,
-            title: "Order lifecycle",
-            text: "Draft → awaiting payment → paid → processing → completed, with explicit cancellation, expiry, refund, and dispute states.",
-          },
-          {
-            icon: Truck,
-            title: "Delivery & handover",
-            text: "Define pickup or courier modes, tracking evidence, handover confirmation, loss claims, and service boundaries.",
-          },
-        ].map(({ icon: Icon, title, text }) => (
-          <section key={title} className="rounded-xl border border-white/10 bg-[#141519] p-5">
-            <Icon className="size-5 text-emerald-400" />
-            <h2 className="mt-3 text-sm font-semibold text-slate-100">{title}</h2>
-            <p className="mt-2 text-xs leading-5 text-slate-400">{text}</p>
-          </section>
-        ))}
-      </div>
-      <section className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]">
-        <div className="border-b border-white/[0.07] p-4">
-          <h2 className="text-sm font-semibold text-slate-100">Order register</h2>
-          <p className="mt-1 text-xs text-slate-500">
-            Empty until an order domain and checkout API are implemented.
-          </p>
+
+      {/* Search */}
+      <form className="flex gap-2">
+        <input
+          type="text"
+          name="q"
+          defaultValue={q}
+          placeholder="Search by order number or customer..."
+          className="flex-1 rounded-lg border border-white/10 bg-[#141519] px-3 py-2 text-sm text-white"
+        />
+        <input type="hidden" name="country" value={country} />
+        <input type="hidden" name="status" value={status} />
+        <button
+          type="submit"
+          className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-white"
+        >
+          Search
+        </button>
+      </form>
+
+      {/* Orders list */}
+      {orders.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-white/10 bg-[#141519]/60 px-5 py-12 text-center">
+          <p className="text-sm font-semibold text-slate-200">No orders found</p>
         </div>
-        <div className="px-4 py-12 text-center">
-          <ShoppingCart className="mx-auto size-6 text-slate-600" />
-          <p className="mt-3 text-sm font-medium text-slate-300">No order records connected</p>
-          <p className="mt-1 text-xs text-slate-500">
-            This workspace does not infer transactions from listing status.
-          </p>
+      ) : (
+        <div className="space-y-3">
+          {orders.map((order) => {
+            const allowedTransitions = getAllowedTransitions(order.status, "ADMIN");
+            return (
+              <div
+                key={order.id}
+                className="rounded-xl border border-white/[0.08] bg-[#141519] p-4"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      #{order.orderNumber}
+                    </p>
+                    <p className="text-xs text-slate-400">
+                      {order.customer.name} ({order.customer.email})
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {new Date(order.createdAt).toLocaleString()} · {order.items.length} items
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-white">
+                      {Number(order.total).toFixed(order.currency === "BHD" ? 3 : 0)} {order.currency}
+                    </p>
+                    <p className={`text-xs font-medium ${STATUS_COLORS[order.status] || "text-slate-400"}`}>
+                      {STATUS_LABELS[order.status] || order.status}
+                    </p>
+                    <p className="text-[10px] text-slate-500">
+                      {order.region === "BAHRAIN" ? "🇧🇭" : "🇵🇰"} {order.paymentStatus}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Status update controls */}
+                <OrderStatusUpdate
+                  orderId={order.id}
+                  allowedTransitions={allowedTransitions}
+                  statusLabels={STATUS_LABELS}
+                />
+              </div>
+            );
+          })}
         </div>
-      </section>
+      )}
     </div>
   );
 }

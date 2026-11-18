@@ -1,13 +1,34 @@
-export * from "./types";
-export * from "./repositories/dealer.repository";
-export * from "./services/dealer.service";
-export * from "./actions/dealer.actions";
 export type {
-  AddInventoryInput,
-  AddStaffInput,
+  DealerLeadDto,
+  CreateDealerLeadInput,
+  UpdateDealerLeadInput,
+  DealerDto,
+  DealerBranchDto,
+  DealerInventoryDto,
+  DealerUserDto,
   CreateBranchInput,
   CreateDealerInput,
   UpdateDealerInput,
-} from "./schemas/dealer";
-export { addInventoryToDealer as addInventory } from "./repositories/dealer.repository";
-export { getUserDealer, getDealerStats } from "./services/dealer.service";
+  BulkImportDealerInventoryInput,
+} from "./types";
+
+export {
+  createDealer,
+  getDealerById,
+  getDealerBySlug,
+  getDealerByUserId,
+  getDealerMembershipByUserId,
+  updateDealer,
+  getDealerReviewQueue,
+  getDealerStatusCounts,
+  reviewDealerApplication,
+  listActiveDealers,
+  createBranch,
+  getBranchesByDealer,
+  setDealerBranchActive,
+  removeDealerInventory,
+} from "./repositories/dealer.repository";
+
+export {
+  convertLeadToDealer,
+} from "./services/dealer.service";

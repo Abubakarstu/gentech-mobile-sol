@@ -32,6 +32,8 @@ function withDemoFill(
   return [...real, ...filler].slice(0, limit);
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   // Real listings + real category counts from the DB (both fail-soft).
   const [feed, categories, locations, user] = await Promise.all([

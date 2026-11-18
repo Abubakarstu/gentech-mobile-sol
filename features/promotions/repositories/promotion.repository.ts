@@ -133,9 +133,11 @@ export async function createPromotionPlan(input: CreatePromotionPlanInput): Prom
       description: input.description,
       placement: input.placement,
       price: new Prisma.Decimal(input.price),
+      currency: input.region === "BAHRAIN" ? "BHD" : "PKR",
       durationDays: input.durationDays,
       maxSlots: input.maxSlots,
       isActive: input.isActive ?? true,
+      region: (input.region as any) ?? "PAKISTAN",
     },
     select: { id: true },
   });
@@ -150,17 +152,23 @@ export async function getPromotionPlan(id: string): Promise<PromotionPlanDto | n
   return row ? toPlanDto(row) : null;
 }
 
-export async function listActivePromotionPlans(): Promise<PromotionPlanDto[]> {
+export async function listActivePromotionPlans(region?: string): Promise<PromotionPlanDto[]> {
+  const where: Prisma.PromotionPlanWhereInput = {
+    isActive: true,
+    ...(region ? { region: region as any } : {}),
+  };
   const rows = await prisma.promotionPlan.findMany({
-    where: { isActive: true },
+    where,
     orderBy: { price: "asc" },
     select: planSelect,
   });
   return rows.map(toPlanDto);
 }
 
-export async function listAllPromotionPlans(): Promise<PromotionPlanDto[]> {
+export async function listAllPromotionPlans(region?: string): Promise<PromotionPlanDto[]> {
+  const where: Prisma.PromotionPlanWhereInput = region ? { region: region as any } : {};
   const rows = await prisma.promotionPlan.findMany({
+    where,
     orderBy: { createdAt: "desc" },
     select: planSelect,
   });
@@ -243,17 +251,25 @@ export async function updateListingPromotionStatus(
   });
 }
 
-export async function getActivePromotedListings(): Promise<
-  { listingId: string; promotion: ListingPromotionDto }[]
+export async function getActivePromotedListings(region?: string): Promise<
+  { listingId: string; promotion: ListingPromotionDto; listingTitle: string; amountPaid: number }[]
 > {
   const rows = await prisma.listingPromotion.findMany({
     where: {
       status: "ACTIVE",
       expiresAt: { gte: new Date() },
+      ...(region ? { listing: { region: region as any } } : {}),
     },
     include: {
+      listing: {
+        select: { title: true },
+      },
       plan: {
-        select: { placement: true },
+        select: { placement: true, price: true },
+      },
+      payments: {
+        where: { status: "COMPLETED" },
+        select: { amount: true },
       },
     },
     orderBy: { createdAt: "desc" },
@@ -262,6 +278,11 @@ export async function getActivePromotedListings(): Promise<
   return rows.map((row) => ({
     listingId: row.listingId,
     promotion: toPromotionDto(row),
+    listingTitle: row.listing.title,
+    amountPaid:
+      row.payments.length > 0 && row.payments[0]
+        ? Number(row.payments[0].amount)
+        : Number(row.plan.price),
   }));
 }
 
@@ -282,10 +303,22 @@ export async function markExpiredPromotions(): Promise<number> {
 // ---------------------------------------------------------------------------
 
 export async function createPromotionPayment(input: CreatePromotionPaymentInput): Promise<string> {
+  // Snapshot the plan price server-side — do NOT trust the client-supplied amount
+  // (ADR-012: seller-submitted outcomes are never accepted as payment verification).
+  const plan = await prisma.promotionPlan.findUnique({
+    where: { id: input.promotionId },
+    select: { price: true, currency: true },
+  });
+  if (!plan) throw new Error("Promotion plan not found.");
+
+  const amount = new Prisma.Decimal(plan.price);
+  const currency = plan.currency ?? "PKR";
+
   const payment = await prisma.promotionPayment.create({
     data: {
       promotionId: input.promotionId,
-      amount: new Prisma.Decimal(input.amount),
+      amount,
+      currency,
       method: input.method,
       transactionId: input.transactionId,
       status: "PENDING",
@@ -309,4 +342,27 @@ export async function getPromotionPayments(promotionId: string): Promise<Promoti
     select: paymentSelect,
   });
   return rows.map(toPaymentDto);
+}
+
+/** Get promotion info including ownership verification data. */
+export async function getPromotionInfo(promotionId: string) {
+  const promotion = await prisma.listingPromotion.findUnique({
+    where: { id: promotionId },
+    select: {
+      id: true,
+      listingId: true,
+      planId: true,
+      status: true,
+      startedAt: true,
+      expiresAt: true,
+      listing: {
+        select: { title: true, sellerId: true },
+      },
+      plan: {
+        select: { placement: true, price: true },
+      },
+    },
+  });
+  if (!promotion) return null;
+  return promotion;
 }

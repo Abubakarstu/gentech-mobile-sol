@@ -85,6 +85,14 @@ export const auth = betterAuth({
         defaultValue: USER_ROLES.USER,
         input: false,
       },
+      // Region selection — user chooses Bahrain or Pakistan during sign-up.
+      // Stored in the User table for data isolation.
+      region: {
+        type: "string",
+        required: false,
+        defaultValue: "PAKISTAN",
+        input: true,
+      },
     },
   },
 
@@ -99,7 +107,13 @@ export const auth = betterAuth({
       create: {
         after: async (user) => {
           // Provision an (empty) profile row alongside every new account.
-          await prisma.profile.create({ data: { userId: user.id } });
+          // Pass the user's chosen region to the profile.
+          await prisma.profile.create({
+            data: {
+              userId: user.id,
+              region: (user.region as "BAHRAIN" | "PAKISTAN") ?? "PAKISTAN",
+            },
+          });
         },
       },
     },

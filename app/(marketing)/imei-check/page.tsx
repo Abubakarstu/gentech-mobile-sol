@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from 'next';
 import { ImeiVerificationResultCard } from '@/features/phone-intelligence/components/imei-verification-result';
 import { verifyImeiAction, getImeiVerificationAction } from '@/features/phone-intelligence/actions/imei.actions';
@@ -11,13 +13,20 @@ export const metadata: Metadata = {
   },
 };
 
+type ImeiCheckSearchParams = {
+  imei?: string;
+  unavailable?: string;
+  rateLimited?: string;
+  invalid?: string;
+};
+
 export default async function ImeiCheckPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ imei?: string }>;
+  searchParams?: Promise<ImeiCheckSearchParams>;
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
-  const imei = resolvedSearchParams.imei;
+  const { imei, unavailable, rateLimited, invalid } = resolvedSearchParams;
 
   let verification = null;
   if (imei && /^\d{15}$/.test(imei)) {
@@ -34,6 +43,33 @@ export default async function ImeiCheckPage({
       </div>
 
       <div className="max-w-2xl mx-auto">
+        {invalid && (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800"
+          >
+            Enter a valid 15-digit IMEI. Dial *#06# on the phone to find it.
+          </div>
+        )}
+        {rateLimited && (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800"
+          >
+            Too many IMEI checks. Wait a minute before trying again.
+          </div>
+        )}
+        {unavailable && (
+          <div
+            role="alert"
+            className="mb-4 rounded-lg border border-gray-300 bg-gray-50 p-4 text-sm text-gray-700"
+          >
+            PTA/CPID verification is not available in this environment, so no status was
+            produced. Do not treat an absent result as proof that the device is registered
+            or clean.
+          </div>
+        )}
+
         {/* IMEI Check Form */}
         <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200 mb-6">
           <h2 className="text-xl font-semibold mb-4">Enter IMEI Number</h2>

@@ -74,6 +74,8 @@ deployments.
 - [ ] `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` - Media uploads
 - [ ] PayFast merchant ID/key, HTTPS API base, merchant category code, and merchant-issued account/bank configuration (optional)
 - [ ] Keep `PAYFAST_MODE=disabled` and `PAYFAST_LIVE_ENABLED=false` until sandbox, 3-D Secure, and compliance checks are complete
+- [ ] `PAYMENTS_TEST_MODE` must be `false` on public production; set `true` only on preview/staging to exercise the simulated JazzCash/Easypaisa/card flow
+- [ ] `DEVICE_VERIFICATION_TEST_MODE` must be `false` on public production; set `true` only on preview/staging to exercise simulated PTA/CPID results
 - [ ] `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` - Maps integration
 - [ ] `NEXT_PUBLIC_GTM_ID` / `NEXT_PUBLIC_GA4_ID` / `NEXT_PUBLIC_META_PIXEL_ID` / `NEXT_PUBLIC_MIXPANEL_TOKEN` - Analytics
 

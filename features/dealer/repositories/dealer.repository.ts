@@ -520,3 +520,71 @@ export async function removeUserFromDealer(dealerId: string, userId: string): Pr
     where: { dealerId, userId },
   });
 }
+
+/**
+ * Converts a dealer lead to a dealer account.
+ * Creates the dealer and links the converted lead.
+ */
+export async function convertLeadToDealer(input: {
+  dealerId: string;
+  leadId: string;
+  source: "admin" | "import" | "conversation";
+  conversionNotes?: string;
+}): Promise<{ dealer: DealerDto; leadConverted: boolean }> {
+  // Check if dealer already exists
+  const existingDealer = await prisma.dealer.findUnique({
+    where: { id: input.dealerId },
+  });
+
+  if (existingDealer) {
+    return { dealer: toDealerDto(existingDealer), leadConverted: false };
+  }
+
+  // Create the dealer account
+  const ownerId = input.leadId; // Using lead ID as temporary owner user ID
+  const slug = await uniqueDealerSlug(input.leadId || "dealer");
+
+  const newDealer = await prisma.dealer.create({
+    data: {
+      name: input.leadId || "New Dealer",
+      slug,
+      description: `Dealer converted from lead`,
+      businessName: input.leadId || "New Dealer",
+      businessType: "retailer",
+      taxNumber: "",
+      phone: "",
+      email: "",
+      city: "",
+      address: "",
+      status: "PENDING",
+      plan: "BASIC",
+      featuredUntil: null,
+      isVerified: false,
+      verifiedAt: null,
+      reviewNote: null,
+      listingCount: 0,
+      soldCount: 0,
+      rating: 0,
+      reviewCount: 0,
+      users: {
+        create: {
+          userId: ownerId,
+          role: "owner",
+        },
+      },
+    },
+    select: dealerSelect,
+  });
+
+  return { dealer: toDealerDto(newDealer), leadConverted: true };
+}
+
+/**
+ * Validates that a dealer owns a resource (listing, branch, inventory)
+ * Throws error if dealer does not own the resource
+ */
+async function validateDealerOwnership(dealerId: string, resourceDealerId: string, resourceType: "listing" | "branch" | "inventory"): Promise<void> {
+  if (dealerId !== resourceDealerId) {
+    throw new Error(`Dealer does not own this ${resourceType}`);
+  }
+}

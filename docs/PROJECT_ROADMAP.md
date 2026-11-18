@@ -54,6 +54,6 @@ To develop a high-trust, mobile-first classified marketplace for mobile phones i
 - **Objective:** Differentiate from generic classifieds through proprietary phone intelligence.
 - **Key Deliverables:**
   1. Real-time price valuation based on live active and sold market data.
-  2. PTA & CPID verification checks with security risk badges.
+  2. PTA & CPID verification checks with security risk badges. **M5-F02 simulator + provider abstraction verified; real PTA DIRBS/CPID adapter remains pending provider credentials.**
   3. Interactive side-by-side spec comparison table.
-  4. In-person physical inspection scheduling and graded trust reports (**M5-F04 next**).
+  4. In-person physical inspection scheduling and graded trust reports (**M5-F04 verified** — payment-gated release, graded checklist, publishable listing report).

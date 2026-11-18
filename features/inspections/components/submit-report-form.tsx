@@ -38,7 +38,8 @@ function initialItems(): ItemState[] {
     group.items.map((label) => ({
       category: group.category,
       label,
-      result: INSPECTION_ITEM_RESULTS.PASS as InspectionItemResult,
+      // Nothing is graded by default: a blank form must never produce an A.
+      result: INSPECTION_ITEM_RESULTS.NOT_APPLICABLE as InspectionItemResult,
       comment: "",
     })),
   );
@@ -63,6 +64,11 @@ export function SubmitReportForm({ requestId }: { requestId: string }) {
 
     const batteryRaw = String(form.get("batteryHealth") ?? "").trim();
     const ptaRaw = String(form.get("ptaApproved") ?? "");
+
+    if (!items.some((item) => item.result !== INSPECTION_ITEM_RESULTS.NOT_APPLICABLE)) {
+      toast.error("Grade at least one checklist item before submitting.");
+      return;
+    }
 
     setPending(true);
     const result = await submitReportAction({
@@ -105,7 +111,13 @@ export function SubmitReportForm({ requestId }: { requestId: string }) {
       <section className="grid gap-4 sm:grid-cols-3">
         <div className="space-y-1.5">
           <Label htmlFor="imei">IMEI</Label>
-          <Input id="imei" name="imei" maxLength={40} placeholder="Optional" />
+          <Input
+            id="imei"
+            name="imei"
+            inputMode="numeric"
+            maxLength={15}
+            placeholder="15 digits (optional)"
+          />
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="ptaApproved">PTA Approved</Label>
@@ -125,8 +137,11 @@ export function SubmitReportForm({ requestId }: { requestId: string }) {
           <Input
             id="batteryHealth"
             name="batteryHealth"
+            type="number"
             inputMode="numeric"
-            maxLength={3}
+            min={0}
+            max={100}
+            step={1}
             placeholder="0–100"
           />
         </div>
@@ -134,7 +149,12 @@ export function SubmitReportForm({ requestId }: { requestId: string }) {
 
       {/* Checklist */}
       <section className="space-y-5">
-        <h2 className="text-lg font-semibold">Checklist</h2>
+        <div>
+          <h2 className="text-lg font-semibold">Checklist</h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Lines left as N/A are excluded from the score. Grade at least one item.
+          </p>
+        </div>
         {[...groups.entries()].map(([category, entries]) => (
           <div key={category}>
             <h3 className="mb-2 text-sm font-semibold">{category}</h3>

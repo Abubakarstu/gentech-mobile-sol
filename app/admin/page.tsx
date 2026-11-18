@@ -14,9 +14,10 @@ import {
 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { getStats } from "@/features/admin/services/admin.service";
+import { getRegionAnalyticsData, getStats } from "@/features/admin/services/admin.service";
 import { getCurrentUser } from "@/lib/session";
 import { ROUTES } from "@/lib/constants";
+import { formatPrice } from "@/utils/format";
 
 export const metadata: Metadata = {
   title: "Admin — Overview",
@@ -56,6 +57,7 @@ export default async function AdminOverviewPage() {
   const user = await getCurrentUser();
   const isDemo = user?.id === "demo:admin";
   const stats = isDemo ? null : await getStats();
+  const regionAnalytics = isDemo ? { regions: [] } : await getRegionAnalyticsData();
 
   const metrics = [
     {
@@ -118,7 +120,7 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="space-y-7">
-      <section className="workspace-hero relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(115deg,#171b21_0%,#151a1b_55%,#10201c_100%)] px-5 py-6 sm:px-7 sm:py-7">
+      <section className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(115deg,#171b21_0%,#151a1b_55%,#10201c_100%)] px-5 py-6 sm:px-7 sm:py-7">
         <div className="pointer-events-none absolute -top-24 -right-14 size-64 rounded-full bg-emerald-400/[0.08] blur-3xl" />
         <div className="relative flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
@@ -170,7 +172,7 @@ export default async function AdminOverviewPage() {
           </Link>
         </div>
 
-        <div className="workspace-stagger grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {metrics.map(({ icon: Icon, label, value, detail, href, tone }) => (
             <Link
               key={label}
@@ -205,6 +207,57 @@ export default async function AdminOverviewPage() {
           ))}
         </div>
       </section>
+
+      {regionAnalytics.regions.length > 0 && (
+        <section aria-labelledby="region-snapshot-title">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 id="region-snapshot-title" className="text-sm font-semibold text-slate-100">
+                Regional snapshot
+              </h2>
+              <p className="mt-1 text-xs text-slate-500">
+                Each market in its own currency — no BHD/PKR conversion.
+              </p>
+            </div>
+            <Link
+              href="/admin/analytics"
+              className="inline-flex items-center gap-1 text-xs font-medium text-emerald-300 transition-colors hover:text-emerald-200"
+            >
+              Full analytics <ArrowRight className="size-3.5" />
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {regionAnalytics.regions.map((region) => (
+              <Card key={region.region} className="border-white/[0.08] bg-[#141519]">
+                <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="flex items-center gap-2 text-xs font-medium text-slate-400">
+                    <span aria-hidden>{region.flag}</span> {region.label}
+                  </CardTitle>
+                  <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-400">
+                    {region.currency}
+                  </span>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-xl font-bold tabular-nums text-slate-100">
+                    {formatPrice(region.paymentVolume, { currency: region.currency })}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {formatCount(region.listings)} listings · {formatCount(region.orders)} orders ·{" "}
+                    {formatCount(region.paidPayments)} completed payments
+                  </p>
+                  {region.topCities.length > 0 && (
+                    <p className="mt-2 truncate text-xs text-slate-500">
+                      Top city: {region.topCities[0]?.name} (
+                      {formatCount(region.topCities[0]?.count ?? 0)})
+                      {region.topAreas.length > 0 && ` · Top area: ${region.topAreas[0]?.name}`}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
         <Card className="border-white/[0.08] bg-[#141519]">
