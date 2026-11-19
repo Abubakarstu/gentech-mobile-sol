@@ -162,6 +162,12 @@ Last Updated: 2026-11-19
 - **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 289/289; `pnpm lint` 0 errors / 46 pre-existing warnings (the unused `fcmConfig` import warning was removed); `pnpm build` exit 0 (265 pages). No `NEXT_PUBLIC_FCM_*` references remain outside deprecation notes.
 - **Follow-up:** `GET /api/fcm/register` is an unauthenticated test-send endpoint; it should be removed or admin-gated before public production use.
 
+### Production demo 401 root cause (2026-11-19)
+- **Diagnosis:** runtime diagnostics on `gentech-mauve.vercel.app` showed the `user` credentials matched and demo mode was enabled, but `isDemoSessionEnabled()` returned false. The Production `BETTER_AUTH_SECRET` was still the 51-character local placeholder (`local-demo-secret-change-before-deploy-000000000000`), which the production session guard correctly rejects.
+- **Fix:** rotated the Vercel Production `BETTER_AUTH_SECRET` to a fresh random secret via `vercel env add ... --force --sensitive` and removed all temporary diagnostics. No database or migration changes were made; existing Better Auth sessions issued with the old placeholder are invalidated by design.
+- **Guard retained:** `isRealAuthSecret()` still rejects the placeholder in Production, so a future misconfiguration fails closed instead of issuing demo sessions with a public secret.
+- **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 295/295; `pnpm lint` 0 errors / 46 warnings. Production smoke tests follow deployment.
+
 ### Environment-independent demo seeding (2026-11-19)
 - **Change:** `prisma/seed-demo.ts` and `prisma/seed.ts` no longer skip demo account seeding based on `VERCEL_ENV` or `NODE_ENV`.
 - **Demo-mode decoupling:** the remaining `isDemoModeEnabled()` gate in `prisma/seed-demo.ts` was replaced by `isDemoSeedingEnabled()` in `lib/demo-mode.ts`. Seeding is now governed only by `DEMO_SEED_USERS=true` plus a configured `DIRECT_URL`/`DATABASE_URL`; `DEMO_MODE` and `DEMO_READ_ONLY` no longer affect it. This removes the `Skipping demo account seeding: demo mode is disabled.` warning seen in Vercel Production builds.

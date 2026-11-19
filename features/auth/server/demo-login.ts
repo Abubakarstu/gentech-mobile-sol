@@ -7,12 +7,6 @@ import {
   matchDemoCredentials,
   type DemoAccount,
 } from "@/features/auth/lib/demo-accounts";
-import {
-  isDemoModeEnabled,
-  isNonProductionDemoEnvironment,
-  isReadOnlyDemoEnabled,
-  isDemoSessionEnabled,
-} from "@/lib/demo-mode";
 import { ROUTES } from "@/lib/constants";
 import { createDemoCookieValue, DEMO_COOKIE } from "@/lib/session";
 
@@ -39,30 +33,7 @@ export function resolveDemoAccount(input: {
   username?: string;
 }): DemoAccount | null {
   const account = matchDemoCredentials(input);
-  const sessionEnabled = isDemoSessionEnabled();
-  const allowed = Boolean(account && isDemoAccountAllowed(account));
-  console.info("[demo policy diagnostic]", {
-    matched: account?.key ?? null,
-    hasEmail: Boolean(input.email),
-    hasUsername: Boolean(input.username),
-    passwordLength: input.password?.length ?? 0,
-    sessionEnabled,
-    demoModeEnabled: isDemoModeEnabled(),
-    nonProduction: isNonProductionDemoEnvironment(),
-    readOnly: isReadOnlyDemoEnabled(),
-    productionEnv: {
-      nodeEnvProduction: process.env.NODE_ENV === "production",
-      vercelEnvProduction: process.env.VERCEL_ENV === "production",
-      demoModeNotFalse: process.env.DEMO_MODE !== "false",
-      databaseUrlSet: Boolean(process.env.DATABASE_URL),
-      authSecretLength: process.env.BETTER_AUTH_SECRET?.length ?? 0,
-      authSecretIsPlaceholder:
-        process.env.BETTER_AUTH_SECRET?.trim() ===
-        "local-demo-secret-change-before-deploy-000000000000",
-    },
-    allowed,
-  });
-  return allowed ? (account ?? null) : null;
+  return account && isDemoAccountAllowed(account) ? account : null;
 }
 
 export function getDemoDashboard(account: DemoAccount): string {

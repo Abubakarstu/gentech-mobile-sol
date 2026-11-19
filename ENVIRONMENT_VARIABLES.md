@@ -61,6 +61,7 @@ read-only demo mode and disables database access.
    - Must be random, at least 32 characters
    - Generate with: `openssl rand -base64 32`
    - Used to sign and verify session cookies
+   - The local placeholder (`local-demo-secret-change-before-deploy-...`) is rejected in Production; demo sessions and real sessions both require a real secret
    - **Rotate this if compromised**
 
 4. **`BETTER_AUTH_URL`** / **`APP_URL`** - Optional URL overrides
