@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
-import { signUp } from "@/lib/auth-client";
+import { authClient, signUp } from "@/lib/auth-client";
 import { ROUTES } from "@/lib/constants";
 import { signUpSchema, type SignUpInput } from "@/features/auth/schemas";
 import { SocialButtons, type EnabledSocialProviders } from "./social-buttons";
@@ -43,6 +43,15 @@ export function SignUpForm({ providers }: { providers: EnabledSocialProviders })
     if (error) {
       toast.error(error.message ?? "Could not create your account.");
       return;
+    }
+
+    // The first account is promoted to ADMIN by a post-create database hook,
+    // after the sign-up response is built. Refresh from the database so the
+    // session cookie cache carries the persisted role instead of USER.
+    try {
+      await authClient.getSession({ query: { disableCookieCache: true } });
+    } catch {
+      // Non-fatal: the cache refreshes itself within its 5-minute window.
     }
 
     toast.success("Account created. Welcome to GenTech!");
