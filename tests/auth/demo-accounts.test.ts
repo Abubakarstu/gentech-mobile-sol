@@ -71,6 +71,12 @@ describe("demo account environment policy", () => {
     });
   });
 
+  it("allows every documented role in Vercel Preview without an explicit DEMO_MODE", () => {
+    withEnv({ ...previewEnv, DEMO_MODE: undefined }, () => {
+      expect(DEMO_ACCOUNTS.map(isDemoAccountAllowed)).toEqual([true, true, true, true]);
+    });
+  });
+
   it("allows every documented role in local development", () => {
     withEnv(
       {
@@ -134,6 +140,12 @@ describe("demo account environment policy", () => {
         expect(DEMO_ACCOUNTS.map(isDemoAccountAllowed)).toEqual([false, false, false, false]);
       },
     );
+  });
+
+  it("honours an explicit DEMO_MODE=false opt-out in Vercel Preview", () => {
+    withEnv({ ...previewEnv, DEMO_MODE: "false" }, () => {
+      expect(DEMO_ACCOUNTS.map(isDemoAccountAllowed)).toEqual([false, false, false, false]);
+    });
   });
 
   it("blocks all demo accounts when demo mode is disabled", () => {

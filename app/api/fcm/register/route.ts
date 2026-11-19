@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { sendFcmMessage } from "@/lib/fcm.service";
-import { fcmConfig } from "@/lib/fcm-config";
 
 // FCM token registration endpoint
 export async function POST(request: Request) {

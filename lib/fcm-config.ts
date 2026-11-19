@@ -1,7 +1,11 @@
+import "server-only";
+
+import { env } from "@/lib/env";
+
 /**
  * Firebase Cloud Messaging Configuration
- * 
- * These values should be set via environment variables in production.
+ *
+ * These values should be set via server-only environment variables in production.
  * Do not commit real service account keys to version control.
  */
 export interface FcmConfig {
@@ -12,9 +16,9 @@ export interface FcmConfig {
 
 /** Load FCM config from environment variables */
 export function getFcmConfig(): FcmConfig {
-  const projectId = process.env.NEXT_PUBLIC_FCM_PROJECT_ID;
-  const clientEmail = process.env.NEXT_PUBLIC_FCM_CLIENT_EMAIL;
-  const privateKey = process.env.NEXT_PUBLIC_FCM_PRIVATE_KEY;
+  const projectId = env.FCM_PROJECT_ID;
+  const clientEmail = env.FCM_CLIENT_EMAIL;
+  const privateKey = env.FCM_PRIVATE_KEY;
 
   if (!projectId || !clientEmail || !privateKey) {
     console.warn("[FCM] Configuration missing - FCM functionality disabled");

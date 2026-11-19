@@ -12,7 +12,15 @@ export function isProductionDemoFallback() {
 }
 
 export function isDemoModeEnabled() {
-  return process.env.DEMO_MODE === "true" || isProductionDemoFallback();
+  // Explicit opt-out always wins, even in development or Preview.
+  if (process.env.DEMO_MODE === "false") return false;
+  // Dev-like environments (local dev, tests, Vercel Preview) are demo environments
+  // by definition; do not require a second, drift-prone flag to enable them.
+  return (
+    process.env.DEMO_MODE === "true" ||
+    isNonProductionDemoEnvironment() ||
+    isProductionDemoFallback()
+  );
 }
 
 export function isReadOnlyDemoEnabled() {

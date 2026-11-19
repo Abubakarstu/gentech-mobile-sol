@@ -76,6 +76,7 @@ deployments.
 - [ ] Keep `PAYFAST_MODE=disabled` and `PAYFAST_LIVE_ENABLED=false` until sandbox, 3-D Secure, and compliance checks are complete
 - [ ] `PAYMENTS_TEST_MODE` must be `false` on public production; set `true` only on preview/staging to exercise the simulated JazzCash/Easypaisa/card flow
 - [ ] `DEVICE_VERIFICATION_TEST_MODE` must be `false` on public production; set `true` only on preview/staging to exercise simulated PTA/CPID results
+- [ ] `FCM_PROJECT_ID` / `FCM_CLIENT_EMAIL` / `FCM_PRIVATE_KEY` - Server-only FCM service account; never use `NEXT_PUBLIC_FCM_*`
 - [ ] `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` - Maps integration
 - [ ] `NEXT_PUBLIC_GTM_ID` / `NEXT_PUBLIC_GA4_ID` / `NEXT_PUBLIC_META_PIXEL_ID` / `NEXT_PUBLIC_MIXPANEL_TOKEN` - Analytics
 

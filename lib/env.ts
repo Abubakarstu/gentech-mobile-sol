@@ -82,6 +82,12 @@ export const env = createEnv({
     // are stored and displayed as simulated; never enable on public production.
     // A real provider adapter must be registered before accurate checks exist.
     DEVICE_VERIFICATION_TEST_MODE: z.enum(["true", "false"]).default("false"),
+
+    // --- Firebase Cloud Messaging (optional; server-side service account) ---
+    // Never expose service-account credentials with a NEXT_PUBLIC_ prefix.
+    FCM_PROJECT_ID: z.string().min(1).optional(),
+    FCM_CLIENT_EMAIL: z.string().min(1).optional(),
+    FCM_PRIVATE_KEY: z.string().min(1).optional(),
   },
 
   client: {

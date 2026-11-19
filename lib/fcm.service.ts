@@ -1,9 +1,11 @@
 import "server-only";
 
-// FCM config from environment (not validated by env.ts schema)
-const FCM_PROJECT_ID = process.env.NEXT_PUBLIC_FCM_PROJECT_ID;
-const FCM_CLIENT_EMAIL = process.env.NEXT_PUBLIC_FCM_CLIENT_EMAIL;
-const FCM_PRIVATE_KEY = process.env.NEXT_PUBLIC_FCM_PRIVATE_KEY;
+import { env } from "@/lib/env";
+
+// FCM service-account config is server-only and validated by env.ts.
+const FCM_PROJECT_ID = env.FCM_PROJECT_ID;
+const FCM_CLIENT_EMAIL = env.FCM_CLIENT_EMAIL;
+const FCM_PRIVATE_KEY = env.FCM_PRIVATE_KEY;
 
 // FCM configuration interface
 export interface FcmConfig {

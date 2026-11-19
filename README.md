@@ -87,12 +87,14 @@ connection before building.
 All dev-like environments — local development, tests, and Vercel Preview — may use every
 documented demo role. Vercel Production remains restricted to the read-only preview user.
 
-Use a separate staging database for a protected Vercel Preview. Set `DEMO_MODE="true"`
-and `DEMO_SEED_USERS="true"` in the Preview environment; the build and local dev startup
-run a best-effort seed that creates or refreshes verified Better Auth-compatible accounts.
-Accounts are marked email-verified, so no verification bypass is needed. Seeding is skipped
-in Vercel Production, and a missing or un-migrated preview database never blocks the build
-or sign-in. You can also run `pnpm db:seed:demo` explicitly in any dev-like environment:
+Use a separate database for protected Vercel Preview. Dev-like environments
+(local development, tests, Vercel Preview) enable demo mode automatically; set
+`DEMO_SEED_USERS="true"` in any environment where the build or local startup should
+create or refresh verified Better Auth-compatible accounts. Set `DEMO_MODE="false"`
+explicitly to opt out. Accounts are marked email-verified, so no verification bypass
+is needed. Seeding does not change sign-in policy: Vercel Production still allows only
+the read-only preview user. A missing or un-migrated database never blocks the build.
+You can also run `pnpm db:seed:demo` explicitly:
 
 | Panel     | Email                         | Password              |
 | --------- | ----------------------------- | --------------------- |
@@ -101,12 +103,12 @@ or sign-in. You can also run `pnpm db:seed:demo` explicitly in any dev-like envi
 | User      | `user@demo.gentech.test`      | `DemoUser-2026!`      |
 | Dealer    | `dealer@demo.gentech.test`    | `DemoDealer-2026!`    |
 
-The admin account has full admin access. Keep `DEMO_SEED_USERS="false"` in Vercel
-Production: these documented credentials must only be seeded into a protected Preview
-database, because anyone with this list could sign in as admin. Use the Preview
-database's `DATABASE_URL` and `DIRECT_URL`; setting the flag alone does not create or
-migrate a schema. Apply committed migrations explicitly with `pnpm db:deploy` on the
-intended database before expecting seeded listings or catalog data.
+The admin account has full admin access in dev-like environments. Enable
+`DEMO_SEED_USERS` only where those accounts are intended to exist; production sign-in
+policy still blocks admin, inspector, and dealer sessions. Use the target database's
+`DATABASE_URL` and `DIRECT_URL`; setting the flag alone does not create or migrate a
+schema. Apply committed migrations explicitly with `pnpm db:deploy` on the intended
+database before expecting seeded listings or catalog data.
 
 Sign-in itself is database-independent: when demo mode is enabled, the documented
 credentials always create a signed demo session from the normal email/password form,

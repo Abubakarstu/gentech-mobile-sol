@@ -11,7 +11,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { seedDemoAccounts } from "./demo-accounts";
 import { PrismaClient } from "../lib/generated/prisma/client";
-import { isNonProductionDemoEnvironment } from "../lib/demo-mode";
+import { isDemoModeEnabled } from "../lib/demo-mode";
 
 // Prisma 7 no longer auto-loads .env; load it for standalone `pnpm db:seed` runs.
 try {
@@ -269,16 +269,10 @@ async function main() {
 
   try {
     if (process.env.DEMO_SEED_USERS === "true") {
-      if (!isNonProductionDemoEnvironment()) {
-        console.warn(
-          "Skipping demo account seeding: DEMO_SEED_USERS is only allowed for local development, tests, and Vercel Preview.",
-        );
-      } else {
-        if (process.env.DEMO_MODE !== "true") {
-          throw new Error("DEMO_SEED_USERS requires DEMO_MODE=true.");
-        }
-        await seedDemoAccounts(prisma);
+      if (!isDemoModeEnabled()) {
+        throw new Error("DEMO_SEED_USERS requires demo mode to be enabled.");
       }
+      await seedDemoAccounts(prisma);
     }
 
     // Categories (roots, then children referencing the root id).
