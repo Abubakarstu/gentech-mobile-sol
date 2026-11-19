@@ -20,7 +20,7 @@ export function isDemoModeEnabled() {
     process.env.DEMO_MODE === "true" ||
     isNonProductionDemoEnvironment() ||
     isProductionDemoFallback() ||
-    isSeededProductionDemoEnabled()
+    isProductionDemoEnabled()
   );
 }
 
@@ -43,22 +43,23 @@ export function isDemoSeedingEnabled() {
 }
 
 function isRealAuthSecret(secret: string | undefined) {
-  return Boolean(secret && secret !== DEMO_AUTH_SECRET_PLACEHOLDER && secret.length >= 32);
+  const value = secret?.trim();
+  return Boolean(value && value !== DEMO_AUTH_SECRET_PLACEHOLDER);
 }
 
 /**
- * A real Vercel Production deployment still needs the documented read-only demo
- * user. `DEMO_SEED_USERS=true` plus real database/auth credentials is sufficient;
- * requiring a second `DEMO_MODE=true` flag caused the seeded user to return 401.
- * `DEMO_MODE=false` remains a hard opt-out, and elevated roles stay blocked by
- * `isDemoAccountAllowed` / `createDemoCookieValue`.
+ * A database-backed Vercel Production deployment still exposes the documented
+ * read-only demo user. Demo sessions are resolved from the canonical credential
+ * table, not the database, so this depends only on real runtime credentials —
+ * not on the build-time `DEMO_SEED_USERS` flag. Requiring extra demo flags caused
+ * the seeded user to return 401. `DEMO_MODE=false` remains a hard opt-out, and
+ * elevated roles stay blocked by `isDemoAccountAllowed` / `createDemoCookieValue`.
  */
-function isSeededProductionDemoEnabled() {
+function isProductionDemoEnabled() {
   return (
     process.env.NODE_ENV === "production" &&
     process.env.VERCEL_ENV === "production" &&
     process.env.DEMO_MODE !== "false" &&
-    isDemoSeedingEnabled() &&
     Boolean(process.env.DATABASE_URL) &&
     isRealAuthSecret(process.env.BETTER_AUTH_SECRET)
   );

@@ -111,8 +111,8 @@ describe("demo account environment policy", () => {
     );
   });
 
-  it("allows only the seeded user in Vercel Production without DEMO_MODE", () => {
-    const seededProductionEnv: EnvOverrides = {
+  it("allows only the read-only user in database-backed Vercel Production without demo flags", () => {
+    const productionEnv: EnvOverrides = {
       NODE_ENV: "production",
       VERCEL_ENV: "production",
       DEMO_MODE: undefined,
@@ -122,7 +122,7 @@ describe("demo account environment policy", () => {
       DEMO_SEED_USERS: "true",
     };
 
-    withEnv(seededProductionEnv, () => {
+    const expectUserOnly = () => {
       expect(isDemoModeEnabled()).toBe(true);
       expect(DEMO_ACCOUNTS.map((account) => [account.key, isDemoAccountAllowed(account)])).toEqual([
         ["admin", false],
@@ -130,21 +130,22 @@ describe("demo account environment policy", () => {
         ["user", true],
         ["dealer", false],
       ]);
-    });
+    };
 
-    withEnv({ ...seededProductionEnv, DEMO_SEED_USERS: undefined }, () => {
-      expect(isDemoModeEnabled()).toBe(false);
-      expect(DEMO_ACCOUNTS.map(isDemoAccountAllowed)).toEqual([false, false, false, false]);
-    });
+    withEnv(productionEnv, expectUserOnly);
 
-    withEnv({ ...seededProductionEnv, DEMO_MODE: "false" }, () => {
+    withEnv({ ...productionEnv, DEMO_SEED_USERS: undefined }, expectUserOnly);
+
+    withEnv({ ...productionEnv, BETTER_AUTH_SECRET: "short-but-real-secret" }, expectUserOnly);
+
+    withEnv({ ...productionEnv, DEMO_MODE: "false" }, () => {
       expect(isDemoModeEnabled()).toBe(false);
       expect(DEMO_ACCOUNTS.map(isDemoAccountAllowed)).toEqual([false, false, false, false]);
     });
 
     withEnv(
       {
-        ...seededProductionEnv,
+        ...productionEnv,
         BETTER_AUTH_SECRET: "local-demo-secret-change-before-deploy-000000000000",
       },
       () => {

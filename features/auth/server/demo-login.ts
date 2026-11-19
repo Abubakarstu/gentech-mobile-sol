@@ -7,6 +7,12 @@ import {
   matchDemoCredentials,
   type DemoAccount,
 } from "@/features/auth/lib/demo-accounts";
+import {
+  isDemoModeEnabled,
+  isNonProductionDemoEnvironment,
+  isReadOnlyDemoEnabled,
+  isDemoSessionEnabled,
+} from "@/lib/demo-mode";
 import { ROUTES } from "@/lib/constants";
 import { createDemoCookieValue, DEMO_COOKIE } from "@/lib/session";
 
@@ -33,7 +39,20 @@ export function resolveDemoAccount(input: {
   username?: string;
 }): DemoAccount | null {
   const account = matchDemoCredentials(input);
-  return account && isDemoAccountAllowed(account) ? account : null;
+  const sessionEnabled = isDemoSessionEnabled();
+  const allowed = Boolean(account && isDemoAccountAllowed(account));
+  console.info("[demo policy diagnostic]", {
+    matched: account?.key ?? null,
+    hasEmail: Boolean(input.email),
+    hasUsername: Boolean(input.username),
+    passwordLength: input.password?.length ?? 0,
+    sessionEnabled,
+    demoModeEnabled: isDemoModeEnabled(),
+    nonProduction: isNonProductionDemoEnvironment(),
+    readOnly: isReadOnlyDemoEnabled(),
+    allowed,
+  });
+  return allowed ? (account ?? null) : null;
 }
 
 export function getDemoDashboard(account: DemoAccount): string {
