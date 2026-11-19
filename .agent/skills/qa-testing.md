@@ -109,7 +109,7 @@ Record exact counts. A build that logs `DYNAMIC_SERVER_USAGE` while static-gener
 | :--- | :--- | :--- |
 | M5-F01 | Valuation | Price estimate derived from active/sold data; BHD 3 dp / PKR 0 dp never cross-converted |
 | M5-F02 | IMEI / PTA / CPID | Non-production uses labelled simulator; production fails closed without provider credentials; simulated rows flagged `isSimulated` |
-| M5-F03 | Spec comparison | Side-by-side table renders selected models with correct spec values |
+| M5-F03 | Spec comparison | `/bh/en/compare` empty state has no `{country}`; selecting 2 phone model IDs renders 3-column side-by-side table with populated specs, country currency (`BHD`/`PKR`), loaded images, single `Compare Phones · GenTech` title, and no console errors |
 | M5-F04 | Inspection workflow | Request → claim → schedule → graded report → payment-gated release; terminal requests cannot be re-claimed; IMEI masked unless authorized + audit logged |
 
 ### G. Cross-cutting
@@ -147,6 +147,14 @@ Use the in-app browser. Never drive production QA from curl alone when the featu
 5. Open `/bh/en` and `/bh/en/marketplace` — confirm the listing appears in the first visible set with `BHD`, the correct Bahrain city/area, and the phone photo.
 6. Open the detail page — confirm city/area, price, image, and empty console errors.
 7. Report listing ID, slug, category, city/area, image URL, and first-page visibility. Keep the data only if the owner asked for a persistent listing; otherwise remove it.
+
+### Phone comparison check (on request)
+
+1. Open `/bh/en/compare` with no query — confirm localized description, empty state, no `{country}` placeholder, and no console errors.
+2. Use two active phone model IDs (create minimal QA reference models through `createModelAction` if production has none). Confirm `?phones=<id1>,<id2>` renders a `table` with `thead th` count of 3 and no empty/`-` spec cells.
+3. Verify currency labels use the country currency (`BHD` on `/bh/*`, `PKR` on `/pk/*`), never a hardcoded fallback from the browser bundle.
+4. Verify images load (`naturalWidth > 0`) and `document.title` has exactly one `GenTech` suffix.
+5. Report model IDs, row/column counts, currency samples, image URLs, and console status. Remove QA models if the owner did not request persistent data.
 
 ---
 

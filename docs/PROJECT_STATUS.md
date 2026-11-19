@@ -29,6 +29,14 @@ Last Updated: 2026-11-19
 - **First-page check:** PASS — the replacement listing is the first card in both **Featured Listings** and **Recent Listings** on `https://gentech-mauve.vercel.app/bh/en`, and the only result on `/bh/en/marketplace` ("1 result"). Detail page renders `Adliya, Manama`, BHD price, phone image, and no console errors. No console errors were observed on homepage, marketplace, or detail page.
 - **Observed issues:** (1) Direct navigation to an admin subpage in an already-open tab can remain on the "Loading admin page…" skeleton while many sidebar RSC prefetches run; a fresh direct tab rendered the page normally. (2) The image-upload signing endpoint returned 503 during live QA (Cloudinary credentials unavailable), so the listing uses a valid `res.cloudinary.com` iPhone image URL instead of an uploaded asset. (3) P3 localization defect: the Bahrain listing detail CTA still shows inspection pricing as `From Rs 1,499` instead of BHD. None of these blocked the category/listing/first-page flow.
 
+### Phone comparison QA (commit `a8a1c21`)
+
+- **Empty state:** PASS — `/bh/en/compare` renders the localized description (`Browse phones and accessories for sale across Bahrain.`), the empty-state panel, and a single `Compare Phones · GenTech` title with no `{country}` placeholder and no console errors.
+- **Comparison table:** PASS — `/bh/en/compare?phones=cmwnd97ag000007jsk1oi100o,cmwnd97wx000207jsk2krqts4` rendered 3 columns (spec label + 2 phones) and 37 populated spec rows using the QA reference models `iPhone 15 Pro` (`cmwnd97ag000007jsk1oi100o`) and `Galaxy S24` (`cmwnd97wx000207jsk2krqts4`). No blank/`-` spec cells remained after backfilling the full spec set through `updateModelAction`.
+- **Currency/localization:** PASS — launch prices render as `BHD 999` and `BHD 799`; the description resolves the country name; the duplicated `· GenTech` suffix was removed from the metadata title.
+- **Media/console:** PASS — both phone images loaded (`iphone.jpg`, `smartphone.jpg`) and no browser console errors were observed.
+- **Fix scope:** the client comparison table now takes a server-supplied currency code instead of importing the Prisma-backed currency helper into the browser bundle; admin create/update schemas, services, and the phone-model repository now persist all comparison spec fields (camera features, battery type, SIM/Wi-Fi/Bluetooth/NFC, weight, dimensions, OS/version, features). `pnpm typecheck` 0 errors, `pnpm test` 280/280, and `pnpm build` passed before push.
+
 ---
 
 ## Milestone Feature Tracking
