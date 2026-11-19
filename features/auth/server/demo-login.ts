@@ -2,9 +2,13 @@ import "server-only";
 
 import { NextResponse } from "next/server";
 
-import { matchDemoCredentials, type DemoAccount } from "@/features/auth/lib/demo-accounts";
+import {
+  isDemoAccountAllowed,
+  matchDemoCredentials,
+  type DemoAccount,
+} from "@/features/auth/lib/demo-accounts";
 import { ROUTES } from "@/lib/constants";
-import { createDemoCookieValue, DEMO_COOKIE, demoModeEnabled } from "@/lib/session";
+import { createDemoCookieValue, DEMO_COOKIE } from "@/lib/session";
 
 const cookieOptions = {
   httpOnly: true,
@@ -21,15 +25,7 @@ const DASHBOARD_ROUTES: Record<DemoAccount["dashboard"], string> = {
   dealer: ROUTES.dealerDashboard,
 };
 
-/**
- * Production demo sessions are limited to the read-only preview user. Local and
- * protected preview deployments may use every seeded demo account.
- */
-export function isDemoAccountAllowed(account: DemoAccount): boolean {
-  if (!demoModeEnabled()) return false;
-  if (process.env.NODE_ENV === "production" && account.key !== "user") return false;
-  return true;
-}
+export { isDemoAccountAllowed };
 
 export function resolveDemoAccount(input: {
   email?: string;

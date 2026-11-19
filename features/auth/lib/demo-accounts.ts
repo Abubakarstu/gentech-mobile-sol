@@ -2,6 +2,8 @@
  * Public demo credentials shared by the sign-in helper, the demo cookie route,
  * and the database seed. These are intentionally non-production fixtures.
  */
+import { isDemoSessionEnabled, isNonProductionDemoEnvironment } from "@/lib/demo-mode";
+
 export const DEMO_ROLES = ["ADMIN", "INSPECTOR", "USER", "DEALER"] as const;
 
 export type DemoRole = (typeof DEMO_ROLES)[number];
@@ -77,4 +79,14 @@ export function matchDemoCredentials(input: {
 
   if (!account || !input.password || account.password !== input.password) return undefined;
   return account;
+}
+
+/**
+ * Local development, tests, and Vercel Preview may use every documented role.
+ * Vercel Production remains restricted to the read-only preview user.
+ */
+export function isDemoAccountAllowed(account: DemoAccount): boolean {
+  if (!isDemoSessionEnabled()) return false;
+  if (isNonProductionDemoEnvironment()) return true;
+  return account.key === "user";
 }

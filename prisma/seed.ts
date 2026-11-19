@@ -8,10 +8,10 @@
  * Run via `pnpm db:seed` or automatically after `pnpm db:migrate`.
  */
 import { PrismaPg } from "@prisma/adapter-pg";
-import { hashPassword } from "better-auth/crypto";
 
-import { DEMO_ACCOUNTS } from "../features/auth/lib/demo-accounts";
+import { seedDemoAccounts } from "./demo-accounts";
 import { PrismaClient } from "../lib/generated/prisma/client";
+import { isNonProductionDemoEnvironment } from "../lib/demo-mode";
 
 // Prisma 7 no longer auto-loads .env; load it for standalone `pnpm db:seed` runs.
 try {
@@ -66,93 +66,6 @@ const BRANDS = [
   "Huawei",
   "Motorola",
 ];
-
-async function seedDemoAccounts(prisma: PrismaClient) {
-  if (process.env.DEMO_SEED_USERS !== "true") return;
-  if (process.env.NODE_ENV === "production" && process.env.VERCEL_ENV !== "preview") {
-    console.warn(
-      "Skipping demo account seeding: DEMO_SEED_USERS is only allowed for Vercel Preview deployments.",
-    );
-    return;
-  }
-  if (process.env.DEMO_MODE !== "true") {
-    throw new Error("DEMO_SEED_USERS requires DEMO_MODE=true.");
-  }
-
-  for (const demoAccount of DEMO_ACCOUNTS) {
-    const password = await hashPassword(demoAccount.password);
-    // Dealer capability is modelled by DealerUser membership, not a Role enum value.
-    const role = demoAccount.role === "DEALER" ? "USER" : demoAccount.role;
-    const user = await prisma.user.upsert({
-      where: { email: demoAccount.email },
-      update: {
-        name: demoAccount.name,
-        emailVerified: true,
-        role,
-      },
-      create: {
-        name: demoAccount.name,
-        email: demoAccount.email,
-        emailVerified: true,
-        role,
-      },
-    });
-
-    await prisma.profile.upsert({
-      where: { userId: user.id },
-      update: {},
-      create: { userId: user.id },
-    });
-
-    await prisma.account.upsert({
-      where: {
-        providerId_accountId: { providerId: "credential", accountId: user.id },
-      },
-      update: { password },
-      create: {
-        accountId: user.id,
-        providerId: "credential",
-        userId: user.id,
-        password,
-      },
-    });
-
-    if (demoAccount.key === "dealer") {
-      const dealer = await prisma.dealer.upsert({
-        where: { slug: "demo-mobile-store" },
-        update: {
-          name: "Demo Mobile Store",
-          businessName: "GenTech Demo Mobile Store",
-          status: "ACTIVE",
-          isVerified: true,
-          verifiedAt: new Date(),
-        },
-        create: {
-          name: "Demo Mobile Store",
-          slug: "demo-mobile-store",
-          businessName: "GenTech Demo Mobile Store",
-          description: "Seeded demo dealership for sign-in and dealer dashboard previews.",
-          email: demoAccount.email,
-          city: "Lahore",
-          region: "PAKISTAN",
-          status: "ACTIVE",
-          isVerified: true,
-          verifiedAt: new Date(),
-        },
-      });
-
-      await prisma.dealerUser.upsert({
-        where: {
-          dealerId_userId: { dealerId: dealer.id, userId: user.id },
-        },
-        update: { role: "owner", isActive: true },
-        create: { dealerId: dealer.id, userId: user.id, role: "owner", isActive: true },
-      });
-    }
-  }
-
-  console.info("✓ Seeded demo admin, inspector, user, and dealer accounts.");
-}
 
 /** Inspection packages (PakWheels-style tiers). Prices in PKR. */
 const INSPECTION_PLANS: Array<{
@@ -355,7 +268,18 @@ async function main() {
   const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
   try {
-    await seedDemoAccounts(prisma);
+    if (process.env.DEMO_SEED_USERS === "true") {
+      if (!isNonProductionDemoEnvironment()) {
+        console.warn(
+          "Skipping demo account seeding: DEMO_SEED_USERS is only allowed for local development, tests, and Vercel Preview.",
+        );
+      } else {
+        if (process.env.DEMO_MODE !== "true") {
+          throw new Error("DEMO_SEED_USERS requires DEMO_MODE=true.");
+        }
+        await seedDemoAccounts(prisma);
+      }
+    }
 
     // Categories (roots, then children referencing the root id).
     for (const [rootIndex, root] of CATEGORIES.entries()) {

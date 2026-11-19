@@ -130,6 +130,7 @@
     "brand": "Brand",
     "category": "Category",
     "city": "City",
+    "allCities": "All cities",
     "storage": "Storage",
     "ram": "RAM",
     "color": "Color",

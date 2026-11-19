@@ -1,6 +1,6 @@
 # GenTech Marketplace — Project Status Tracker
 
-Last Updated: 2026-11-18
+Last Updated: 2026-11-19
 
 ## Overall Status
 
@@ -134,3 +134,14 @@ Last Updated: 2026-11-18
 - **Checks:** `pnpm typecheck` 0 errors; `pnpm lint` 0 errors / 47 pre-existing warnings; `pnpm test` 281/281 (new `tests/auth/demo-accounts.test.ts`); `pnpm build` exit 0 (265 pages).
 - **Runtime smoke:** with `pnpm dev`, `POST /api/auth/sign-in/email` returned 200 and the `gentech_demo_session` cookie for admin, inspector, and dealer credentials, with `url` values `/admin`, `/inspector`, and `/dashboard/dealer`. The test included the sign-in form's `callbackURL: /dashboard` to confirm role destinations cannot be overridden. With `pnpm start`, non-user demo credentials returned 401 because the local `BETTER_AUTH_SECRET` equals the documented placeholder and production demo gating intentionally refuses privilege widening.
 - **Deployment guardrails:** the `app_setting` migration was not applied; it must be deployed with `pnpm db:deploy` only to an explicitly authorized database. Preview seeding requires `DEMO_SEED_USERS=true` and `DEMO_MODE=true`. Manual verification remains: toggle `/admin/settings`, confirm the audit row, and confirm an unverified account is blocked only while the setting is enabled. Local Prisma still cannot reach `127.0.0.1:5432`.
+
+### Dev/preview demo seeding and role gating (2026-11-19)
+- **401 root cause in Vercel Preview:** preview builds set `NODE_ENV=production`, so the previous `NODE_ENV`-only check refused admin, inspector, and dealer credentials even though preview is intended to allow them.
+- **Fix:** `isNonProductionDemoEnvironment()` in `lib/demo-mode.ts` treats local development, tests, and `VERCEL_ENV=preview` as dev-like. Sign-in policy (`features/auth/lib/demo-accounts.ts`), cookie creation, and cookie validation (`lib/session.ts`) now share this rule; Vercel Production remains restricted to the read-only `user` account. `isDemoSessionEnabled()` centralizes the production secret guard so the placeholder secret can never widen privileges.
+- **Seeding:** demo upserts moved to `prisma/demo-accounts.ts`. `pnpm db:seed:demo` is a best-effort dev/preview entrypoint wired into `predev`, `build`, and `vercel-build`; it skips production, missing DB URLs, and seed errors instead of blocking startup or deployment. `pnpm db:seed` keeps strict validation for explicit full seeds. The dealer record now relies on the schema's `PAKISTAN` region default instead of sending a column that may not exist on an un-migrated preview database.
+- **Localization:** added the missing `filters.allCities` key to `messages/{en,ar,ur}.json`; `marketplace-filters.tsx` reads this namespace, while `search.allCities` remains for the search bar.
+- **Tests:** `tests/auth/demo-accounts.test.ts` now covers preview/local full-role access, production user-only access, placeholder-secret rejection, and disabled demo mode.
+- **Environment docs:** `.env.example` now defaults local `DEMO_SEED_USERS="true"`; `README.md` and `ENVIRONMENT_VARIABLES.md` describe build-time best-effort seeding and the production restriction.
+- **Verification:** `pnpm typecheck` 0 errors; `pnpm lint` 0 errors / 47 pre-existing warnings; `pnpm test` 287/287 (added preview, local, production, unset-`NODE_ENV`, placeholder-secret, and disabled-demo cases); `pnpm build` exit 0 (265 pages). `pnpm db:seed:demo` exited cleanly when skipped in simulated Vercel Production and when the preview database was unreachable.
+- **Production-build smoke:** with `VERCEL_ENV=preview`, all four demo sign-ins returned 200 with the expected `gentech_demo_session` role, fixed dashboard destination, and ignored `callbackURL=/dashboard`. With `VERCEL_ENV=production`, admin returned 401 and user returned 200.
+- **Manual verification still required:** apply committed migrations (`20261117_add_region_isolation`, `20261118130000_add_app_settings`) to the authorized Preview database with `pnpm db:deploy`, then redeploy and smoke all four demo accounts plus `/admin/settings` and its audit entry. No migrations or database resets were executed in this session.

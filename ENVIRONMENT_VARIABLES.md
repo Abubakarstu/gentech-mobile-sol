@@ -7,9 +7,9 @@
 | `DATABASE_URL`                    | YES       | NO          | YES      | NO              | YES     | PostgreSQL pooled connection (application)                                              |
 | `DIRECT_URL`                      | OPTIONAL  | NO          | YES      | NO              | YES     | PostgreSQL direct connection (migrations)                                               |
 | `BETTER_AUTH_SECRET`              | YES       | NO          | YES      | NO              | YES     | Better Auth session signing key                                                         |
-| `DEMO_MODE`                       | OPTIONAL  | NO          | YES      | NO              | NO      | `true` enables demo behavior and local fallback DB/auth values                          |
+| `DEMO_MODE`                       | OPTIONAL  | YES         | YES      | NO              | NO      | `true` enables demo behavior and local fallback DB/auth values                          |
 | `DEMO_READ_ONLY`                  | OPTIONAL  | NO          | YES      | NO              | NO      | `true` disables database access and restricts production demo login to the preview user |
-| `DEMO_SEED_USERS`                 | OPTIONAL  | NO          | YES      | NO              | NO      | `true` seeds verified demo accounts in development/protected Preview only                |
+| `DEMO_SEED_USERS`                 | OPTIONAL  | YES         | NO       | NO              | NO      | `true` seeds verified demo accounts in development/protected Preview only                |
 | `BETTER_AUTH_URL`                 | OPTIONAL  | NO          | YES      | NO              | NO      | Auth base URL override (Vercel origin is detected automatically)                        |
 | `APP_URL`                         | OPTIONAL  | YES         | YES      | NO              | NO      | Server-side app URL override for non-Vercel deployments                                 |
 | `AUTH_SKIP_EMAIL_VERIFICATION`    | OPTIONAL  | NO          | YES      | NO              | NO      | Legacy compatibility flag; admin panel now controls email verification                  |

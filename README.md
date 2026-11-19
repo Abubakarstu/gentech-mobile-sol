@@ -84,12 +84,15 @@ connection before building.
 
 ## Demo accounts
 
-For a protected Vercel Preview/staging environment, use a separate staging database.
-To create these Better Auth-compatible accounts, set `DEMO_SEED_USERS="true"` and
-`DEMO_MODE="true"` in the Preview environment; the build seed step creates or resets
-them. Accounts are marked email-verified, so no verification bypass is needed. The
-seed refuses to run with this flag in Vercel Production or any other production
-environment:
+All dev-like environments — local development, tests, and Vercel Preview — may use every
+documented demo role. Vercel Production remains restricted to the read-only preview user.
+
+Use a separate staging database for a protected Vercel Preview. Set `DEMO_MODE="true"`
+and `DEMO_SEED_USERS="true"` in the Preview environment; the build and local dev startup
+run a best-effort seed that creates or refreshes verified Better Auth-compatible accounts.
+Accounts are marked email-verified, so no verification bypass is needed. Seeding is skipped
+in Vercel Production, and a missing or un-migrated preview database never blocks the build
+or sign-in. You can also run `pnpm db:seed:demo` explicitly in any dev-like environment:
 
 | Panel     | Email                         | Password              |
 | --------- | ----------------------------- | --------------------- |
@@ -101,13 +104,15 @@ environment:
 The admin account has full admin access. Keep `DEMO_SEED_USERS="false"` in Vercel
 Production: these documented credentials must only be seeded into a protected Preview
 database, because anyone with this list could sign in as admin. Use the Preview
-database's `DATABASE_URL` and `DIRECT_URL`; setting the flag alone does not create,
-migrate, or seed a database.
+database's `DATABASE_URL` and `DIRECT_URL`; setting the flag alone does not create or
+migrate a schema. Apply committed migrations explicitly with `pnpm db:deploy` on the
+intended database before expecting seeded listings or catalog data.
 
-When demo mode is enabled, the same credentials also work in the normal email/password
-form without a database connection; they create a local demo session. Email verification
-is off by default and can be switched on by an admin at `/admin/settings` (the change is
-server-side, permission-gated, and audited).
+Sign-in itself is database-independent: when demo mode is enabled, the documented
+credentials always create a signed demo session from the normal email/password form,
+even if the database is unavailable. Email verification is off by default and can be
+switched on by an admin at `/admin/settings` (the change is server-side,
+permission-gated, and audited).
 
 ## 4. Run
 

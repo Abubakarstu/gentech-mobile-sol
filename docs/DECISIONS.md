@@ -76,7 +76,7 @@
 
 - **Date:** 2026-11-18
 - **Status:** Approved
-- **Decision:** Demo credentials live in one shared module and are consumed by the seed, sign-in form, demo panel, and auth route. Known demo emails are intercepted before Better Auth or Prisma so local demo sign-in never depends on a database and never returns 500. A wrong password returns 401. In production, demo sessions are restricted to the read-only user unless `DEMO_READ_ONLY` is enabled for a protected preview. Dealer capability is represented by `USER` + `DealerUser` membership because the `Role` enum has no dealer value; no authorization enum is widened for demos.
+- **Decision:** Demo credentials live in one shared module and are consumed by the seed, sign-in form, demo panel, and auth route. Known demo emails are intercepted before Better Auth or Prisma so local demo sign-in never depends on a database and never returns 500. A wrong password returns 401. Local development, tests, and Vercel Preview may use every documented role; Vercel Production remains restricted to the read-only user. `VERCEL_ENV` takes precedence over `NODE_ENV` so an unset build-time `NODE_ENV` cannot widen production access. Dealer capability is represented by `USER` + `DealerUser` membership because the `Role` enum has no dealer value; no authorization enum is widened for demos.
 
 ## ADR-014: Email Verification Is Opt-In and Admin-Controlled
 
