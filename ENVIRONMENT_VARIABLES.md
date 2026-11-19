@@ -7,9 +7,9 @@
 | `DATABASE_URL`                    | YES       | NO          | YES      | NO              | YES     | PostgreSQL pooled connection (application)                                              |
 | `DIRECT_URL`                      | OPTIONAL  | NO          | YES      | NO              | YES     | PostgreSQL direct connection (migrations)                                               |
 | `BETTER_AUTH_SECRET`              | YES       | NO          | YES      | NO              | YES     | Better Auth session signing key                                                         |
-| `DEMO_MODE`                       | OPTIONAL  | YES         | YES      | NO              | NO      | Auto-enabled in dev-like environments and seeded Production; `false` is a hard opt-out |
+| `DEMO_MODE`                       | OPTIONAL  | YES         | YES      | NO              | NO      | Auto-enabled in dev-like environments; `false` is a hard opt-out |
 | `DEMO_READ_ONLY`                  | OPTIONAL  | NO          | YES      | NO              | NO      | `true` disables database access and restricts production demo login to the preview user |
-| `DEMO_SEED_USERS`                 | OPTIONAL  | YES         | YES      | NO              | NO      | `true` seeds all environments and enables the read-only user demo in seeded Production; independent of `DEMO_MODE` |
+| `DEMO_SEED_USERS`                 | OPTIONAL  | YES         | YES      | NO              | NO      | `true` seeds all environments; independent of `DEMO_MODE` |
 | `BETTER_AUTH_URL`                 | OPTIONAL  | NO          | YES      | NO              | NO      | Auth base URL override (Vercel origin is detected automatically)                        |
 | `APP_URL`                         | OPTIONAL  | YES         | YES      | NO              | NO      | Server-side app URL override for non-Vercel deployments                                 |
 | `AUTH_SKIP_EMAIL_VERIFICATION`    | OPTIONAL  | NO          | YES      | NO              | NO      | Legacy compatibility flag; admin panel now controls email verification                  |
@@ -58,7 +58,7 @@ read-only demo mode and disables database access.
    - **Do not use this for application runtime**
 
 3. **`BETTER_AUTH_SECRET`** - Session signing key
-   - Must be random, 32+ characters
+   - Must be random, at least 32 characters
    - Generate with: `openssl rand -base64 32`
    - Used to sign and verify session cookies
    - **Rotate this if compromised**
