@@ -50,6 +50,16 @@ export function resolveDemoAccount(input: {
     demoModeEnabled: isDemoModeEnabled(),
     nonProduction: isNonProductionDemoEnvironment(),
     readOnly: isReadOnlyDemoEnabled(),
+    productionEnv: {
+      nodeEnvProduction: process.env.NODE_ENV === "production",
+      vercelEnvProduction: process.env.VERCEL_ENV === "production",
+      demoModeNotFalse: process.env.DEMO_MODE !== "false",
+      databaseUrlSet: Boolean(process.env.DATABASE_URL),
+      authSecretLength: process.env.BETTER_AUTH_SECRET?.length ?? 0,
+      authSecretIsPlaceholder:
+        process.env.BETTER_AUTH_SECRET?.trim() ===
+        "local-demo-secret-change-before-deploy-000000000000",
+    },
     allowed,
   });
   return allowed ? (account ?? null) : null;
