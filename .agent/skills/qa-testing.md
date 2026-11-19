@@ -33,11 +33,12 @@ Never downgrade to generic chatbot mode. Do not report a feature as working unle
 
 1. **No destructive operations.** No migrations, resets, `db push`, truncation, or deletion of real rows.
 2. **Use labelled QA data.** Prefix created listings/categories with `QA-` and a date, e.g. `QA listing 2026-11-19`.
-3. **Clean up temporary accounts** created for QA unless the owner explicitly asked for the data to remain (e.g. a requested demo listing).
-4. **Never expose secrets** in logs, screenshots, commits, or bug reports. Mask tokens, cookies, and passwords.
-5. **Verify authorization server-side**, not by hidden UI: a `USER` must be rejected by the endpoint/layout even if the button was removed from the page.
-6. **Fail closed** on third-party integrations (PTA/CPID, payments): a missing provider credential must not produce a fake success.
-7. **One change at a time** when diagnosing, then re-test.
+3. **Never fake a Bahrain listing.** A Bahrain listing must use `country=Bahrain`, a real Bahrain city and area from an official Bahrain/iGA source, `currency=BHD`, and a real phone photograph. Never use Karachi, Lahore, Islamabad, or any other non-Bahrain location for `/bh/*` QA data.
+4. **Clean up temporary accounts** created for QA unless the owner explicitly asked for the data to remain (e.g. a requested demo listing).
+5. **Never expose secrets** in logs, screenshots, commits, or bug reports. Mask tokens, cookies, and passwords.
+6. **Verify authorization server-side**, not by hidden UI: a `USER` must be rejected by the endpoint/layout even if the button was removed from the page.
+7. **Fail closed** on third-party integrations (PTA/CPID, payments): a missing provider credential must not produce a fake success.
+8. **One change at a time** when diagnosing, then re-test.
 
 ---
 
@@ -137,13 +138,15 @@ Use the in-app browser. Never drive production QA from curl alone when the featu
 8. Capture a screenshot for visual regressions when layout is part of the feature.
 9. Verify the result in the database **only if** a read-only query is available; never mutate production rows directly.
 
-### First-page demo listing check (on request)
+### First-page Bahrain listing check (on request)
 
-1. As admin, create a category if the listing form requires one: `/admin/categories`.
-2. Create the listing through `/sell` (admin is also a seller).
-3. Ensure the listing is `ACTIVE` (approve it from `/admin/listings` if it lands in `PENDING_APPROVAL`).
-4. Open the homepage and the marketplace — confirm the new listing appears in the first visible set.
-5. Report the listing ID, slug, category, and whether it was visible. Keep the data only if the owner asked for a persistent demo listing; otherwise remove it.
+1. As admin, create a category if the listing form requires one: `/admin/categories`. Prefer a live catalog category such as `mobile-phones` unless a dedicated QA category is explicitly required.
+2. Add/verify Bahrain cities and areas from official Bahrain/iGA sources via `/admin/locations`. Never reuse Pakistan cities for `/bh/*`.
+3. Create the listing through `/bh/en/sell` (admin is also a seller) with `country=Bahrain`, a Bahrain `city` and `area`, `BHD` price, and a real phone photograph.
+4. Ensure the listing is `ACTIVE` (approve it from `/admin/listings` if it lands in `PENDING_APPROVAL`).
+5. Open `/bh/en` and `/bh/en/marketplace` — confirm the listing appears in the first visible set with `BHD`, the correct Bahrain city/area, and the phone photo.
+6. Open the detail page — confirm city/area, price, image, and empty console errors.
+7. Report listing ID, slug, category, city/area, image URL, and first-page visibility. Keep the data only if the owner asked for a persistent listing; otherwise remove it.
 
 ---
 
