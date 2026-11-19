@@ -18,6 +18,14 @@ const demoLoginSchema = z
   });
 
 export async function POST(request: Request) {
+  console.info("[demo-login diagnostic]", {
+    nodeEnv: process.env.NODE_ENV,
+    vercelEnv: process.env.VERCEL_ENV,
+    explicitDemoMode: process.env.DEMO_MODE ?? null,
+    seedUsers: process.env.DEMO_SEED_USERS === "true",
+    hasDatabaseUrl: Boolean(process.env.DATABASE_URL),
+    authSecretLength: process.env.BETTER_AUTH_SECRET?.length ?? 0,
+  });
   const hostname = new URL(request.url).hostname;
   if (
     process.env.NODE_ENV !== "production" &&
