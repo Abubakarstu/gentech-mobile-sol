@@ -49,7 +49,13 @@ export function SignInForm({
   });
 
   async function onSubmit(values: SignInInput) {
-    const demoAccount = demoAccessEnabled ? findDemoAccountByEmail(values.email) : undefined;
+    const matchedDemoAccount = demoAccessEnabled
+      ? findDemoAccountByEmail(values.email)
+      : undefined;
+    const demoAccount =
+      matchedDemoAccount && (!demoOnly || matchedDemoAccount.key === "user")
+        ? matchedDemoAccount
+        : undefined;
     if (demoAccount) {
       if (values.password !== demoAccount.password) {
         toast.error("Invalid email or password.");

@@ -5,10 +5,10 @@ import { getCountryFromParam, getLocaleFromParam } from "@/lib/countries/server"
 import { getEnabledSocialProviders } from "@/features/auth/server/enabled-providers";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
-import { isDemoModeEnabled, isReadOnlyDemoEnabled } from "@/lib/demo-mode";
+import { isDemoModeEnabled, isNonProductionDemoEnvironment } from "@/lib/demo-mode";
 
 const demoAccessEnabled = isDemoModeEnabled();
-const demoOnly = process.env.NODE_ENV === "production" && isReadOnlyDemoEnabled();
+const demoOnly = !isNonProductionDemoEnvironment();
 
 export const dynamic = "force-dynamic";
 
