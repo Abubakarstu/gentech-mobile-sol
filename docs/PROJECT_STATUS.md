@@ -167,3 +167,10 @@ Last Updated: 2026-11-19
 - **Policy unchanged:** sign-in roles are still environment-gated; Vercel Production remains restricted to the read-only preview user. Seeding accounts does not grant elevated sessions.
 - **Docs:** `.env.example`, `README.md`, and `ENVIRONMENT_VARIABLES.md` now describe environment-independent seeding.
 - **Verification:** `pnpm typecheck`, `pnpm test` (289/289), `pnpm lint` (0 errors, 46 pre-existing warnings), and `pnpm build` (265 pages) pass. A simulated Vercel Production build with `DEMO_MODE=true` and `DEMO_SEED_USERS=true` now attempts the demo seed instead of printing the environment-skip warning (local DB unreachable).
+
+### Production migration recovery (2026-11-19)
+- **Deployment blocker:** the Production database was 28 migrations behind. `pnpm db:deploy` failed successively on a missing `Region` enum, missing `cart_item`/`order`/`order_item`/`payment` tables, UTF-8 BOMs in 23 index migrations, and legacy columns such as `notification.readAt`.
+- **Fixes:** added `20261117_bootstrap_commerce_tables` for the missing commerce tables and order/payment enums, added `20261118120010_z_align_legacy_columns` for missing legacy columns with backfills, and stripped BOMs from all affected migration files. No data was deleted or reset.
+- **Recovery:** failed migration rows were cleared with `prisma migrate resolve --rolled-back` before re-running `pnpm db:deploy`. `prisma migrate status` now reports `Database schema is up to date!`.
+- **Verification:** `pnpm db:seed:demo` completed against Production without a skip warning; `pnpm typecheck` 0 errors; `pnpm test` 289/289; `pnpm lint` 0 errors / 46 pre-existing warnings.
+- **Note:** Vercel CLI linked the repo and added `.env*` to `.gitignore`. Production still uses the private FCM variables and remains restricted to the read-only `user` demo session.

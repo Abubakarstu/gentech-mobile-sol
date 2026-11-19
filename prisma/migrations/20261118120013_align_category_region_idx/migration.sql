@@ -1,2 +1,2 @@
-﻿CREATE INDEX CONCURRENTLY IF NOT EXISTS "category_region_idx" ON "category" ("region");
+CREATE INDEX CONCURRENTLY IF NOT EXISTS "category_region_idx" ON "category" ("region");
 
