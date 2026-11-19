@@ -166,6 +166,22 @@ export function ListingCard({
           aria-label={isSelected ? tCompare("removeFromCompare") : tCompare("addToCompare")}
           className="block w-full text-start disabled:cursor-not-allowed"
         >
+          {/*
+           * The visual checkbox must live inside the toggle button: it is absolutely
+           * positioned over the card and would otherwise intercept clicks without a
+           * handler, making the checkbox itself unclickable.
+           */}
+          <span
+            aria-hidden="true"
+            className={cn(
+              "absolute top-2 start-2 z-10 flex size-6 items-center justify-center rounded-md border-2 shadow-sm",
+              isSelected
+                ? "bg-primary border-primary text-primary-foreground"
+                : "bg-background/90 border-muted-foreground/50",
+            )}
+          >
+            {isSelected ? <Check className="size-4" /> : null}
+          </span>
           {body}
         </button>
       ) : (
@@ -174,19 +190,7 @@ export function ListingCard({
         </LocalizedLink>
       )}
 
-      {selectionMode ? (
-        <span
-          aria-hidden="true"
-          className={cn(
-            "absolute top-2 start-2 z-10 flex size-6 items-center justify-center rounded-md border-2 shadow-sm",
-            isSelected
-              ? "bg-primary border-primary text-primary-foreground"
-              : "bg-background/90 border-muted-foreground/50",
-          )}
-        >
-          {isSelected ? <Check className="size-4" /> : null}
-        </span>
-      ) : (
+      {!selectionMode ? (
         <>
           {enabled ? (
             <button
@@ -206,7 +210,7 @@ export function ListingCard({
             className="absolute top-2 end-2"
           />
         </>
-      )}
+      ) : null}
     </article>
   );
 }
