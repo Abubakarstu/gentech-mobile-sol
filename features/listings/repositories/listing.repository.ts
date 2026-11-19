@@ -186,7 +186,7 @@ function toCardData(row: ListingCardRow): ListingCardData {
     city: row.city ?? "—",
     brand: row.brand?.name,
     brandSlug: row.brand?.slug,
-    categorySlug: row.category.slug,
+    categorySlug: row.category?.slug,
     isFeatured: row.isFeatured,
     negotiable: row.negotiable,
     views: row.views,
@@ -203,7 +203,7 @@ function toCardData(row: ListingCardRow): ListingCardData {
     modelNumber: typeof attrs?.modelNumber === "string" ? attrs.modelNumber : undefined,
     warranty: typeof attrs?.warranty === "string" ? attrs.warranty : undefined,
     isInspected: row.inspections.length > 0,
-    isVerifiedSeller: row.seller.emailVerified,
+    isVerifiedSeller: row.seller?.emailVerified ?? false,
     isDealer: row.dealerId !== null,
   };
 }

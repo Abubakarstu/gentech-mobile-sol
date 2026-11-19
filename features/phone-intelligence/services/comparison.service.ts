@@ -2,8 +2,7 @@ import { prisma } from '@/lib/prisma';
 import type { Prisma } from '@/lib/generated/prisma/client';
 import type { Region } from '@/lib/generated/prisma/enums';
 import type { ListingCardData } from '@/types/marketplace';
-import { getListingCardsByIds } from '@/features/listings/repositories/listing.repository';
-import { withDemoListingsForIds } from '@/features/listings/data/demo-source';
+import { getSelectedListingCards } from '@/features/listings/services/listing.service';
 import { phoneModelRepository, type PhoneModelWithBrand } from '../repositories/phone-model.repository';
 import { resolvePhoneModelForListing } from './listing-model-resolver';
 import type { PhoneComparisonInput, PhoneSpecComparison } from '../schemas/comparison.schema';
@@ -138,25 +137,30 @@ export class ComparisonService {
     region?: Region,
   ): Promise<PhoneSpecComparison[]> {
     const ids = [...new Set(listingIds.filter(Boolean))].slice(0, 4);
-    if (ids.length < 2) return [];
+    if (ids.length === 0) return [];
 
+    // The selected ids are resolved through the marketplace's own listing service.
+    // Catalog enrichment is independent: an unavailable catalog must never discard
+    // listings that were loaded successfully.
     let listings: ListingCardData[] = [];
-    let models: PhoneModelWithBrand[] = [];
     try {
-      [listings, models] = await Promise.all([
-        getListingCardsByIds(ids, region),
-        phoneModelRepository.findAllActive(),
-      ]);
+      listings = await getSelectedListingCards(ids, region);
     } catch (error) {
-      // Preview mode: the marketplace serves demo cards, so resolve comparison
-      // links against the same region-scoped fixtures instead of failing.
       console.warn(
-        "[compare] Could not load listing comparison data.",
+        "[compare] Could not load selected listings.",
         error instanceof Error ? error.message : error,
       );
     }
 
-    listings = withDemoListingsForIds(listings, ids, region);
+    let models: PhoneModelWithBrand[] = [];
+    try {
+      models = await phoneModelRepository.findAllActive();
+    } catch (error) {
+      console.warn(
+        "[compare] Catalog specs unavailable; using listing attributes.",
+        error instanceof Error ? error.message : error,
+      );
+    }
 
     const byId = new Map(listings.map((listing) => [listing.id, listing]));
     const ordered = ids
@@ -165,10 +169,20 @@ export class ComparisonService {
 
     const specs = ordered.map((listing) => {
       const model = resolvePhoneModelForListing(listing, models);
-      return model ? fromPhoneModel(model) : fromListing(listing);
+      const spec = model ? fromPhoneModel(model) : fromListing(listing);
+      // Keep the listing as the comparison subject. A catalog match supplies
+      // specifications only — replacing the id breaks refresh/removal links.
+      return {
+        ...spec,
+        id: listing.id,
+        slug: listing.slug,
+        name: listing.model ?? listing.title,
+        brand: listing.brand ?? spec.brand,
+        imageUrl: listing.imageUrl ?? spec.imageUrl,
+      };
     });
 
-    return specs.length >= 2 ? specs : [];
+    return specs;
   }
 
   /**

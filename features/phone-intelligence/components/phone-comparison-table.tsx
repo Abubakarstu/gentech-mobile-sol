@@ -1,14 +1,22 @@
 'use client';
 
 import React from 'react';
+import { X } from 'lucide-react';
 import type { PhoneSpecComparison } from '../schemas/comparison.schema';
 
 interface PhoneComparisonTableProps {
   phones: PhoneSpecComparison[];
   currency?: string;
+  onRemove?: (id: string) => void;
+  removeLabel?: string;
 }
 
-export function PhoneComparisonTable({ phones, currency = 'PKR' }: PhoneComparisonTableProps) {
+export function PhoneComparisonTable({
+  phones,
+  currency = 'PKR',
+  onRemove,
+  removeLabel = 'Remove from comparison',
+}: PhoneComparisonTableProps) {
   if (phones.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -115,7 +123,18 @@ export function PhoneComparisonTable({ phones, currency = 'PKR' }: PhoneComparis
             </th>
             {phones.map((phone) => (
               <th key={phone.id} className="border-b-2 border-gray-200 p-4 text-center font-semibold bg-gray-50 min-w-[200px]">
-                <div className="flex flex-col items-center gap-2">
+                <div className="relative flex flex-col items-center gap-2">
+                  {onRemove ? (
+                    <button
+                      type="button"
+                      onClick={() => onRemove(phone.id)}
+                      aria-label={`${removeLabel}: ${phone.name}`}
+                      title={removeLabel}
+                      className="bg-background hover:bg-muted absolute -top-2 -end-2 rounded-full border p-1 shadow-sm"
+                    >
+                      <X className="text-muted-foreground size-3.5" />
+                    </button>
+                  ) : null}
                   {phone.imageUrl && (
                     /* eslint-disable-next-line @next/next/no-img-element */
                     <img

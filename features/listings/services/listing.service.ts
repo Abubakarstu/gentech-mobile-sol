@@ -12,6 +12,7 @@ import type { CreateListingInput } from "@/features/listings/schemas/create-list
 import {
   createListing as createListingRecord,
   getListingBySlug,
+  getListingCardsByIds,
   getListingFilterOptions as getListingFilterOptionsRecord,
   getRelatedListings,
   getSellerListings,
@@ -19,7 +20,7 @@ import {
   searchListingsRanked,
 } from "../repositories/listing.repository";
 import { getDemoListings } from "@/features/marketplace/data/fixtures";
-import { searchDemoListings } from "../data/demo-source";
+import { getDemoListingCardsByIds, searchDemoListings } from "../data/demo-source";
 import { getDemoListingDetail, getDemoRelated } from "../data/demo-detail";
 
 export interface ListingFeed extends ListingSearchResult {
@@ -45,6 +46,27 @@ export async function getListingFeed(filters: ListingFilters, region?: Region): 
       error instanceof Error ? error.message : error,
     );
     return { ...searchDemoListings(filters, region), source: "demo" };
+  }
+}
+
+/**
+ * Resolves the exact ids shown by the marketplace. Uses the same repository and
+ * the same preview fallback as `getListingFeed`, so an id in the grid never
+ * disappears just because the caller queried a different path.
+ */
+export async function getSelectedListingCards(
+  ids: string[],
+  region?: Region,
+): Promise<ListingCardData[]> {
+  if (ids.length === 0) return [];
+  try {
+    return await getListingCardsByIds(ids, region);
+  } catch (error) {
+    console.warn(
+      "[listings] Database unavailable for selected listings — using preview data.",
+      error instanceof Error ? error.message : error,
+    );
+    return getDemoListingCardsByIds(ids, region);
   }
 }
 

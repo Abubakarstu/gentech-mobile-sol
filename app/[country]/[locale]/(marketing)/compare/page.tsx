@@ -12,7 +12,7 @@ import { getCurrencyConfigByCountry } from "@/lib/currency";
 import { ROUTES } from "@/lib/constants";
 import { withCountryLocalePrefix } from "@/lib/localized-path";
 import { localizedSeoMetadata } from "@/lib/seo/metadata";
-import { PhoneComparisonTable } from "@/features/phone-intelligence/components/phone-comparison-table";
+import { ComparisonWithControls } from "@/features/compare/components/comparison-with-controls";
 import { comparisonService } from "@/features/phone-intelligence/services/comparison.service";
 import type { PhoneSpecComparison } from "@/features/phone-intelligence/schemas/comparison.schema";
 
@@ -52,13 +52,14 @@ export default async function ComparePage({ params, searchParams }: PageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
   const listingIds = resolvedSearchParams.listings?.split(",").filter(Boolean) ?? [];
   const phoneIds = resolvedSearchParams.phones?.split(",").filter(Boolean) ?? [];
+  const hasSelection = listingIds.length > 0 || phoneIds.length > 0;
 
   let phones: PhoneSpecComparison[] = [];
   try {
-    if (listingIds.length >= 2) {
+    if (listingIds.length > 0) {
       // ?listings= contains listing IDs from the new selection UI and is region-scoped.
       phones = await comparisonService.getListingComparisonSpecs(listingIds, region);
-    } else if (phoneIds.length >= 2) {
+    } else if (phoneIds.length > 0) {
       // ?phones= remains supported for catalog-model links.
       phones = await comparisonService.getComparisonSpecs(phoneIds);
     }
@@ -82,13 +83,23 @@ export default async function ComparePage({ params, searchParams }: PageProps) {
         </p>
       </div>
 
-      {phones.length >= 2 ? (
-        <PhoneComparisonTable phones={phones} currency={currency} />
+      {phones.length > 0 ? (
+        <ComparisonWithControls
+          phones={phones}
+          currency={currency}
+          idParam={listingIds.length > 0 ? "listings" : "phones"}
+          marketplaceHref={marketplaceHref}
+          canCompare={phones.length >= 2}
+        />
       ) : (
         <div className="bg-card rounded-lg border p-12 text-center shadow-md">
-          <h2 className="mb-2 text-xl font-semibold">{t("noListings")}</h2>
+          <h2 className="mb-2 text-xl font-semibold">
+            {hasSelection ? t("selectionUnavailable") : t("noListings")}
+          </h2>
           <p className="text-muted-foreground mb-6">
-            {t("description", { country: countryName })}
+            {hasSelection
+              ? t("selectionUnavailableHint")
+              : t("description", { country: countryName })}
           </p>
           <Link
             href={marketplaceHref}
