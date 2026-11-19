@@ -119,9 +119,20 @@ export class PhoneModelRepository {
     storageOptions?: string[];
     mainCamera?: string;
     selfieCamera?: string;
+    cameraFeatures?: string[];
     batteryCapacity?: string;
+    batteryType?: string;
     chargingSpeed?: string;
     networkSupport?: string[];
+    simType?: string;
+    wifi?: string;
+    bluetooth?: string;
+    nfc?: boolean;
+    weight?: string;
+    dimensions?: string;
+    os?: string;
+    osVersion?: string;
+    features?: string[];
     colors?: string[];
     imageUrl?: string;
     description?: string;
@@ -148,9 +159,20 @@ export class PhoneModelRepository {
         storageOptions: data.storageOptions ?? [],
         mainCamera: data.mainCamera ?? null,
         selfieCamera: data.selfieCamera ?? null,
+        cameraFeatures: data.cameraFeatures ?? [],
         batteryCapacity: data.batteryCapacity ?? null,
+        batteryType: data.batteryType ?? null,
         chargingSpeed: data.chargingSpeed ?? null,
         networkSupport: data.networkSupport ?? [],
+        simType: data.simType ?? null,
+        wifi: data.wifi ?? null,
+        bluetooth: data.bluetooth ?? null,
+        nfc: data.nfc ?? null,
+        weight: data.weight ?? null,
+        dimensions: data.dimensions ?? null,
+        os: data.os ?? null,
+        osVersion: data.osVersion ?? null,
+        features: data.features ?? [],
         colors: data.colors ?? [],
         imageUrl: data.imageUrl ?? null,
         description: data.description ?? null,
@@ -185,9 +207,20 @@ export class PhoneModelRepository {
       storageOptions?: string[];
       mainCamera?: string | null;
       selfieCamera?: string | null;
+      cameraFeatures?: string[];
       batteryCapacity?: string | null;
+      batteryType?: string | null;
       chargingSpeed?: string | null;
       networkSupport?: string[];
+      simType?: string | null;
+      wifi?: string | null;
+      bluetooth?: string | null;
+      nfc?: boolean | null;
+      weight?: string | null;
+      dimensions?: string | null;
+      os?: string | null;
+      osVersion?: string | null;
+      features?: string[];
       colors?: string[];
       imageUrl?: string | null;
       description?: string | null;

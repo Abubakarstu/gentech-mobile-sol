@@ -28,9 +28,20 @@ export async function createAdminModel(data: {
   storageOptions?: string[];
   mainCamera?: string;
   selfieCamera?: string;
+  cameraFeatures?: string[];
   batteryCapacity?: string;
+  batteryType?: string;
   chargingSpeed?: string;
   networkSupport?: string[];
+  simType?: string;
+  wifi?: string;
+  bluetooth?: string;
+  nfc?: boolean;
+  weight?: string;
+  dimensions?: string;
+  os?: string;
+  osVersion?: string;
+  features?: string[];
   colors?: string[];
   imageUrl?: string;
   description?: string;
@@ -57,9 +68,20 @@ export async function createAdminModel(data: {
     storageOptions: data.storageOptions,
     mainCamera: data.mainCamera?.trim() || undefined,
     selfieCamera: data.selfieCamera?.trim() || undefined,
+    cameraFeatures: data.cameraFeatures,
     batteryCapacity: data.batteryCapacity?.trim() || undefined,
+    batteryType: data.batteryType?.trim() || undefined,
     chargingSpeed: data.chargingSpeed?.trim() || undefined,
     networkSupport: data.networkSupport,
+    simType: data.simType?.trim() || undefined,
+    wifi: data.wifi?.trim() || undefined,
+    bluetooth: data.bluetooth?.trim() || undefined,
+    nfc: data.nfc,
+    weight: data.weight?.trim() || undefined,
+    dimensions: data.dimensions?.trim() || undefined,
+    os: data.os?.trim() || undefined,
+    osVersion: data.osVersion?.trim() || undefined,
+    features: data.features,
     colors: data.colors,
     imageUrl: data.imageUrl?.trim() || undefined,
     description: data.description?.trim() || undefined,
@@ -89,9 +111,20 @@ export async function updateAdminModel(
     storageOptions?: string[];
     mainCamera?: string | null;
     selfieCamera?: string | null;
+    cameraFeatures?: string[];
     batteryCapacity?: string | null;
+    batteryType?: string | null;
     chargingSpeed?: string | null;
     networkSupport?: string[];
+    simType?: string | null;
+    wifi?: string | null;
+    bluetooth?: string | null;
+    nfc?: boolean | null;
+    weight?: string | null;
+    dimensions?: string | null;
+    os?: string | null;
+    osVersion?: string | null;
+    features?: string[];
     colors?: string[];
     imageUrl?: string | null;
     description?: string | null;
@@ -125,9 +158,20 @@ export async function updateAdminModel(
   if (data.storageOptions !== undefined) updates.storageOptions = data.storageOptions;
   if (data.mainCamera !== undefined) updates.mainCamera = data.mainCamera;
   if (data.selfieCamera !== undefined) updates.selfieCamera = data.selfieCamera;
+  if (data.cameraFeatures !== undefined) updates.cameraFeatures = data.cameraFeatures;
   if (data.batteryCapacity !== undefined) updates.batteryCapacity = data.batteryCapacity;
+  if (data.batteryType !== undefined) updates.batteryType = data.batteryType;
   if (data.chargingSpeed !== undefined) updates.chargingSpeed = data.chargingSpeed;
   if (data.networkSupport !== undefined) updates.networkSupport = data.networkSupport;
+  if (data.simType !== undefined) updates.simType = data.simType;
+  if (data.wifi !== undefined) updates.wifi = data.wifi;
+  if (data.bluetooth !== undefined) updates.bluetooth = data.bluetooth;
+  if (data.nfc !== undefined) updates.nfc = data.nfc;
+  if (data.weight !== undefined) updates.weight = data.weight;
+  if (data.dimensions !== undefined) updates.dimensions = data.dimensions;
+  if (data.os !== undefined) updates.os = data.os;
+  if (data.osVersion !== undefined) updates.osVersion = data.osVersion;
+  if (data.features !== undefined) updates.features = data.features;
   if (data.colors !== undefined) updates.colors = data.colors;
   if (data.imageUrl !== undefined) updates.imageUrl = data.imageUrl;
   if (data.description !== undefined) updates.description = data.description;

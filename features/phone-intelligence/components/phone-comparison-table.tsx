@@ -5,9 +5,10 @@ import type { PhoneSpecComparison } from '../schemas/comparison.schema';
 
 interface PhoneComparisonTableProps {
   phones: PhoneSpecComparison[];
+  currency?: string;
 }
 
-export function PhoneComparisonTable({ phones }: PhoneComparisonTableProps) {
+export function PhoneComparisonTable({ phones, currency = 'PKR' }: PhoneComparisonTableProps) {
   if (phones.length === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -95,7 +96,9 @@ export function PhoneComparisonTable({ phones }: PhoneComparisonTableProps) {
   const formatValue = (value: unknown, key: string): string => {
     if (value === null || value === undefined) return '-';
     if (Array.isArray(value)) return value.join(', ');
-    if (key === 'launchPrice' && typeof value === 'number') return `PKR ${value.toLocaleString()}`;
+    if (key === 'launchPrice' && typeof value === 'number') {
+      return `${currency} ${value.toLocaleString()}`;
+    }
     if (key === 'releaseDate' && (value instanceof Date || typeof value === 'string')) return new Date(value).toLocaleDateString();
     if (key === 'nfc') return value ? 'Yes' : 'No';
     if (key === 'cpuCores' && typeof value === 'number') return value.toString();
