@@ -37,10 +37,12 @@ export function CreateListingForm({
   categories,
   brands,
   locations,
+  showPakistanSignals = true,
 }: {
   categories: CategoryItem[];
   brands: BrandItem[];
   locations: LocationTree;
+  showPakistanSignals?: boolean;
 }) {
   const router = useRouter();
   const {
@@ -235,34 +237,38 @@ export function CreateListingForm({
             />
             <FieldError message={errors.batteryHealth?.message} />
           </div>
-          <div className="flex items-end pb-2 sm:col-span-2">
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" className="size-4" {...register("ptaApproved")} />
-              PTA approved
-            </label>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="ptaStatus">PTA Status (optional)</Label>
-            <select id="ptaStatus" className={selectClass} defaultValue="" {...register("ptaStatus")}>
-              <option value="">Unknown</option>
-              {Object.entries(PTA_STATUS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label.replace(/_/g, " ")}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="cpidStatus">CPID Status (optional)</Label>
-            <select id="cpidStatus" className={selectClass} defaultValue="" {...register("cpidStatus")}>
-              <option value="">Unknown</option>
-              {Object.entries(CPID_STATUS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label.replace(/_/g, " ")}
-                </option>
-              ))}
-            </select>
-          </div>
+          {showPakistanSignals ? (
+            <>
+              <div className="flex items-end pb-2 sm:col-span-2">
+                <label className="flex items-center gap-2 text-sm">
+                  <input type="checkbox" className="size-4" {...register("ptaApproved")} />
+                  PTA approved
+                </label>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="ptaStatus">PTA Status (optional)</Label>
+                <select id="ptaStatus" className={selectClass} defaultValue="" {...register("ptaStatus")}>
+                  <option value="">Unknown</option>
+                  {Object.entries(PTA_STATUS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="cpidStatus">CPID Status (optional)</Label>
+                <select id="cpidStatus" className={selectClass} defaultValue="" {...register("cpidStatus")}>
+                  <option value="">Unknown</option>
+                  {Object.entries(CPID_STATUS).map(([value, label]) => (
+                    <option key={value} value={value}>
+                      {label.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </>
+          ) : null}
         </div>
       </section>
 

@@ -32,6 +32,8 @@ import {
   getMarketplaceCategories,
 } from "@/features/marketplace/services/catalog.service";
 import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
+import { CompareControls } from "@/features/compare/components/compare-controls";
+import { CompareSelectionProvider } from "@/features/compare/components/compare-selection-provider";
 
 /** True when the user has narrowed the feed in some way worth saving. */
 function hasActiveFilters(filters: ListingFilters): boolean {
@@ -152,53 +154,50 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
         </Badge>
       ) : null}
 
-      <div className="mb-4 flex flex-wrap gap-3">
-        <LocalizedLink
-          href={ROUTES.comparison}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          {t("comparePhones")}
-        </LocalizedLink>
-        <LocalizedLink
-          href={ROUTES.valuation}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          {t("checkValue")}
-        </LocalizedLink>
-        <LocalizedLink
-          href={ROUTES.imeiCheck}
-          className={buttonVariants({ variant: "outline", size: "sm" })}
-        >
-          {t("verifyImei")}
-        </LocalizedLink>
-      </div>
-
-      <div className="mb-4">
-        <ActiveFilters filters={filters} categories={categories} brands={brands} />
-      </div>
-
-      <div className="flex gap-6">
-        <aside className="hidden w-60 shrink-0 lg:block">
-          <div className="bg-card sticky top-20 rounded-xl border p-4">
-            <MarketplaceFilters
-              categories={categories}
-              brands={brands}
-              filters={filters}
-              locations={locations}
-              filterOptions={filterOptions}
-            />
-          </div>
-        </aside>
-
-        <div className="min-w-0 flex-1">
-          <ListingsGrid
-            listings={feed.items}
-            favoriteIds={favoriteIds}
-            isAuthenticated={isAuthenticated}
-          />
-          <ListingsPagination page={feed.page} totalPages={feed.totalPages} />
+      <CompareSelectionProvider>
+        <div className="mb-4 flex flex-wrap gap-3">
+          <CompareControls />
+          <LocalizedLink
+            href={ROUTES.valuation}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            {t("checkValue")}
+          </LocalizedLink>
+          <LocalizedLink
+            href={ROUTES.imeiCheck}
+            className={buttonVariants({ variant: "outline", size: "sm" })}
+          >
+            {t("verifyImei")}
+          </LocalizedLink>
         </div>
-      </div>
+
+        <div className="mb-4">
+          <ActiveFilters filters={filters} categories={categories} brands={brands} />
+        </div>
+
+        <div className="flex gap-6">
+          <aside className="hidden w-60 shrink-0 lg:block">
+            <div className="bg-card sticky top-20 rounded-xl border p-4">
+              <MarketplaceFilters
+                categories={categories}
+                brands={brands}
+                filters={filters}
+                locations={locations}
+                filterOptions={filterOptions}
+              />
+            </div>
+          </aside>
+
+          <div className="min-w-0 flex-1">
+            <ListingsGrid
+              listings={feed.items}
+              favoriteIds={favoriteIds}
+              isAuthenticated={isAuthenticated}
+            />
+            <ListingsPagination page={feed.page} totalPages={feed.totalPages} />
+          </div>
+        </div>
+      </CompareSelectionProvider>
       {itemListJsonLd ? <JsonLd data={itemListJsonLd} /> : null}
     </div>
   );

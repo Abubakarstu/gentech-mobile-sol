@@ -44,6 +44,9 @@ export interface ListingCardData {
   batteryHealth?: number;
   ptaStatus?: string;
   cpidStatus?: string;
+  /** Free-text phone model captured in the listing attributes. */
+  model?: string;
+  modelNumber?: string;
   warranty?: string;
   isInspected?: boolean;
   isVerifiedSeller?: boolean;

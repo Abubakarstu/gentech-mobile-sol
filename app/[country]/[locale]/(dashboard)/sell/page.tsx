@@ -84,7 +84,12 @@ export default async function SellPage({ params }: PageProps) {
         </Link>
       </div>
 
-      <CreateListingForm categories={categories} brands={brands} locations={locations} />
+      <CreateListingForm
+        categories={categories}
+        brands={brands}
+        locations={locations}
+        showPakistanSignals={showPakistanSignals}
+      />
     </div>
   );
 }

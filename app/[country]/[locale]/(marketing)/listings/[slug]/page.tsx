@@ -28,6 +28,11 @@ import { SellerCard } from "@/features/listings/components/seller-card";
 import { LocationMap } from "@/features/listings/components/location-map";
 import { ShareButton } from "@/features/listings/components/share-button";
 import { FavoriteButton } from "@/features/marketplace/components/favorite-button";
+import { CompareSuggestionsDialog } from "@/features/compare/components/compare-suggestions-dialog";
+import {
+  getCompareSuggestions,
+  toCompareCurrent,
+} from "@/features/compare/services/compare-suggestions.service";
 import { ListingsGrid } from "@/features/marketplace/components/listings-grid";
 import { SectionHeader } from "@/features/marketplace/components/section-header";
 import { ViewListingTracker } from "@/features/analytics/components/view-listing-tracker";
@@ -94,8 +99,9 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
   const tNavigation = await getTranslations({ locale, namespace: "navigation" });
   const { detail, related } = result;
   const isAuthenticated = Boolean(user);
+  const compareCurrent = toCompareCurrent(detail, region);
 
-  const [inspectionPlans, publishedReport, phoneHistory, locations, favoriteIds] =
+  const [inspectionPlans, publishedReport, phoneHistory, locations, favoriteIds, compareSuggestions] =
     await Promise.all([
       getInspectionPlans(),
       getListingInspectionReport(detail.id),
@@ -104,6 +110,7 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
       isAuthenticated && user
         ? getFavoriteListingIds(user.id, [detail.id, ...related.map((listing) => listing.id)])
         : Promise.resolve([]),
+      getCompareSuggestions({ current: compareCurrent, user, region }),
     ]);
 
   const listingPath = `/listings/${detail.slug}`;
@@ -172,6 +179,10 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
             <div className="flex items-start justify-between gap-3">
               <h1 className="text-2xl font-bold tracking-tight">{detail.title}</h1>
               <div className="flex shrink-0 items-center gap-2">
+                <CompareSuggestionsDialog
+                  current={compareCurrent}
+                  suggestions={compareSuggestions}
+                />
                 <FavoriteButton
                   listingId={detail.id}
                   initialIsFavorite={favoriteIds.includes(detail.id)}

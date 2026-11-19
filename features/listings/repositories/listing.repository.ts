@@ -23,6 +23,7 @@ const cardSelect = {
   price: true,
   currency: true,
   condition: true,
+  region: true,
   city: true,
   isFeatured: true,
   negotiable: true,
@@ -181,6 +182,7 @@ function toCardData(row: ListingCardRow): ListingCardData {
     price: Number(row.price),
     currency: row.currency,
     condition: row.condition,
+    region: row.region,
     city: row.city ?? "—",
     brand: row.brand?.name,
     brandSlug: row.brand?.slug,
@@ -197,6 +199,8 @@ function toCardData(row: ListingCardRow): ListingCardData {
     batteryHealth: typeof attrs?.batteryHealth === "number" ? attrs.batteryHealth : undefined,
     ptaStatus: typeof attrs?.ptaStatus === "string" ? attrs.ptaStatus : undefined,
     cpidStatus: typeof attrs?.cpidStatus === "string" ? attrs.cpidStatus : undefined,
+    model: typeof attrs?.model === "string" ? attrs.model : undefined,
+    modelNumber: typeof attrs?.modelNumber === "string" ? attrs.modelNumber : undefined,
     warranty: typeof attrs?.warranty === "string" ? attrs.warranty : undefined,
     isInspected: row.inspections.length > 0,
     isVerifiedSeller: row.seller.emailVerified,
@@ -509,10 +513,18 @@ export async function getSellerListings(sellerId: string, region?: Region): Prom
 }
 
 /** Loads active listing cards in the same order as the requested ids. */
-export async function getListingCardsByIds(ids: string[]): Promise<ListingCardData[]> {
+export async function getListingCardsByIds(
+  ids: string[],
+  region?: Region,
+): Promise<ListingCardData[]> {
   if (ids.length === 0) return [];
   const rows = await prisma.listing.findMany({
-    where: { id: { in: ids }, status: "ACTIVE", deletedAt: null },
+    where: {
+      id: { in: ids },
+      status: "ACTIVE",
+      deletedAt: null,
+      ...(region ? { region } : {}),
+    },
     select: cardSelect,
   });
   const byId = new Map(rows.map((row) => [row.id, toCardData(row)]));
@@ -521,16 +533,46 @@ export async function getListingCardsByIds(ids: string[]): Promise<ListingCardDa
     .filter((listing): listing is ListingCardData => Boolean(listing));
 }
 
+/** Active listings whose title matches any previously compared phone model name. */
+export async function getListingsByModelNames(
+  modelNames: string[],
+  region: Region,
+  excludeId: string,
+  limit = 6,
+): Promise<ListingCardData[]> {
+  const names = modelNames.map((name) => name.trim()).filter(Boolean).slice(0, 8);
+  if (names.length === 0) return [];
+  const rows = await prisma.listing.findMany({
+    where: {
+      status: "ACTIVE",
+      deletedAt: null,
+      region,
+      id: { not: excludeId },
+      OR: names.map((name) => ({ title: { contains: name, mode: "insensitive" as const } })),
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    select: cardSelect,
+  });
+  return rows.map(toCardData);
+}
+
 /** Builds the category-specific attributes JSON from the validated input. */
-function buildAttributes(input: CreateListingInput): Prisma.InputJsonValue | undefined {
+function buildAttributes(
+  input: CreateListingInput,
+  region: Region,
+): Prisma.InputJsonValue | undefined {
   const attributes: Record<string, string | number | boolean> = {};
   if (input.storage) attributes.storage = input.storage;
   if (input.ram) attributes.ram = input.ram;
   if (input.color) attributes.color = input.color;
   if (input.batteryHealth) attributes.batteryHealth = Number(input.batteryHealth);
-  if (input.ptaApproved !== undefined) attributes.ptaApproved = input.ptaApproved;
-  if (input.ptaStatus) attributes.ptaStatus = input.ptaStatus;
-  if (input.cpidStatus) attributes.cpidStatus = input.cpidStatus;
+  // PTA/CPID are Pakistan-only regulatory signals; never persist them on Bahrain listings.
+  if (region === "PAKISTAN") {
+    if (input.ptaApproved !== undefined) attributes.ptaApproved = input.ptaApproved;
+    if (input.ptaStatus) attributes.ptaStatus = input.ptaStatus;
+    if (input.cpidStatus) attributes.cpidStatus = input.cpidStatus;
+  }
 
   // Extended phone attributes
   if (input.model) attributes.model = input.model;
@@ -616,7 +658,7 @@ export async function createListing(
       cityId: city.id,
       areaId: area?.id,
       region: sellerRegion,
-      attributes: buildAttributes(input),
+      attributes: buildAttributes(input, sellerRegion),
       sellerId,
       categoryId: category.id,
       brandId,

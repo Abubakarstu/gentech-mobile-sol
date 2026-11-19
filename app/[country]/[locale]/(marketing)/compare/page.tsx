@@ -5,6 +5,7 @@ import { getTranslations } from "next-intl/server";
 import {
   getCountryFromParam,
   getLocaleFromParam,
+  getRegionForCountry,
 } from "@/lib/countries/server";
 import { getCountryName } from "@/lib/countries";
 import { getCurrencyConfigByCountry } from "@/lib/currency";
@@ -17,7 +18,7 @@ import type { PhoneSpecComparison } from "@/features/phone-intelligence/schemas/
 
 type PageProps = {
   params: Promise<{ country: string; locale: string }>;
-  searchParams?: Promise<{ phones?: string }>;
+  searchParams?: Promise<{ phones?: string; listings?: string }>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -42,16 +43,22 @@ export default async function ComparePage({ params, searchParams }: PageProps) {
   const { country, locale: localeParam } = await params;
   const countryCode = getCountryFromParam(country);
   const locale = getLocaleFromParam(localeParam, countryCode);
+  const region = getRegionForCountry(countryCode);
   const t = await getTranslations({ locale, namespace: "marketplace" });
   const tUi = await getTranslations({ locale, namespace: "uiActions" });
   const countryName = getCountryName(countryCode, locale);
   const currency = getCurrencyConfigByCountry(countryCode).code;
 
   const resolvedSearchParams = searchParams ? await searchParams : {};
+  const listingIds = resolvedSearchParams.listings?.split(",").filter(Boolean) ?? [];
   const phoneIds = resolvedSearchParams.phones?.split(",").filter(Boolean) ?? [];
 
   let phones: PhoneSpecComparison[] = [];
-  if (phoneIds.length >= 2) {
+  if (listingIds.length >= 2) {
+    // ?listings= contains listing IDs from the new selection UI and is region-scoped.
+    phones = await comparisonService.getListingComparisonSpecs(listingIds, region);
+  } else if (phoneIds.length >= 2) {
+    // ?phones= remains supported for catalog-model links.
     phones = await comparisonService.getComparisonSpecs(phoneIds);
   }
 
