@@ -320,6 +320,7 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
             isAuthenticated={Boolean(user)}
             defaultCity={detail.city}
             locations={locations}
+            showPakistanSignals={showPakistanSignals}
           />
         </aside>
       </div>

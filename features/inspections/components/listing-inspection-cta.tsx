@@ -17,6 +17,7 @@ interface Props {
   isAuthenticated: boolean;
   defaultCity?: string;
   locations: LocationTree;
+  showPakistanSignals?: boolean;
 }
 
 /** Sidebar card on the listing detail page — the buyer's entry point to inspections. */
@@ -26,6 +27,7 @@ export function ListingInspectionCta({
   isAuthenticated,
   defaultCity,
   locations,
+  showPakistanSignals = false,
 }: Props) {
   const [open, setOpen] = React.useState(false);
   const fromPrice = plans.length > 0 ? Math.min(...plans.map((p) => p.price)) : null;
@@ -40,8 +42,8 @@ export function ListingInspectionCta({
         <div className="min-w-0">
           <h3 className="font-semibold">Not sure about this phone?</h3>
           <p className="text-muted-foreground mt-0.5 text-sm">
-            Get it checked by a certified GenTech inspector before you buy — battery, IMEI, PTA,
-            cameras and more.
+            Get it checked by a certified GenTech inspector before you buy — battery, IMEI,
+            {showPakistanSignals ? " PTA," : ""} cameras and more.
           </p>
         </div>
       </div>
