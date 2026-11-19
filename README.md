@@ -25,22 +25,16 @@ pnpm install
 
 ## 2. Configure environment
 
-For a database-free public demo, copy the example as-is. The homepage uses demo fixtures
-when PostgreSQL is unavailable. The read-only demo login is `user` / `user`; admin,
-dealer, registration, and database-backed write features are disabled.
+Copy the example and replace the database and auth placeholders with real values.
+`DATABASE_URL` and `BETTER_AUTH_SECRET` are required in every environment.
 
 ```bash
 cp .env.example .env
 ```
 
-For database-backed features, set `DEMO_MODE="false"` and `DEMO_READ_ONLY="false"`,
-then replace the database and auth placeholders with real values.
-
-For an initial database-free Vercel demo, no environment variables are required. When
-both `DATABASE_URL` and `BETTER_AUTH_SECRET` are absent, production automatically
-starts in read-only demo mode and exposes only the `user` / `user` preview login.
-Database requests and all write methods are blocked. To use the real app later, configure
-the database and auth variables and set `DEMO_MODE=false` and `DEMO_READ_ONLY=false`.
+There are no demo accounts or demo-mode flags. The first account registered after
+deployment becomes `ADMIN` when no administrator exists; later accounts are `USER`.
+New accounts are pre-verified and can sign in immediately.
 
 Minimum required to run auth locally:
 
@@ -61,8 +55,8 @@ Optional (features degrade gracefully until set):
 
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — Google sign-in
 - `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET` — Facebook sign-in
-- `RESEND_API_KEY` / `EMAIL_FROM` — real verification & reset emails
-  (without these, email links are printed to the server console)
+- `RESEND_API_KEY` / `EMAIL_FROM` — password-reset emails
+  (without these, reset links are printed to the server console)
 
 OAuth redirect URIs (add in each provider's console):
 
@@ -78,47 +72,16 @@ pnpm db:migrate      # development database: creates tables + generates the clie
 ```
 
 For staging or production, apply committed migrations explicitly with
-`pnpm db:deploy` before deploying the application. Builds seed catalog data in every
-environment, but do not run migrations; configure the environment's intended database
-connection before building.
+`pnpm db:deploy` before deploying the application. Builds do not seed or migrate data;
+run `pnpm db:seed` explicitly against the intended database for catalog reference data.
 
-## Demo accounts
+## Accounts
 
-All dev-like environments — local development, tests, and Vercel Preview — may use every
-documented demo role. Vercel Production remains restricted to the read-only preview user.
-
-Use a separate database for protected Vercel Preview. Dev-like environments
-(local development, tests, Vercel Preview) enable demo mode automatically; set
-`DEMO_SEED_USERS="true"` in any environment where the build or local startup should
-create or refresh verified Better Auth-compatible accounts. Set `DEMO_MODE="false"`
-explicitly to opt out. Accounts are marked email-verified, so no verification bypass
-is needed. Seeding is independent of `DEMO_MODE`: `DEMO_SEED_USERS="true"` seeds all three
-environments, including Production. A database-backed Vercel Production deployment with a real
-`BETTER_AUTH_SECRET` exposes the read-only `user` demo session without requiring `DEMO_MODE=true`
-or `DEMO_SEED_USERS=true`; admin, inspector, and dealer sessions stay blocked there. Normal
-registration/sign-in use the same database regardless of demo flags. A missing or un-migrated
-database never blocks the build.
-You can also run `pnpm db:seed:demo` explicitly:
-
-| Panel     | Email                         | Password              |
-| --------- | ----------------------------- | --------------------- |
-| Admin     | `admin@demo.gentech.test`     | `DemoAdmin-2026!`     |
-| Inspector | `inspector@demo.gentech.test` | `DemoInspector-2026!` |
-| User      | `user@demo.gentech.test`      | `DemoUser-2026!`      |
-| Dealer    | `dealer@demo.gentech.test`    | `DemoDealer-2026!`    |
-
-The admin account has full admin access in dev-like environments. Enable
-`DEMO_SEED_USERS` only where those accounts are intended to exist; production sign-in
-policy still blocks admin, inspector, and dealer sessions. Use the target database's
-`DATABASE_URL` and `DIRECT_URL`; setting the flag alone does not create or migrate a
-schema. Apply committed migrations explicitly with `pnpm db:deploy` on the intended
-database before expecting seeded listings or catalog data.
-
-Sign-in itself is database-independent: when demo mode is enabled, the documented
-credentials always create a signed demo session from the normal email/password form,
-even if the database is unavailable. Email verification is off by default and can be
-switched on by an admin at `/admin/settings` (the change is server-side,
-permission-gated, and audited).
+Only real registered accounts can sign in. On a database with no administrator, the
+first successful registration is assigned `ADMIN`; every later registration is `USER`.
+Email verification is disabled, so no verification step is required after sign-up.
+Use a separate database for Vercel Preview so preview registrations cannot claim the
+production administrator role.
 
 ## 4. Run
 

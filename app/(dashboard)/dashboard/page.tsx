@@ -24,13 +24,11 @@ function DashboardHero({
   email,
   role,
   emailVerified,
-  isDemo = false,
 }: {
   name: string;
   email: string;
   role: UserRole;
   emailVerified: boolean;
-  isDemo?: boolean;
 }) {
   return (
     <section
@@ -41,21 +39,19 @@ function DashboardHero({
         <div className="max-w-2xl">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] text-emerald-200 uppercase">
-              {isDemo ? "Preview mode" : "Your marketplace"}
+              Your marketplace
             </span>
             <Badge className="border-white/10 bg-white/10 text-slate-200">{role}</Badge>
-            {!isDemo ? (
-              <Badge
-                variant="outline"
-                className={
-                  emailVerified
-                    ? "border-emerald-300/25 text-emerald-200"
-                    : "border-amber-300/25 text-amber-200"
-                }
-              >
-                {emailVerified ? "Verified" : "Unverified"}
-              </Badge>
-            ) : null}
+            <Badge
+              variant="outline"
+              className={
+                emailVerified
+                  ? "border-emerald-300/25 text-emerald-200"
+                  : "border-amber-300/25 text-amber-200"
+              }
+            >
+              {emailVerified ? "Verified" : "Unverified"}
+            </Badge>
           </div>
           <h1
             id="dashboard-welcome"
@@ -64,25 +60,22 @@ function DashboardHero({
             Good to see you, {name.split(" ")[0]}.
           </h1>
           <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
-            {isDemo
-              ? "Explore your GenTech dashboard preview. Marketplace actions are disabled in demo mode."
-              : "Your next great find—or your next sale—starts here. Keep your listings, messages, and saved searches moving."}
+            Your next great find—or your next sale—starts here. Keep your listings, messages, and
+            saved searches moving.
           </p>
           <p className="mt-3 text-xs text-slate-400">{email}</p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
-          {!isDemo ? (
-            <Link
-              href={ROUTES.sell}
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "min-h-10 rounded-full bg-emerald-300 px-4 font-semibold text-slate-950 hover:bg-emerald-200",
-              )}
-            >
-              <Plus className="size-4" />
-              Post a listing
-            </Link>
-          ) : null}
+          <Link
+            href={ROUTES.sell}
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "min-h-10 rounded-full bg-emerald-300 px-4 font-semibold text-slate-950 hover:bg-emerald-200",
+            )}
+          >
+            <Plus className="size-4" />
+            Post a listing
+          </Link>
           <Link
             href="/marketplace"
             className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 text-sm font-medium text-white transition-colors hover:bg-white/[0.12]"
@@ -101,34 +94,6 @@ export default async function DashboardPage() {
 
   const { user } = session;
   const role = (user.role as UserRole | undefined) ?? USER_ROLES.USER;
-  if (user.id === "demo:user") {
-    return (
-      <div className="space-y-6">
-        <DashboardHero
-          name={user.name || "Demo"}
-          email={user.email}
-          role={role}
-          emailVerified={user.emailVerified}
-          isDemo
-        />
-        <div className="workspace-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {["My Listings", "Messages", "Saved Searches", "Inspections"].map((label) => (
-            <Card key={label}>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">{label}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">Demo</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <p className="text-muted-foreground text-sm">
-          Preview mode: database actions are unavailable.
-        </p>
-      </div>
-    );
-  }
 
   const [unread, sellerStats, inspectionCount] = await Promise.all([
     getUnreadCount(user.id),

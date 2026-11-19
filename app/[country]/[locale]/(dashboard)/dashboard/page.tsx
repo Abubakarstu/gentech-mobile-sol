@@ -35,7 +35,6 @@ function DashboardHero({
   email,
   role,
   emailVerified,
-  isDemo = false,
   copy,
   links,
 }: {
@@ -43,7 +42,6 @@ function DashboardHero({
   email: string;
   role: UserRole;
   emailVerified: boolean;
-  isDemo?: boolean;
   copy: Record<string, string | undefined>;
   links: { sell: string; marketplace: string };
 }) {
@@ -56,21 +54,19 @@ function DashboardHero({
         <div className="max-w-2xl">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] text-emerald-200 uppercase">
-              {isDemo ? copy.previewMode : copy.yourMarketplace}
+              {copy.yourMarketplace}
             </span>
             <Badge className="border-white/10 bg-white/10 text-slate-200">{role}</Badge>
-            {!isDemo ? (
-              <Badge
-                variant="outline"
-                className={
-                  emailVerified
-                    ? "border-emerald-300/25 text-emerald-200"
-                    : "border-amber-300/25 text-amber-200"
-                }
-              >
-                {emailVerified ? copy.verified : copy.unverified}
-              </Badge>
-            ) : null}
+            <Badge
+              variant="outline"
+              className={
+                emailVerified
+                  ? "border-emerald-300/25 text-emerald-200"
+                  : "border-amber-300/25 text-amber-200"
+              }
+            >
+              {emailVerified ? copy.verified : copy.unverified}
+            </Badge>
           </div>
           <h1
             id="dashboard-welcome"
@@ -78,24 +74,20 @@ function DashboardHero({
           >
             {copy.greeting?.replace("{name}", name.split(" ")[0] ?? name) ?? ""}
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
-            {isDemo ? copy.demoBody : copy.liveBody}
-          </p>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">{copy.liveBody}</p>
           <p className="mt-3 text-xs text-slate-400" dir="ltr">{email}</p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
-          {!isDemo ? (
-            <Link
-              href={links.sell}
-              className={cn(
-                buttonVariants({ size: "sm" }),
-                "min-h-10 rounded-full bg-emerald-300 px-4 font-semibold text-slate-950 hover:bg-emerald-200",
-              )}
-            >
-              <Plus className="size-4" />
-              {copy.postListing}
-            </Link>
-          ) : null}
+          <Link
+            href={links.sell}
+            className={cn(
+              buttonVariants({ size: "sm" }),
+              "min-h-10 rounded-full bg-emerald-300 px-4 font-semibold text-slate-950 hover:bg-emerald-200",
+            )}
+          >
+            <Plus className="size-4" />
+            {copy.postListing}
+          </Link>
           <Link
             href={links.marketplace}
             className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 text-sm font-medium text-white transition-colors hover:bg-white/[0.12]"
@@ -151,39 +143,6 @@ export default async function DashboardPage({ params }: PageProps) {
 
   const { user } = session;
   const role = (user.role as UserRole | undefined) ?? USER_ROLES.USER;
-  if (user.id === "demo:user") {
-    return (
-      <div className="space-y-6">
-        <DashboardHero
-          name={user.name || "Demo"}
-          email={user.email}
-          role={role}
-          emailVerified={user.emailVerified}
-          isDemo
-          copy={copy}
-          links={links}
-        />
-        <div className="workspace-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            tNav("myListings"),
-            tNav("messages"),
-            tNav("savedSearches"),
-            tNav("inspections"),
-          ].map((label) => (
-            <Card key={label}>
-              <CardHeader>
-                <CardTitle className="text-sm font-medium">{label}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{copy.previewMode}</div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-        <p className="text-muted-foreground text-sm">{copy.previewNote}</p>
-      </div>
-    );
-  }
 
   const [unread, sellerStats, inspectionCount] = await Promise.all([
     getUnreadCount(user.id),

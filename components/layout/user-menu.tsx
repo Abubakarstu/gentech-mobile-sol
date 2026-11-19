@@ -39,8 +39,6 @@ interface UserMenuProps {
   email: string;
   image?: string | null;
   role: UserRole | "DEALER";
-  isDemoSession?: boolean;
-  isDemoDealer?: boolean;
 }
 
 function initials(name: string) {
@@ -54,24 +52,15 @@ function initials(name: string) {
   );
 }
 
-export function UserMenu({
-  userId,
-  name,
-  email,
-  image,
-  role,
-  isDemoSession = false,
-  isDemoDealer = false,
-}: UserMenuProps) {
+export function UserMenu({ userId, name, email, image, role }: UserMenuProps) {
   const router = useRouter();
   const t = useTranslations("navigation");
   const tCommon = useTranslations("common");
   const [pending, setPending] = React.useState(false);
 
   React.useEffect(() => {
-    if (isDemoSession) return;
     identify(userId, { role });
-  }, [isDemoSession, role, userId]);
+  }, [role, userId]);
 
   const homeHref = useLocalizedHref(ROUTES.home);
   const dashboardHref = useLocalizedHref(ROUTES.dashboard);
@@ -83,18 +72,9 @@ export function UserMenu({
   const accountHref = useLocalizedHref(ROUTES.account);
   const inspectorHref = useLocalizedHref(ROUTES.inspector);
   const adminHref = useLocalizedHref(ROUTES.admin);
-  const dealerHref = useLocalizedHref(`${ROUTES.dashboard}/dealer`);
 
   async function handleSignOut() {
     setPending(true);
-    if (isDemoSession) {
-      await fetch("/api/demo-login", { method: "DELETE" });
-      resetAnalytics();
-      router.push(homeHref);
-      router.refresh();
-      return;
-    }
-
     await signOut({
       fetchOptions: {
         onSuccess: () => {
@@ -139,52 +119,42 @@ export function UserMenu({
           <LayoutDashboard className="size-4" />
           {t("dashboard")}
         </DropdownMenuItem>
-        {isDemoSession ? null : (
-          <>
-            <DropdownMenuItem render={<Link href={listingsHref} />}>
-              <Package className="size-4" />
-              {t("myListings")}
-            </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={messagesHref} />}>
-              <MessageSquare className="size-4" />
-              {t("messages")}
-            </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={favoritesHref} />}>
-              <Heart className="size-4" />
-              {t("favorites")}
-            </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={savedSearchesHref} />}>
-              <Bookmark className="size-4" />
-              {t("savedSearches")}
-            </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={inspectionsHref} />}>
-              <ShieldCheck className="size-4" />
-              {t("inspections")}
-            </DropdownMenuItem>
-            <DropdownMenuItem render={<Link href={accountHref} />}>
-              <UserIcon className="size-4" />
-              {t("profile")}
-            </DropdownMenuItem>
-            {role === USER_ROLES.INSPECTOR || role === USER_ROLES.ADMIN ? (
-              <DropdownMenuItem render={<Link href={inspectorHref} />}>
-                <ClipboardCheck className="size-4" />
-                {t("inspector")}
-              </DropdownMenuItem>
-            ) : null}
-            {role === USER_ROLES.ADMIN ? (
-              <DropdownMenuItem render={<Link href={adminHref} />}>
-                <LayoutDashboard className="size-4" />
-                {t("admin")}
-              </DropdownMenuItem>
-            ) : null}
-            {isDemoDealer ? (
-              <DropdownMenuItem render={<Link href={dealerHref} />}>
-                <LayoutDashboard className="size-4" />
-                {t("dealerPanel")}
-              </DropdownMenuItem>
-            ) : null}
-          </>
-        )}
+        <DropdownMenuItem render={<Link href={listingsHref} />}>
+          <Package className="size-4" />
+          {t("myListings")}
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href={messagesHref} />}>
+          <MessageSquare className="size-4" />
+          {t("messages")}
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href={favoritesHref} />}>
+          <Heart className="size-4" />
+          {t("favorites")}
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href={savedSearchesHref} />}>
+          <Bookmark className="size-4" />
+          {t("savedSearches")}
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href={inspectionsHref} />}>
+          <ShieldCheck className="size-4" />
+          {t("inspections")}
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href={accountHref} />}>
+          <UserIcon className="size-4" />
+          {t("profile")}
+        </DropdownMenuItem>
+        {role === USER_ROLES.INSPECTOR || role === USER_ROLES.ADMIN ? (
+          <DropdownMenuItem render={<Link href={inspectorHref} />}>
+            <ClipboardCheck className="size-4" />
+            {t("inspector")}
+          </DropdownMenuItem>
+        ) : null}
+        {role === USER_ROLES.ADMIN ? (
+          <DropdownMenuItem render={<Link href={adminHref} />}>
+            <LayoutDashboard className="size-4" />
+            {t("admin")}
+          </DropdownMenuItem>
+        ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onSelect={(event) => event.preventDefault()}

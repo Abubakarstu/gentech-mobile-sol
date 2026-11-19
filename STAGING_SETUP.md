@@ -229,8 +229,6 @@ DIRECT_URL="postgresql://user:password@host:port/database"
 
 # Authentication
 BETTER_AUTH_SECRET="your-staging-secret-min-32-characters"
-# Email verification is controlled in /admin/settings; legacy flag kept for compatibility.
-AUTH_SKIP_EMAIL_VERIFICATION="false"
 
 # Vercel Preview automatically provides the staging origin; URL variables are not needed.
 # For a non-Vercel staging deployment, optionally set APP_URL and BETTER_AUTH_URL.

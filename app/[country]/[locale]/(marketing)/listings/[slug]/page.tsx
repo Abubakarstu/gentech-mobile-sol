@@ -93,7 +93,7 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
   const tCondition = await getTranslations({ locale, namespace: "condition" });
   const tNavigation = await getTranslations({ locale, namespace: "navigation" });
   const { detail, related } = result;
-  const isAuthenticated = Boolean(user && user.id !== "demo:user");
+  const isAuthenticated = Boolean(user);
 
   const [inspectionPlans, publishedReport, phoneHistory, locations, favoriteIds] =
     await Promise.all([

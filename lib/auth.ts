@@ -2,12 +2,11 @@ import { betterAuth, type BetterAuthOptions } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { nextCookies } from "better-auth/next-js";
 
-import { isEmailVerificationRequired } from "@/features/admin/services/settings.service";
+import { assignInitialAdminIfNeeded } from "@/features/auth/repositories/initial-role.repository";
 import { APP_URL, IS_VERCEL_DEPLOYMENT } from "@/lib/app-url";
 import { APP, USER_ROLES } from "@/lib/constants";
 import { sendEmail } from "@/lib/email";
 import { env } from "@/lib/env";
-import { DEMO_LOCAL_SECRET, isReadOnlyDemoEnabled } from "@/lib/demo-mode";
 // Better Auth owns its tables, so it is the one infrastructure module besides
 // repositories that may import the Prisma client directly.
 import { prisma } from "@/lib/prisma";
@@ -34,42 +33,22 @@ function buildSocialProviders(): BetterAuthOptions["socialProviders"] {
   return providers;
 }
 
-/**
- * Better Auth's static gate stays off so the admin-controlled setting can be
- * evaluated per sign-in in the route handler. Unverified accounts are rejected
- * there when verification is enabled, and demo accounts are always pre-verified.
- */
-const requireEmailVerification = false;
-
 export const auth = betterAuth({
   appName: APP.name,
   baseURL: IS_VERCEL_DEPLOYMENT ? APP_URL : (env.BETTER_AUTH_URL ?? APP_URL),
-  secret: env.BETTER_AUTH_SECRET || (isReadOnlyDemoEnabled() ? DEMO_LOCAL_SECRET : ""),
+  secret: env.BETTER_AUTH_SECRET,
 
   database: prismaAdapter(prisma, { provider: "postgresql" }),
 
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification,
+    requireEmailVerification: false,
     minPasswordLength: 8,
     sendResetPassword: async ({ user, url }) => {
       await sendEmail({
         to: user.email,
         subject: `Reset your ${APP.name} password`,
         text: `Hi ${user.name || "there"},\n\nReset your password using the link below (valid for 1 hour):\n${url}\n\nIf you didn't request this, you can safely ignore this email.`,
-      });
-    },
-  },
-
-  emailVerification: {
-    sendOnSignUp: true,
-    autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
-      if (!(await isEmailVerificationRequired())) return;
-      await sendEmail({
-        to: user.email,
-        subject: `Verify your ${APP.name} email`,
-        text: `Welcome to ${APP.name}!\n\nConfirm your email address to activate your account:\n${url}`,
       });
     },
   },
@@ -105,7 +84,12 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        before: async (user) => ({ data: { ...user, emailVerified: true } }),
         after: async (user) => {
+          // Promote the first persisted account only; the lock in the repository
+          // makes concurrent sign-ups safe.
+          await assignInitialAdminIfNeeded(user.id);
+
           // Provision an (empty) profile row alongside every new account.
           // Pass the user's chosen region to the profile.
           await prisma.profile.create({

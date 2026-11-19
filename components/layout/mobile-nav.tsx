@@ -17,10 +17,9 @@ import { CountryLocaleSelector } from "@/components/country-locale-selector";
 interface MobileNavProps {
   categories: CategoryItem[];
   isAuthenticated: boolean;
-  isDemoSession?: boolean;
 }
 
-export function MobileNav({ categories, isAuthenticated, isDemoSession = false }: MobileNavProps) {
+export function MobileNav({ categories, isAuthenticated }: MobileNavProps) {
   const t = useTranslations("navigation");
   const tCategories = useTranslations("categories");
   const tCommon = useTranslations("common");
@@ -144,12 +143,10 @@ export function MobileNav({ categories, isAuthenticated, isDemoSession = false }
               </nav>
 
               <div className="space-y-2 border-t p-4">
-                {!isDemoSession ? (
-                  <LocalizedLink href={ROUTES.sell} className={cn(buttonVariants(), "w-full")}>
-                    <Plus className="size-4" />
-                    {t("sell")}
-                  </LocalizedLink>
-                ) : null}
+                <LocalizedLink href={ROUTES.sell} className={cn(buttonVariants(), "w-full")}>
+                  <Plus className="size-4" />
+                  {t("sell")}
+                </LocalizedLink>
                 {!isAuthenticated ? (
                   <LocalizedLink
                     href={ROUTES.signIn}

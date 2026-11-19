@@ -11,7 +11,6 @@ import { ROUTES } from "@/lib/constants";
 import { withCountryLocalePrefix } from "@/lib/localized-path";
 import { CreateListingForm } from "@/features/listings/components/create-listing-form";
 import { buttonVariants } from "@/components/ui/button";
-import { getCurrentUser } from "@/lib/session";
 import {
   getMarketplaceBrands,
   getMarketplaceCategories,
@@ -42,22 +41,8 @@ export default async function SellPage({ params }: PageProps) {
     getTranslations({ locale, namespace: "uiActions" }),
   ]);
 
-  const marketplaceHref = withCountryLocalePrefix(ROUTES.marketplace, countryCode, locale);
   const valuationHref = withCountryLocalePrefix(ROUTES.valuation, countryCode, locale);
   const imeiHref = withCountryLocalePrefix(ROUTES.imeiCheck, countryCode, locale);
-
-  const user = await getCurrentUser();
-  if (user?.id.startsWith("demo:")) {
-    return (
-      <div className="mx-auto max-w-2xl space-y-3">
-        <h1 className="text-2xl font-bold tracking-tight">{tUi("preview")}</h1>
-        <p className="text-muted-foreground text-sm">{tCta("body")}</p>
-        <Link href={marketplaceHref} className={buttonVariants({ variant: "outline" })}>
-          {tUi("browseMarketplace")}
-        </Link>
-      </div>
-    );
-  }
 
   const [categories, brands, locations] = await Promise.all([
     getMarketplaceCategories(region),

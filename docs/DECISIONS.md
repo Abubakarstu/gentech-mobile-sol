@@ -75,11 +75,17 @@
 ## ADR-013: Demo Credentials Are Canonical Fixtures With Scoped Session Creation
 
 - **Date:** 2026-11-18
-- **Status:** Approved
-- **Decision:** Demo credentials live in one shared module and are consumed by the seed, sign-in form, demo panel, and auth route. Known demo emails are intercepted before Better Auth or Prisma so local demo sign-in never depends on a database and never returns 500. A wrong password returns 401. Local development, tests, and Vercel Preview may use every documented role; Vercel Production remains restricted to the read-only user. `VERCEL_ENV` takes precedence over `NODE_ENV` so an unset build-time `NODE_ENV` cannot widen production access. Dealer capability is represented by `USER` + `DealerUser` membership because the `Role` enum has no dealer value; no authorization enum is widened for demos.
+- **Status:** Superseded by ADR-015
+- **Decision:** Demo credentials lived in one shared module and were consumed by the seed, sign-in form, demo panel, and auth route. Known demo emails were intercepted before Better Auth or Prisma. `VERCEL_ENV` took precedence over `NODE_ENV` so an unset build-time `NODE_ENV` could not widen production access. Dealer capability is represented by `USER` + `DealerUser` membership because the `Role` enum has no dealer value.
 
 ## ADR-014: Email Verification Is Opt-In and Admin-Controlled
 
 - **Date:** 2026-11-18
+- **Status:** Superseded by ADR-015
+- **Decision:** Email verification was opt-in via the persisted `EMAIL_VERIFICATION_REQUIRED` app setting and an admin toggle at `/admin/settings`; the auth route enforced it per sign-in.
+
+## ADR-015: Real Accounts Only, First Admin, Verification Disabled
+
+- **Date:** 2026-11-19
 - **Status:** Approved
-- **Decision:** Email verification is off by default and controlled by the persisted `EMAIL_VERIFICATION_REQUIRED` app setting at `/admin/settings`. The setting is permission-gated with `requireAdmin()`, audited, and fail-safe: an absent setting, missing migration, or unavailable database leaves verification off rather than locking users out. Better Auth's static `requireEmailVerification` stays `false`; the auth route enforces the setting per sign-in and discards any session response for an unverified account. Demo accounts remain pre-verified and `AUTH_SKIP_EMAIL_VERIFICATION` is retained only for legacy compatibility.
+- **Decision:** All demo flags, accounts, sessions, seeding, and UI are removed. `DEMO_MODE` is ignored. Better Auth's `user.create.before` hook marks new accounts `emailVerified: true`; its `user.create.after` hook promotes the first persisted account to `ADMIN` only when no active `ADMIN` exists, guarded by `pg_advisory_xact_lock`, so simultaneous sign-ups cannot both claim the role. No verification route, setting, or sign-in gate remains.

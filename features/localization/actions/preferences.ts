@@ -54,7 +54,7 @@ export async function saveLocalizationPreferencesAction(input: {
   cookieStore.set(LOCALE_COOKIE, locale, options);
 
   const user = await getCurrentUser();
-  if (!user || user.id.startsWith("demo:")) {
+  if (!user) {
     return { ok: true, persistedToProfile: false };
   }
 

@@ -29,9 +29,6 @@ export async function requestInspectionAction(
 ): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
-  if (!user.emailVerified) {
-    return { ok: false, error: "Please verify your email before requesting an inspection." };
-  }
 
   const parsed = requestInspectionSchema.safeParse(input);
   if (!parsed.success) {
@@ -55,9 +52,6 @@ export async function requestInspectionAction(
 export async function bookInspectionAction(input: BookInspectionInput): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };
-  if (!user.emailVerified) {
-    return { ok: false, error: "Please verify your email before requesting an inspection." };
-  }
 
   const parsed = bookInspectionSchema.safeParse(input);
   if (!parsed.success) {

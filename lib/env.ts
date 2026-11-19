@@ -1,11 +1,6 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
-import { isDemoModeEnabled, isReadOnlyDemoEnabled } from "@/lib/demo-mode";
-
-const demoMode = isDemoModeEnabled();
-const readOnlyDemo = isReadOnlyDemoEnabled();
-
 /**
  * Type-safe, validated environment variables.
  *
@@ -22,25 +17,16 @@ const readOnlyDemo = isReadOnlyDemoEnabled();
 export const env = createEnv({
   server: {
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-    DEMO_MODE: z.enum(["true", "false"]).default(demoMode ? "true" : "false"),
-    DEMO_READ_ONLY: z.enum(["true", "false"]).default(readOnlyDemo ? "true" : "false"),
 
     // --- Database (Neon PostgreSQL) ---
     // Pooled connection (PgBouncer) for the app; direct connection for migrations.
-    DATABASE_URL: demoMode
-      ? z.string().min(1).default("postgresql://demo:demo@127.0.0.1:5432/gentech")
-      : z.string().min(1, "DATABASE_URL is required"),
+    DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
     DIRECT_URL: z.string().min(1).optional(),
 
     // --- Better Auth ---
-    BETTER_AUTH_SECRET: demoMode
-      ? z.string().min(1).default("local-demo-secret-change-before-deploy-000000000000")
-      : z.string().min(1, "BETTER_AUTH_SECRET is required"),
+    BETTER_AUTH_SECRET: z.string().min(1, "BETTER_AUTH_SECRET is required"),
     BETTER_AUTH_URL: z.url().optional(),
     APP_URL: z.url().optional(),
-    // DEV-ONLY escape hatch: set to "true" to skip the email-verification gate when no
-    // email provider is configured. Ignored in production (see lib/auth.ts).
-    AUTH_SKIP_EMAIL_VERIFICATION: z.string().optional(),
 
     // --- Social OAuth (optional until configured) ---
     GOOGLE_CLIENT_ID: z.string().min(1).optional(),

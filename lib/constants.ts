@@ -69,7 +69,6 @@ export const ROUTES = {
   signUp: "/sign-up",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
-  verifyEmail: "/verify-email",
   // Account
   dashboard: "/dashboard",
   myListings: "/dashboard/listings",

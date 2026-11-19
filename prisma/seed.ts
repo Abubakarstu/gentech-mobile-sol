@@ -2,16 +2,13 @@
  * Database seed — catalog reference data.
  *
  * Seeds the phone-focused category tree and popular brands. Idempotent: safe to
- * run repeatedly (everything upserts by unique slug). Optional demo accounts use
- * Better Auth's password hash format and are gated by `DEMO_SEED_USERS`.
+ * run repeatedly (everything upserts by unique slug).
  *
  * Run via `pnpm db:seed` or automatically after `pnpm db:migrate`.
  */
 import { PrismaPg } from "@prisma/adapter-pg";
 
-import { seedDemoAccounts } from "./demo-accounts";
 import { PrismaClient } from "../lib/generated/prisma/client";
-import { isDemoSeedingEnabled } from "../lib/demo-mode";
 
 // Prisma 7 no longer auto-loads .env; load it for standalone `pnpm db:seed` runs.
 try {
@@ -268,10 +265,6 @@ async function main() {
   const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
   try {
-    if (isDemoSeedingEnabled()) {
-      await seedDemoAccounts(prisma);
-    }
-
     // Categories (roots, then children referencing the root id).
     for (const [rootIndex, root] of CATEGORIES.entries()) {
       const parent = await prisma.category.upsert({

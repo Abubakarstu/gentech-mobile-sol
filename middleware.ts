@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { isReadOnlyDemoEnabled } from "@/lib/demo-mode";
 import { getDefaultLocale, isSupportedLocale } from "@/lib/countries";
 import {
   COUNTRY_HEADER,
@@ -36,7 +35,6 @@ const LOCALIZED_ROUTES = new Set([
   "sign-up",
   "forgot-password",
   "reset-password",
-  "verify-email",
   "dashboard",
   "account",
 ]);
@@ -176,15 +174,6 @@ export function middleware(request: NextRequest) {
 
   if (isStaticOrApi(pathname)) {
     const response = NextResponse.next();
-    addSecurityHeaders(response, pathname, request.nextUrl.searchParams);
-    return response;
-  }
-
-  if (isReadOnlyDemoEnabled() && !["GET", "HEAD"].includes(request.method)) {
-    const response = NextResponse.json(
-      { error: "This read-only demo does not accept changes." },
-      { status: 403 },
-    );
     addSecurityHeaders(response, pathname, request.nextUrl.searchParams);
     return response;
   }

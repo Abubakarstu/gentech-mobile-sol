@@ -19,9 +19,6 @@ export default async function DealerApplyPage() {
   if (!session) redirect(ROUTES.signIn);
 
   const { user } = session;
-  if (user.id.startsWith("demo:")) {
-    redirect(user.id === "demo:dealer" ? ROUTES.dealerDashboard : ROUTES.dashboard);
-  }
 
   const dealer = await getUserDealer(user.id);
   if (dealer) redirect(ROUTES.dealerDashboard);

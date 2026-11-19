@@ -45,8 +45,9 @@ export function SignUpForm({ providers }: { providers: EnabledSocialProviders })
       return;
     }
 
-    toast.success("Account created — check your email to verify your address.");
-    router.push(`${ROUTES.verifyEmail}?email=${encodeURIComponent(values.email)}`);
+    toast.success("Account created. Welcome to GenTech!");
+    router.push(ROUTES.dashboard);
+    router.refresh();
   }
 
   const isSubmitting = form.formState.isSubmitting;

@@ -26,26 +26,19 @@ export async function SiteHeader() {
   const session = await getCurrentSession();
   const user = session?.user;
   const t = await getServerTranslations("navigation");
-  const isDemoSession = user?.id.startsWith("demo:") ?? false;
   const { country } = await getRequestCountryLocale();
   const categories = getDemoCategories(getRegionForCountry(country));
 
   const [unreadNotifications, recentNotifications, locations] = await Promise.all([
-    user && !isDemoSession
-      ? getUnreadNotificationCount(user.id)
-      : Promise.resolve(0),
-    user && !isDemoSession ? getNotifications(user.id, 6) : Promise.resolve([]),
+    user ? getUnreadNotificationCount(user.id) : Promise.resolve(0),
+    user ? getNotifications(user.id, 6) : Promise.resolve([]),
     getActiveLocationTree(country),
   ]);
 
   return (
     <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full border-b backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-        <MobileNav
-          categories={categories}
-          isAuthenticated={Boolean(user)}
-          isDemoSession={isDemoSession}
-        />
+        <MobileNav categories={categories} isAuthenticated={Boolean(user)} />
 
         <LocalizedLink
           href={ROUTES.home}
@@ -73,20 +66,18 @@ export async function SiteHeader() {
             {t("inspection")}
           </LocalizedLink>
 
-          {!isDemoSession ? (
-            <LocalizedLink
-              href={ROUTES.sell}
-              className={cn(buttonVariants({ size: "sm" }), "hidden rounded-full sm:inline-flex")}
-            >
-              <Plus className="size-4" />
-              {t("sell")}
-            </LocalizedLink>
-          ) : null}
+          <LocalizedLink
+            href={ROUTES.sell}
+            className={cn(buttonVariants({ size: "sm" }), "hidden rounded-full sm:inline-flex")}
+          >
+            <Plus className="size-4" />
+            {t("sell")}
+          </LocalizedLink>
 
           <CountryLocaleSelector />
           <ThemeToggle />
 
-          {user && !isDemoSession ? (
+          {user ? (
             <NotificationBell
               initialCount={unreadNotifications}
               initialItems={recentNotifications}
@@ -100,8 +91,6 @@ export async function SiteHeader() {
               email={user.email}
               image={user.image}
               role={(user.role as UserRole | "DEALER" | undefined) ?? USER_ROLES.USER}
-              isDemoSession={isDemoSession}
-              isDemoDealer={user.id === "demo:dealer"}
             />
           ) : (
             <LocalizedLink

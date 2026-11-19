@@ -13,7 +13,6 @@ const PRIVATE_ROUTE_PREFIXES = [
   "/sign-up",
   "/forgot-password",
   "/reset-password",
-  "/verify-email",
   "/inspection/pay",
 ] as const;
 
@@ -60,8 +59,6 @@ export function buildRobotsConfig(baseUrl: string): MetadataRoute.Robots {
     "/*/forgot-password",
     "/reset-password",
     "/*/reset-password",
-    "/verify-email",
-    "/*/verify-email",
     "/inspection/pay",
   ];
 

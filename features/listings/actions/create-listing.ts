@@ -15,14 +15,11 @@ export interface CreateListingResult {
   error?: string;
 }
 
-/** Server action: validate input, enforce auth + verified email, persist the listing. */
+/** Server action: validate input, enforce auth, persist the listing. */
 export async function createListingAction(input: CreateListingInput): Promise<CreateListingResult> {
   const user = await getCurrentUser();
   if (!user) {
     return { ok: false, error: "You must be signed in to post a listing." };
-  }
-  if (!user.emailVerified) {
-    return { ok: false, error: "Please verify your email before posting a listing." };
   }
 
   const parsed = createListingSchema.safeParse(input);

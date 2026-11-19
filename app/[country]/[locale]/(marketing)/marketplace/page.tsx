@@ -100,7 +100,7 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
   ]);
 
   const canSaveSearch = hasActiveFilters(filters);
-  const isAuthenticated = Boolean(user && user.id !== "demo:user");
+  const isAuthenticated = Boolean(user);
   const favoriteIds =
     isAuthenticated && user
       ? await getFavoriteListingIds(

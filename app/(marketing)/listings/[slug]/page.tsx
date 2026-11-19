@@ -69,7 +69,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
   if (!result) notFound();
 
   const { detail, related } = result;
-  const isAuthenticated = Boolean(user && user.id !== "demo:user");
+  const isAuthenticated = Boolean(user);
 
   // Inspection service data (fail-soft): pricing packages + any published report.
   const [inspectionPlans, publishedReport, phoneHistory, locations, favoriteIds] =

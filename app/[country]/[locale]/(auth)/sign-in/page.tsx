@@ -5,15 +5,6 @@ import { getCountryFromParam, getLocaleFromParam } from "@/lib/countries/server"
 import { getEnabledSocialProviders } from "@/features/auth/server/enabled-providers";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
-import {
-  isDemoModeEnabled,
-  isNonProductionDemoEnvironment,
-  isReadOnlyDemoEnabled,
-} from "@/lib/demo-mode";
-
-const demoAccessEnabled = isDemoModeEnabled();
-const demoOnly = isReadOnlyDemoEnabled();
-const productionDemo = !isNonProductionDemoEnvironment();
 
 export const dynamic = "force-dynamic";
 
@@ -36,12 +27,7 @@ export default async function SignInPage({ params }: PageProps) {
 
   return (
     <AuthCard title={t("signInTitle")} description={t("signInDescription")}>
-      <SignInForm
-        providers={providers}
-        demoAccessEnabled={demoAccessEnabled}
-        demoOnly={demoOnly}
-        productionDemo={productionDemo}
-      />
+      <SignInForm providers={providers} />
     </AuthCard>
   );
 }

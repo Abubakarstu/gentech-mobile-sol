@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 
 export default async function FavoritesPage() {
   const user = await getCurrentUser();
-  if (!user || user.id === "demo:user") redirect(ROUTES.signIn);
+  if (!user) redirect(ROUTES.signIn);
 
   const listings = await getFavoriteListings(user.id);
   const favoriteIds = listings.map((listing) => listing.id);

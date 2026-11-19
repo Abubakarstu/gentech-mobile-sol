@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { CreateListingForm } from "@/features/listings/components/create-listing-form";
 import { buttonVariants } from "@/components/ui/button";
-import { getCurrentUser } from "@/lib/session";
 import {
   getMarketplaceBrands,
   getMarketplaceCategories,
@@ -13,22 +12,6 @@ import { getActiveLocationTree } from "@/features/locations/services/location.se
 export const metadata: Metadata = { title: "Post your ad" };
 
 export default async function SellPage() {
-  const user = await getCurrentUser();
-  if (user?.id.startsWith("demo:")) {
-    return (
-      <div className="mx-auto max-w-2xl space-y-3">
-        <h1 className="text-2xl font-bold tracking-tight">Read-only demo</h1>
-        <p className="text-muted-foreground text-sm">
-          Creating listings is disabled in the demo. Browse the marketplace or explore the phone
-          tools.
-        </p>
-        <Link href="/marketplace" className={buttonVariants({ variant: "outline" })}>
-          Browse marketplace
-        </Link>
-      </div>
-    );
-  }
-
   const [categories, brands, locations] = await Promise.all([
     getMarketplaceCategories(),
     getMarketplaceBrands(),

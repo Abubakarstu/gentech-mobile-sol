@@ -61,7 +61,7 @@ export default async function LocalizedHomepage({ params }: PageProps) {
   const featuredReal = feed.items.filter((item) => item.isFeatured);
   const featured = featuredReal.length > 0 ? featuredReal : feed.items;
   const latest = feed.items;
-  const isAuthenticated = Boolean(user && user.id !== "demo:user");
+  const isAuthenticated = Boolean(user);
   const favoriteIds =
     isAuthenticated && user
       ? await getFavoriteListingIds(user.id, [

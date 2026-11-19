@@ -17,9 +17,6 @@ export const metadata: Metadata = {
 export default async function DealerInventoryPage() {
   const session = await getCurrentSession();
   if (!session) redirect(ROUTES.signIn);
-  if (session.user.id.startsWith("demo:")) {
-    redirect(session.user.id === "demo:dealer" ? ROUTES.dealerDashboard : ROUTES.dashboard);
-  }
 
   const dealer = await getUserDealer(session.user.id);
   if (!dealer) redirect(ROUTES.dealerApply);

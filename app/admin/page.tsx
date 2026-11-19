@@ -55,9 +55,7 @@ const formatCount = (value: number) => value.toLocaleString();
 
 export default async function AdminOverviewPage() {
   const user = await getCurrentUser();
-  const isDemo = user?.id === "demo:admin";
-  const stats = isDemo ? null : await getStats();
-  const regionAnalytics = isDemo ? { regions: [] } : await getRegionAnalyticsData();
+  const [stats, regionAnalytics] = await Promise.all([getStats(), getRegionAnalyticsData()]);
 
   const metrics = [
     {
@@ -158,11 +156,7 @@ export default async function AdminOverviewPage() {
             <h2 id="marketplace-metrics-title" className="text-sm font-semibold text-slate-100">
               Marketplace at a glance
             </h2>
-            <p className="mt-1 text-xs text-slate-500">
-              {isDemo
-                ? "Demo preview · live database metrics are unavailable"
-                : "Current operational totals"}
-            </p>
+            <p className="mt-1 text-xs text-slate-500">Current operational totals</p>
           </div>
           <Link
             href="/admin/analytics"

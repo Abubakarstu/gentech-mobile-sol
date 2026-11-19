@@ -6,7 +6,6 @@ const mockedEnv = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/env", () => ({ env: mockedEnv.env }));
-vi.mock("@/lib/demo-mode", () => ({ isReadOnlyDemoEnabled: () => false }));
 
 import { middleware } from "@/middleware";
 
