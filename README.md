@@ -93,9 +93,11 @@ Use a separate database for protected Vercel Preview. Dev-like environments
 create or refresh verified Better Auth-compatible accounts. Set `DEMO_MODE="false"`
 explicitly to opt out. Accounts are marked email-verified, so no verification bypass
 is needed. Seeding is independent of `DEMO_MODE`: `DEMO_SEED_USERS="true"` seeds all three
-environments, including Production. Seeding does not change sign-in policy: Vercel Production
-still allows only the read-only preview user, and normal registration/sign-in use the same
-database regardless of demo flags. A missing or un-migrated database never blocks the build.
+environments, including Production. With a real database and `BETTER_AUTH_SECRET`, that same
+flag also enables the read-only `user` demo session in Vercel Production without requiring
+`DEMO_MODE=true`; admin, inspector, and dealer sessions stay blocked there. Normal
+registration/sign-in use the same database regardless of demo flags. A missing or un-migrated
+database never blocks the build.
 You can also run `pnpm db:seed:demo` explicitly:
 
 | Panel     | Email                         | Password              |

@@ -6,7 +6,7 @@ import {
   isDemoAccountAllowed,
   matchDemoCredentials,
 } from "@/features/auth/lib/demo-accounts";
-import { isDemoSeedingEnabled } from "@/lib/demo-mode";
+import { isDemoModeEnabled, isDemoSeedingEnabled } from "@/lib/demo-mode";
 
 describe("demo accounts", () => {
   it("exposes all four documented accounts including dealer", () => {
@@ -107,6 +107,48 @@ describe("demo account environment policy", () => {
           ["user", true],
           ["dealer", false],
         ]);
+      },
+    );
+  });
+
+  it("allows only the seeded user in Vercel Production without DEMO_MODE", () => {
+    const seededProductionEnv: EnvOverrides = {
+      NODE_ENV: "production",
+      VERCEL_ENV: "production",
+      DEMO_MODE: undefined,
+      DEMO_READ_ONLY: undefined,
+      BETTER_AUTH_SECRET: "production-secret-with-at-least-32-characters",
+      DATABASE_URL: "postgresql://example:example@127.0.0.1:5432/gentech",
+      DEMO_SEED_USERS: "true",
+    };
+
+    withEnv(seededProductionEnv, () => {
+      expect(isDemoModeEnabled()).toBe(true);
+      expect(DEMO_ACCOUNTS.map((account) => [account.key, isDemoAccountAllowed(account)])).toEqual([
+        ["admin", false],
+        ["inspector", false],
+        ["user", true],
+        ["dealer", false],
+      ]);
+    });
+
+    withEnv({ ...seededProductionEnv, DEMO_SEED_USERS: undefined }, () => {
+      expect(isDemoModeEnabled()).toBe(false);
+      expect(DEMO_ACCOUNTS.map(isDemoAccountAllowed)).toEqual([false, false, false, false]);
+    });
+
+    withEnv({ ...seededProductionEnv, DEMO_MODE: "false" }, () => {
+      expect(isDemoModeEnabled()).toBe(false);
+      expect(DEMO_ACCOUNTS.map(isDemoAccountAllowed)).toEqual([false, false, false, false]);
+    });
+
+    withEnv(
+      {
+        ...seededProductionEnv,
+        BETTER_AUTH_SECRET: "local-demo-secret-change-before-deploy-000000000000",
+      },
+      () => {
+        expect(DEMO_ACCOUNTS.map(isDemoAccountAllowed)).toEqual([false, false, false, false]);
       },
     );
   });

@@ -19,7 +19,8 @@ export function isDemoModeEnabled() {
   return (
     process.env.DEMO_MODE === "true" ||
     isNonProductionDemoEnvironment() ||
-    isProductionDemoFallback()
+    isProductionDemoFallback() ||
+    isSeededProductionDemoEnabled()
   );
 }
 
@@ -39,6 +40,28 @@ export function isReadOnlyDemoEnabled() {
  */
 export function isDemoSeedingEnabled() {
   return process.env.DEMO_SEED_USERS === "true";
+}
+
+function isRealAuthSecret(secret: string | undefined) {
+  return Boolean(secret && secret !== DEMO_AUTH_SECRET_PLACEHOLDER && secret.length >= 32);
+}
+
+/**
+ * A real Vercel Production deployment still needs the documented read-only demo
+ * user. `DEMO_SEED_USERS=true` plus real database/auth credentials is sufficient;
+ * requiring a second `DEMO_MODE=true` flag caused the seeded user to return 401.
+ * `DEMO_MODE=false` remains a hard opt-out, and elevated roles stay blocked by
+ * `isDemoAccountAllowed` / `createDemoCookieValue`.
+ */
+function isSeededProductionDemoEnabled() {
+  return (
+    process.env.NODE_ENV === "production" &&
+    process.env.VERCEL_ENV === "production" &&
+    process.env.DEMO_MODE !== "false" &&
+    isDemoSeedingEnabled() &&
+    Boolean(process.env.DATABASE_URL) &&
+    isRealAuthSecret(process.env.BETTER_AUTH_SECRET)
+  );
 }
 
 /**
@@ -61,6 +84,5 @@ export function isDemoSessionEnabled() {
   if (!isDemoModeEnabled()) return false;
   if (isNonProductionDemoEnvironment()) return true;
   if (isReadOnlyDemoEnabled()) return true;
-  const secret = process.env.BETTER_AUTH_SECRET;
-  return Boolean(secret && secret !== DEMO_AUTH_SECRET_PLACEHOLDER && secret.length >= 32);
+  return isRealAuthSecret(process.env.BETTER_AUTH_SECRET);
 }

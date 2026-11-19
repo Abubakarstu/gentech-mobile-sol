@@ -3,7 +3,7 @@
  *
  * Seeds the phone-focused category tree and popular brands. Idempotent: safe to
  * run repeatedly (everything upserts by unique slug). Optional demo accounts use
- * Better Auth's password hash format and are gated by two explicit environment flags.
+ * Better Auth's password hash format and are gated by `DEMO_SEED_USERS`.
  *
  * Run via `pnpm db:seed` or automatically after `pnpm db:migrate`.
  */
@@ -11,7 +11,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { seedDemoAccounts } from "./demo-accounts";
 import { PrismaClient } from "../lib/generated/prisma/client";
-import { isDemoModeEnabled } from "../lib/demo-mode";
+import { isDemoSeedingEnabled } from "../lib/demo-mode";
 
 // Prisma 7 no longer auto-loads .env; load it for standalone `pnpm db:seed` runs.
 try {
@@ -268,10 +268,7 @@ async function main() {
   const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString }) });
 
   try {
-    if (process.env.DEMO_SEED_USERS === "true") {
-      if (!isDemoModeEnabled()) {
-        throw new Error("DEMO_SEED_USERS requires demo mode to be enabled.");
-      }
+    if (isDemoSeedingEnabled()) {
       await seedDemoAccounts(prisma);
     }
 
