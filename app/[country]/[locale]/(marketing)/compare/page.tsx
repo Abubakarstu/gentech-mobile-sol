@@ -54,12 +54,21 @@ export default async function ComparePage({ params, searchParams }: PageProps) {
   const phoneIds = resolvedSearchParams.phones?.split(",").filter(Boolean) ?? [];
 
   let phones: PhoneSpecComparison[] = [];
-  if (listingIds.length >= 2) {
-    // ?listings= contains listing IDs from the new selection UI and is region-scoped.
-    phones = await comparisonService.getListingComparisonSpecs(listingIds, region);
-  } else if (phoneIds.length >= 2) {
-    // ?phones= remains supported for catalog-model links.
-    phones = await comparisonService.getComparisonSpecs(phoneIds);
+  try {
+    if (listingIds.length >= 2) {
+      // ?listings= contains listing IDs from the new selection UI and is region-scoped.
+      phones = await comparisonService.getListingComparisonSpecs(listingIds, region);
+    } else if (phoneIds.length >= 2) {
+      // ?phones= remains supported for catalog-model links.
+      phones = await comparisonService.getComparisonSpecs(phoneIds);
+    }
+  } catch (error) {
+    // A database outage should show the empty state, not break the whole page.
+    console.warn(
+      "[compare] Could not load comparison data.",
+      error instanceof Error ? error.message : error,
+    );
+    phones = [];
   }
 
   const marketplaceHref = withCountryLocalePrefix(ROUTES.marketplace, countryCode, locale);

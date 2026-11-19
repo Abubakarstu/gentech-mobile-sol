@@ -110,7 +110,12 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
       isAuthenticated && user
         ? getFavoriteListingIds(user.id, [detail.id, ...related.map((listing) => listing.id)])
         : Promise.resolve([]),
-      getCompareSuggestions({ current: compareCurrent, user, region }),
+      getCompareSuggestions({
+        current: compareCurrent,
+        user,
+        region,
+        useDemo: result.source === "demo",
+      }),
     ]);
 
   const listingPath = `/listings/${detail.slug}`;

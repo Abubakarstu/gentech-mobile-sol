@@ -3,6 +3,7 @@ import type { Prisma } from '@/lib/generated/prisma/client';
 import type { Region } from '@/lib/generated/prisma/enums';
 import type { ListingCardData } from '@/types/marketplace';
 import { getListingCardsByIds } from '@/features/listings/repositories/listing.repository';
+import { withDemoListingsForIds } from '@/features/listings/data/demo-source';
 import { phoneModelRepository, type PhoneModelWithBrand } from '../repositories/phone-model.repository';
 import { resolvePhoneModelForListing } from './listing-model-resolver';
 import type { PhoneComparisonInput, PhoneSpecComparison } from '../schemas/comparison.schema';
@@ -139,12 +140,30 @@ export class ComparisonService {
     const ids = [...new Set(listingIds.filter(Boolean))].slice(0, 4);
     if (ids.length < 2) return [];
 
-    const [listings, models] = await Promise.all([
-      getListingCardsByIds(ids, region),
-      phoneModelRepository.findAllActive(),
-    ]);
+    let listings: ListingCardData[] = [];
+    let models: PhoneModelWithBrand[] = [];
+    try {
+      [listings, models] = await Promise.all([
+        getListingCardsByIds(ids, region),
+        phoneModelRepository.findAllActive(),
+      ]);
+    } catch (error) {
+      // Preview mode: the marketplace serves demo cards, so resolve comparison
+      // links against the same region-scoped fixtures instead of failing.
+      console.warn(
+        "[compare] Could not load listing comparison data.",
+        error instanceof Error ? error.message : error,
+      );
+    }
 
-    const specs = listings.map((listing) => {
+    listings = withDemoListingsForIds(listings, ids, region);
+
+    const byId = new Map(listings.map((listing) => [listing.id, listing]));
+    const ordered = ids
+      .map((id) => byId.get(id))
+      .filter((listing): listing is ListingCardData => Boolean(listing));
+
+    const specs = ordered.map((listing) => {
       const model = resolvePhoneModelForListing(listing, models);
       return model ? fromPhoneModel(model) : fromListing(listing);
     });

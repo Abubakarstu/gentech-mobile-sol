@@ -47,6 +47,32 @@ export function searchDemoListings(filters: ListingFilters, region?: Region): Li
   return { items: pageItems, total, page, pageSize: filters.pageSize, totalPages };
 }
 
+/** Resolves demo listing cards by id for preview-mode comparison links. */
+export function getDemoListingCardsByIds(ids: string[], region?: Region): ListingCardData[] {
+  const byId = new Map(getDemoListings(region).map((listing) => [listing.id, listing]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((listing): listing is ListingCardData => Boolean(listing));
+}
+
+/**
+ * Fills unresolved ids from region-scoped demo fixtures. A selection can mix live
+ * database listings with preview cards (e.g. a demo detail page suggesting live
+ * listings), so every missing id must be resolved — not just when none resolved.
+ */
+export function withDemoListingsForIds(
+  resolved: ListingCardData[],
+  ids: string[],
+  region?: Region,
+): ListingCardData[] {
+  if (resolved.length >= ids.length) return resolved;
+  const known = new Set(resolved.map((listing) => listing.id));
+  return [
+    ...resolved,
+    ...getDemoListingCardsByIds(ids, region).filter((listing) => !known.has(listing.id)),
+  ];
+}
+
 function sortListings(items: ListingCardData[], sort: ListingFilters["sort"]): ListingCardData[] {
   const copy = [...items];
   switch (sort) {

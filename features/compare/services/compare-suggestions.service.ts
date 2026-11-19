@@ -8,6 +8,7 @@ import {
   getRelatedListings,
 } from "@/features/listings/repositories/listing.repository";
 import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
+import { getDemoRelated } from "@/features/listings/data/demo-detail";
 import { comparisonService } from "@/features/phone-intelligence/services/comparison.service";
 import { phoneModelRepository } from "@/features/phone-intelligence/repositories/phone-model.repository";
 
@@ -57,10 +58,12 @@ export async function getCompareSuggestions({
   current,
   user,
   region,
+  useDemo = false,
 }: {
   current: ListingCardData;
   user: { id: string } | null;
   region: Region;
+  useDemo?: boolean;
 }): Promise<CompareSuggestions> {
   const seen = new Set<string>([current.id]);
   const keep = (items: ListingCardData[], limit: number): ListingCardData[] => {
@@ -76,23 +79,41 @@ export async function getCompareSuggestions({
 
   let favorites: ListingCardData[] = [];
   let previous: ListingCardData[] = [];
+  let suggested: ListingCardData[] = [];
 
-  if (user) {
-    const [favoriteIds, comparisons] = await Promise.all([
-      getFavoriteListingIds(user.id),
-      comparisonService.getUserComparisons(user.id),
-    ]);
-    const favoriteCards = await getListingCardsByIds(favoriteIds, region);
-    favorites = keep(favoriteCards, 4);
-
-    const modelIds = [...new Set(comparisons.flatMap((row) => row.phoneIds))].slice(0, 8);
-    const models = modelIds.length > 0 ? await phoneModelRepository.findByIds(modelIds) : [];
-    const modelNames = models.flatMap((model) => [model.name, model.modelNumber].filter(Boolean) as string[]);
-    previous = keep(await getListingsByModelNames(modelNames, region, current.id, 6), 4);
+  if (useDemo) {
+    // The detail page is showing preview cards; offer other preview cards so
+    // comparison still works when the database has no inventory for this region.
+    suggested = keep(getDemoRelated(current.categorySlug, current.id, region, 8), 4);
+    return { favorites, previous, suggested };
   }
 
-  const related = await getRelatedListings(current.categorySlug, current.id, 8, region);
-  const suggested = keep(related, 4);
+  // A database outage must degrade to preview suggestions, not a 500.
+  try {
+    if (user) {
+      const [favoriteIds, comparisons] = await Promise.all([
+        getFavoriteListingIds(user.id),
+        comparisonService.getUserComparisons(user.id),
+      ]);
+      const favoriteCards = await getListingCardsByIds(favoriteIds, region);
+      favorites = keep(favoriteCards, 4);
+
+      const modelIds = [...new Set(comparisons.flatMap((row) => row.phoneIds))].slice(0, 8);
+      const models = modelIds.length > 0 ? await phoneModelRepository.findByIds(modelIds) : [];
+      const modelNames = models.flatMap(
+        (model) => [model.name, model.modelNumber].filter(Boolean) as string[],
+      );
+      previous = keep(await getListingsByModelNames(modelNames, region, current.id, 6), 4);
+    }
+
+    suggested = keep(await getRelatedListings(current.categorySlug, current.id, 8, region), 4);
+  } catch (error) {
+    console.warn(
+      "[compare] Database unavailable — using preview suggestions.",
+      error instanceof Error ? error.message : error,
+    );
+    suggested = keep(getDemoRelated(current.categorySlug, current.id, region, 8), 4);
+  }
 
   return { favorites, previous, suggested };
 }

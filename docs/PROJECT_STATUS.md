@@ -46,6 +46,7 @@ Last Updated: 2026-11-19
 - **Pakistan-only signals:** PASS — Bahrain marketplace/detail/sell views expose no PTA/CPID badges or form fields, and the inspection CTA copy omits PTA; `/pk/en/sell` exposes PTA approved, PTA status, and CPID status inputs. Persistence strips PTA/CPID from Bahrain listings in `buildAttributes`.
 - **Localization:** PASS — `/bh/ar/marketplace` and `/pk/ur/marketplace` render translated compare controls with no missing-message keys or console errors.
 - **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 288/288; `pnpm lint` 0 errors / 46 pre-existing warnings; `pnpm exec cross-env SKIP_ENV_VALIDATION=1 next build` passed. QA favorites were restored after verification.
+- **Selection / preview-mode robustness:** PASS — reproduced the reported "only one selected / nothing happens": a detail-page selection mixes a preview listing id (`pk-l1`) with live database ids, and the old compare service silently dropped any id it could not load, so the chosen listing vanished from the result (and all-preview selections produced an empty page). `getCompareSuggestions` now uses region-scoped demo suggestions for preview listings, `withDemoListingsForIds` resolves *every* missing id (not just when none resolved), and the compare page renders its empty state when catalog lookups fail. Bahrain inventory stays Bahrain-only.
 
 ---
 
