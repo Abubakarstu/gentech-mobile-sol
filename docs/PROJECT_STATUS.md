@@ -174,3 +174,8 @@ Last Updated: 2026-11-19
 - **Recovery:** failed migration rows were cleared with `prisma migrate resolve --rolled-back` before re-running `pnpm db:deploy`. `prisma migrate status` now reports `Database schema is up to date!`.
 - **Verification:** `pnpm db:seed:demo` completed against Production without a skip warning; `pnpm typecheck` 0 errors; `pnpm test` 289/289; `pnpm lint` 0 errors / 46 pre-existing warnings.
 - **Note:** Vercel CLI linked the repo and added `.env*` to `.gitignore`. Production still uses the private FCM variables and remains restricted to the read-only `user` demo session.
+
+### Production sign-in UI decoupling (2026-11-19)
+- **Issue:** the read-only preview banner was driven by `!isNonProductionDemoEnvironment()`, which hid normal sign-in and account creation in every Production deployment even when `DATABASE_URL` and `BETTER_AUTH_SECRET` were configured.
+- **Fix:** `demoOnly` now comes from `isReadOnlyDemoEnabled()` and controls only the banner, email/password form, and sign-up link. A new `productionDemo` prop carries the separate demo-role restriction and is still derived from `!isNonProductionDemoEnvironment()`. Production therefore shows real sign-in/registration while the demo panel remains limited to `user`.
+- **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 289/289; `pnpm lint` 0 errors / 46 pre-existing warnings; `pnpm build` exit 0 (265 pages).

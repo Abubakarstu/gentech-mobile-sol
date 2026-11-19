@@ -37,10 +37,12 @@ export function SignInForm({
   providers,
   demoAccessEnabled = false,
   demoOnly = false,
+  productionDemo = false,
 }: {
   providers: EnabledSocialProviders;
   demoAccessEnabled?: boolean;
   demoOnly?: boolean;
+  productionDemo?: boolean;
 }) {
   const router = useRouter();
   const form = useForm<SignInInput>({
@@ -53,7 +55,7 @@ export function SignInForm({
       ? findDemoAccountByEmail(values.email)
       : undefined;
     const demoAccount =
-      matchedDemoAccount && (!demoOnly || matchedDemoAccount.key === "user")
+      matchedDemoAccount && (!productionDemo || matchedDemoAccount.key === "user")
         ? matchedDemoAccount
         : undefined;
     if (demoAccount) {
@@ -167,7 +169,7 @@ export function SignInForm({
         </>
       )}
 
-      {demoAccessEnabled ? <DemoAccess productionDemo={demoOnly} /> : null}
+      {demoAccessEnabled ? <DemoAccess productionDemo={productionDemo} /> : null}
 
       {!demoOnly ? (
         <p className="text-muted-foreground text-center text-sm">

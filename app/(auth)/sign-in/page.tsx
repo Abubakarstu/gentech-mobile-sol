@@ -3,10 +3,15 @@ import type { Metadata } from "next";
 import { getEnabledSocialProviders } from "@/features/auth/server/enabled-providers";
 import { AuthCard } from "@/features/auth/components/auth-card";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
-import { isDemoModeEnabled, isNonProductionDemoEnvironment } from "@/lib/demo-mode";
+import {
+  isDemoModeEnabled,
+  isNonProductionDemoEnvironment,
+  isReadOnlyDemoEnabled,
+} from "@/lib/demo-mode";
 
 const demoAccessEnabled = isDemoModeEnabled();
-const demoOnly = !isNonProductionDemoEnvironment();
+const demoOnly = isReadOnlyDemoEnabled();
+const productionDemo = !isNonProductionDemoEnvironment();
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +24,12 @@ export default function SignInPage() {
   const providers = getEnabledSocialProviders();
   return (
     <AuthCard title="Welcome back" description="Sign in to your account to continue">
-      <SignInForm providers={providers} demoAccessEnabled={demoAccessEnabled} demoOnly={demoOnly} />
+      <SignInForm
+        providers={providers}
+        demoAccessEnabled={demoAccessEnabled}
+        demoOnly={demoOnly}
+        productionDemo={productionDemo}
+      />
     </AuthCard>
   );
 }
