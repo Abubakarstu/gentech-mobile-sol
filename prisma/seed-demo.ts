@@ -2,7 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { seedDemoAccounts } from "./demo-accounts";
 import { PrismaClient } from "../lib/generated/prisma/client";
-import { isDemoModeEnabled } from "../lib/demo-mode";
+import { isDemoSeedingEnabled } from "../lib/demo-mode";
 
 // Prisma 7 no longer auto-loads .env; load it for standalone seed runs.
 try {
@@ -16,12 +16,7 @@ function getConnectionString() {
 }
 
 async function main() {
-  if (process.env.DEMO_SEED_USERS !== "true") return;
-
-  if (!isDemoModeEnabled()) {
-    console.warn("Skipping demo account seeding: demo mode is disabled.");
-    return;
-  }
+  if (!isDemoSeedingEnabled()) return;
 
   const connectionString = getConnectionString();
   if (!connectionString) {

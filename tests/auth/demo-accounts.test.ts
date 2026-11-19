@@ -6,6 +6,7 @@ import {
   isDemoAccountAllowed,
   matchDemoCredentials,
 } from "@/features/auth/lib/demo-accounts";
+import { isDemoSeedingEnabled } from "@/lib/demo-mode";
 
 describe("demo accounts", () => {
   it("exposes all four documented accounts including dealer", () => {
@@ -162,5 +163,52 @@ describe("demo account environment policy", () => {
         expect(DEMO_ACCOUNTS.map(isDemoAccountAllowed)).toEqual([false, false, false, false]);
       },
     );
+  });
+});
+
+describe("demo account seeding policy", () => {
+  const productionBuildEnv: EnvOverrides = {
+    NODE_ENV: "production",
+    VERCEL_ENV: "production",
+    DEMO_MODE: undefined,
+    DEMO_READ_ONLY: undefined,
+    BETTER_AUTH_SECRET: "production-secret-with-at-least-32-characters",
+    DATABASE_URL: "postgresql://example:example@127.0.0.1:5432/gentech",
+    DEMO_SEED_USERS: "true",
+  };
+
+  it("enables seeding during a Vercel Production build without DEMO_MODE", () => {
+    withEnv(productionBuildEnv, () => {
+      expect(isDemoSeedingEnabled()).toBe(true);
+    });
+  });
+
+  it("enables seeding in Vercel Preview and Development", () => {
+    for (const vercelEnv of ["preview", "development"]) {
+      withEnv({ ...productionBuildEnv, VERCEL_ENV: vercelEnv }, () => {
+        expect(isDemoSeedingEnabled()).toBe(true);
+      });
+    }
+  });
+
+  it("stays independent of demo-session policy flags", () => {
+    withEnv(
+      { ...productionBuildEnv, DEMO_MODE: "false", DEMO_READ_ONLY: "false" },
+      () => {
+        expect(isDemoSeedingEnabled()).toBe(true);
+      },
+    );
+  });
+
+  it("does not enable seeding when DEMO_SEED_USERS is unset", () => {
+    withEnv({ ...productionBuildEnv, DEMO_SEED_USERS: undefined }, () => {
+      expect(isDemoSeedingEnabled()).toBe(false);
+    });
+  });
+
+  it("does not enable seeding when DEMO_SEED_USERS is false", () => {
+    withEnv({ ...productionBuildEnv, DEMO_SEED_USERS: "false" }, () => {
+      expect(isDemoSeedingEnabled()).toBe(false);
+    });
   });
 });

@@ -9,7 +9,7 @@
 | `BETTER_AUTH_SECRET`              | YES       | NO          | YES      | NO              | YES     | Better Auth session signing key                                                         |
 | `DEMO_MODE`                       | OPTIONAL  | YES         | YES      | NO              | NO      | Auto-enabled in dev-like environments; `false` opts out, `true` enables prod read-only demo |
 | `DEMO_READ_ONLY`                  | OPTIONAL  | NO          | YES      | NO              | NO      | `true` disables database access and restricts production demo login to the preview user |
-| `DEMO_SEED_USERS`                 | OPTIONAL  | YES         | NO       | NO              | NO      | `true` seeds verified demo accounts in all environments when demo mode is enabled         |
+| `DEMO_SEED_USERS`                 | OPTIONAL  | YES         | NO       | NO              | NO      | `true` seeds verified demo accounts in all environments, independent of `DEMO_MODE`        |
 | `BETTER_AUTH_URL`                 | OPTIONAL  | NO          | YES      | NO              | NO      | Auth base URL override (Vercel origin is detected automatically)                        |
 | `APP_URL`                         | OPTIONAL  | YES         | YES      | NO              | NO      | Server-side app URL override for non-Vercel deployments                                 |
 | `AUTH_SKIP_EMAIL_VERIFICATION`    | OPTIONAL  | NO          | YES      | NO              | NO      | Legacy compatibility flag; admin panel now controls email verification                  |
@@ -168,6 +168,6 @@ read-only demo mode and disables database access.
 - `NEXT_PUBLIC_APP_NAME`: `GenTech`
 - `DEMO_MODE`: auto-enabled for local development, tests, and Vercel Preview; `false` opts out, and production requires explicit `true` for the read-only demo user
 - `DEMO_READ_ONLY`: `false` (automatically enabled for production when database/auth values are absent)
-- `DEMO_SEED_USERS`: `false` (set `true` to seed demo accounts in any enabled environment)
+- `DEMO_SEED_USERS`: `false` (set `true` to seed demo accounts in Development, Preview, and Production, independent of `DEMO_MODE`; a configured `DIRECT_URL`/`DATABASE_URL` is still required)
 
 All other required variables must be explicitly configured.

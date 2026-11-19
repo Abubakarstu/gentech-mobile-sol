@@ -28,6 +28,20 @@ export function isReadOnlyDemoEnabled() {
 }
 
 /**
+ * Build/startup demo seeding is an operational switch, deliberately decoupled from
+ * demo-session policy. `DEMO_SEED_USERS=true` seeds the documented accounts into any
+ * configured database (including Vercel Production) so demo sign-in works in every
+ * environment. Which accounts may actually sign in is governed separately by
+ * `isDemoAccountAllowed`, which keeps Production restricted to `user`.
+ *
+ * A configured `DIRECT_URL`/`DATABASE_URL` is still required at execution time;
+ * the seed runner checks that before connecting.
+ */
+export function isDemoSeedingEnabled() {
+  return process.env.DEMO_SEED_USERS === "true";
+}
+
+/**
  * Dev-like environments where every documented demo account is available:
  * local development, tests, and Vercel Preview. Vercel Production stays
  * restricted to the read-only preview user.
