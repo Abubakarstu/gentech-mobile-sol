@@ -64,13 +64,13 @@ export default async function AdminReportsPage({
 
       <section
         aria-label="Report filters"
-        className="rounded-xl border border-white/[0.08] bg-[#141519] p-3 sm:p-4"
+        className="rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-3 sm:p-4"
       >
         <div className="mb-3 flex items-center justify-between gap-3">
           <p className="text-xs font-medium text-slate-300">
             {result.total.toLocaleString()} {result.total === 1 ? "report" : "reports"}
           </p>
-          <p className="text-[11px] text-slate-500">Filter by case status</p>
+          <p className="text-xs text-slate-500">Filter by case status</p>
         </div>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {FILTERS.map((f) => {
@@ -98,7 +98,7 @@ export default async function AdminReportsPage({
       </section>
 
       {result.items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-white/10 bg-[#141519]/60 px-5 py-12 text-center">
+        <div className="rounded-xl border border-dashed border-white/10 bg-[#1F1F1F]/60 px-5 py-12 text-center">
           <Flag className="mx-auto size-6 text-slate-500" aria-hidden="true" />
           <p className="mt-3 text-sm font-semibold text-slate-200">No reports in this view</p>
           <p className="mt-1 text-xs text-slate-500">
@@ -108,7 +108,7 @@ export default async function AdminReportsPage({
       ) : (
         <section
           aria-label="Reports"
-          className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.08] bg-[#141519]"
+          className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.08] bg-[#1F1F1F]"
         >
           {result.items.map((report) => (
             <AdminReportRow key={report.id} report={report} />

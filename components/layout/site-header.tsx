@@ -1,4 +1,6 @@
-import { Plus, ShieldCheck } from "lucide-react";
+import { LayoutGrid, Plus, ShieldCheck } from "lucide-react";
+
+import { ActiveLocalizedLink } from "@/components/layout/active-localized-link";
 
 import { APP, ROUTES, USER_ROLES, type UserRole } from "@/lib/constants";
 import { getRequestCountryLocale } from "@/lib/countries/server";
@@ -36,78 +38,92 @@ export async function SiteHeader() {
   ]);
 
   return (
-    <header className="bg-background/80 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40 w-full border-b backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-        <MobileNav categories={categories} isAuthenticated={Boolean(user)} />
-
-        <LocalizedLink
-          href={ROUTES.home}
-          className="flex shrink-0 items-center gap-2 font-semibold tracking-tight"
-        >
-          <span className="bg-primary text-primary-foreground grid size-7 place-items-center rounded-md text-sm font-bold">
-            {APP.name.charAt(0)}
-          </span>
-          <span className="hidden sm:inline">{APP.name}</span>
-        </LocalizedLink>
-
-        <div className="mx-2 hidden flex-1 md:block">
-          <SearchBar variant="compact" locations={locations} />
-        </div>
-
-        <nav className="ml-auto flex items-center gap-1.5 md:ml-0">
-          <LocalizedLink
-            href={ROUTES.inspectionService}
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "sm" }),
-              "hidden lg:inline-flex",
-            )}
-          >
-            <ShieldCheck className="size-4" />
-            {t("inspection")}
-          </LocalizedLink>
+    <header className="sticky top-2 z-40 mx-auto mt-2 w-[calc(100%-1.5rem)] max-w-6xl">
+      <div className="rounded-2xl border border-border/60 bg-background/85 shadow-lg shadow-foreground/5 backdrop-blur-xl">
+        <div className="flex h-14 items-center gap-2 px-3 sm:px-4">
+          <MobileNav categories={categories} isAuthenticated={Boolean(user)} />
 
           <LocalizedLink
-            href={ROUTES.sell}
-            className={cn(buttonVariants({ size: "sm" }), "hidden rounded-full sm:inline-flex")}
+            href={ROUTES.home}
+            className="flex shrink-0 items-center gap-2 font-semibold tracking-tight"
           >
-            <Plus className="size-4" />
-            {t("sell")}
+            <span className="bg-primary text-primary-foreground grid size-8 place-items-center rounded-lg text-sm font-semibold">
+              {APP.name.charAt(0)}
+            </span>
+            <span className="hidden sm:inline">{APP.name}</span>
           </LocalizedLink>
 
-          <CountryLocaleSelector />
-          <ThemeToggle />
-
-          {user ? (
-            <NotificationBell
-              initialCount={unreadNotifications}
-              initialItems={recentNotifications}
-            />
-          ) : null}
-
-          {user ? (
-            <UserMenu
-              userId={user.id}
-              name={user.name}
-              email={user.email}
-              image={user.image}
-              role={(user.role as UserRole | "DEALER" | undefined) ?? USER_ROLES.USER}
-            />
-          ) : (
-            <LocalizedLink
-              href={ROUTES.signIn}
+          <nav aria-label={t("navigation")} className="hidden items-center gap-1 lg:flex">
+            <ActiveLocalizedLink
+              href={ROUTES.marketplace}
               className={cn(
                 buttonVariants({ variant: "ghost", size: "sm" }),
-                "hidden sm:inline-flex",
+                "gap-2 px-3 font-medium",
               )}
             >
-              {t("signIn")}
-            </LocalizedLink>
-          )}
-        </nav>
-      </div>
+              <LayoutGrid className="size-4" />
+              {t("marketplace")}
+            </ActiveLocalizedLink>
+            <ActiveLocalizedLink
+              href={ROUTES.inspectionService}
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "sm" }),
+                "gap-2 px-3 font-medium",
+              )}
+            >
+              <ShieldCheck className="size-4" />
+              {t("inspection")}
+            </ActiveLocalizedLink>
+          </nav>
 
-      <div className="border-t px-4 py-2 md:hidden">
-        <SearchBar variant="compact" locations={locations} />
+          <div className="mx-2 hidden flex-1 md:block">
+            <SearchBar variant="compact" locations={locations} />
+          </div>
+
+          <nav aria-label={t("account")} className="ms-auto flex items-center gap-1.5">
+            <LocalizedLink
+              href={ROUTES.sell}
+              className={cn(buttonVariants({ size: "sm" }), "hidden gap-2 rounded-lg sm:inline-flex")}
+            >
+              <Plus className="size-4" />
+              {t("sell")}
+            </LocalizedLink>
+
+            <CountryLocaleSelector />
+            <ThemeToggle />
+
+            {user ? (
+              <NotificationBell
+                initialCount={unreadNotifications}
+                initialItems={recentNotifications}
+              />
+            ) : null}
+
+            {user ? (
+              <UserMenu
+                userId={user.id}
+                name={user.name}
+                email={user.email}
+                image={user.image}
+                role={(user.role as UserRole | "DEALER" | undefined) ?? USER_ROLES.USER}
+              />
+            ) : (
+              <LocalizedLink
+                href={ROUTES.signIn}
+                className={cn(
+                  buttonVariants({ variant: "ghost", size: "sm" }),
+                  "hidden sm:inline-flex",
+                )}
+              >
+                {t("signIn")}
+              </LocalizedLink>
+            )}
+          </nav>
+        </div>
+
+        <div className="border-t px-3 py-2 md:hidden">
+          <SearchBar variant="compact" locations={locations} />
+        </div>
       </div>
     </header>
   );

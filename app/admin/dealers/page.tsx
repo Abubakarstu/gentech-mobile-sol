@@ -91,7 +91,7 @@ export default async function AdminDealersPage({
             name="q"
             defaultValue={q}
             placeholder="Search stores, email, city…"
-            className="min-h-10 border-white/10 bg-[#141519] text-white placeholder:text-slate-500 sm:w-64"
+            className="min-h-10 border-white/10 bg-[#1F1F1F] text-white placeholder:text-slate-500 sm:w-64"
           />
           <Button type="submit" variant="outline" className="min-h-10 border-white/10">
             Search
@@ -101,7 +101,7 @@ export default async function AdminDealersPage({
 
       <section aria-label="Dealer metrics" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {metrics.map(({ label, value, icon: Icon, style }) => (
-          <div key={label} className="rounded-xl border border-white/[0.08] bg-[#141519] p-4">
+          <div key={label} className="rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-4">
             <div className="flex items-center justify-between gap-3">
               <p className="text-xs font-medium text-slate-400">{label}</p>
               <Icon className={cn("size-4", style)} aria-hidden="true" />
@@ -111,7 +111,7 @@ export default async function AdminDealersPage({
         ))}
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#141519]">
+      <section className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1F1F1F]">
         <div className="border-b border-white/[0.07] p-3 sm:p-4">
           <nav
             aria-label="Dealer status filters"
@@ -137,7 +137,7 @@ export default async function AdminDealersPage({
                 >
                   {filter.label}
                   {filter.value !== "ALL" ? (
-                    <span className="ml-2 text-[10px] opacity-70">{counts[filter.value]}</span>
+                    <span className="ml-2 text-xs opacity-70">{counts[filter.value]}</span>
                   ) : null}
                 </Link>
               );

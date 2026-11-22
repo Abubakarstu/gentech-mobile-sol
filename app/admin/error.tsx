@@ -21,7 +21,7 @@ export default function AdminError({
     <div className="mx-auto flex min-h-[50svh] max-w-lg items-center justify-center py-10">
       <section
         role="alert"
-        className="w-full rounded-2xl border border-rose-400/20 bg-[#141519] p-5 text-center sm:p-7"
+        className="w-full rounded-2xl border border-rose-400/20 bg-[#1F1F1F] p-5 text-center sm:p-7"
       >
         <span className="mx-auto flex size-11 items-center justify-center rounded-xl bg-rose-400/10 text-rose-300">
           <AlertCircle className="size-5" aria-hidden="true" />

@@ -195,7 +195,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search models…"
               aria-label="Search phone models"
-              className="border-white/10 bg-[#141519] pl-9 text-white placeholder:text-slate-500"
+              className="border-white/10 bg-[#1F1F1F] pl-9 text-white placeholder:text-slate-500"
             />
           </div>
 
@@ -207,7 +207,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
               id="model-brand-filter"
               value={selectedBrand}
               onChange={(e) => setSelectedBrand(e.target.value)}
-              className="h-10 w-full rounded-lg border border-white/10 bg-[#141519] px-3 text-xs text-white focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+              className="h-10 w-full rounded-lg border border-white/10 bg-[#1F1F1F] px-3 text-xs text-white focus:ring-2 focus:ring-emerald-400 focus:outline-none"
             >
               <option value="">All Brands ({models.length})</option>
               {brands.map((b) => (
@@ -231,7 +231,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
       </header>
 
       <div
-        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/[0.07] bg-[#141519] px-4 py-3 text-xs"
+        className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/[0.07] bg-[#1F1F1F] px-4 py-3 text-xs"
         aria-live="polite"
       >
         <p className="text-slate-400">
@@ -254,7 +254,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
       {showAddForm && (
         <form
           onSubmit={handleCreate}
-          className="space-y-5 rounded-xl border border-white/10 bg-[#141519] p-6 shadow-lg"
+          className="space-y-5 rounded-xl border border-white/10 bg-[#1F1F1F] p-6 shadow-lg"
         >
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 className="text-sm font-semibold text-white">
@@ -492,11 +492,11 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
       {/* Models Table */}
       <section
         aria-label="Phone model catalog"
-        className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]"
+        className="overflow-hidden rounded-xl border border-white/10 bg-[#1F1F1F]"
       >
         <div className="overflow-x-auto">
           <table className="w-full min-w-[840px] text-left text-sm text-slate-300">
-            <thead className="border-b border-white/10 bg-[#08090b] text-xs font-semibold tracking-wider text-slate-400 uppercase">
+            <thead className="border-b border-white/10 bg-[#181818] text-xs font-semibold tracking-wider text-slate-400 uppercase">
               <tr>
                 <th className="px-6 py-4">Phone Model</th>
                 <th className="px-4 py-4">Brand</th>
@@ -535,7 +535,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
                                 setEditPrice(e.target.value ? Number(e.target.value) : undefined)
                               }
                               placeholder="Launch Price PKR"
-                              className="h-7 border-white/20 bg-[#0e0f12] text-[11px] text-white"
+                              className="h-7 border-white/20 bg-[#0e0f12] text-xs text-white"
                             />
                           </div>
                         ) : (
@@ -554,7 +554,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
                             <div>
                               <div className="font-semibold text-white">{model.name}</div>
                               {model.launchPrice ? (
-                                <div className="text-[11px] text-slate-400">
+                                <div className="text-xs text-slate-400">
                                   Launch: PKR {Number(model.launchPrice).toLocaleString()}
                                 </div>
                               ) : null}
@@ -573,7 +573,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
                             model.storageOptions.map((s) => (
                               <span
                                 key={s}
-                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-300"
+                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-xs text-slate-300"
                               >
                                 {s}
                               </span>
@@ -589,7 +589,7 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
                             model.ramOptions.map((r) => (
                               <span
                                 key={r}
-                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-[10px] text-slate-300"
+                                className="rounded border border-white/10 bg-white/5 px-1.5 py-0.5 font-mono text-xs text-slate-300"
                               >
                                 {r}
                               </span>
@@ -614,11 +614,11 @@ export function ModelManager({ models, brands }: ModelManagerProps) {
                           aria-pressed={model.isActive}
                         >
                           {model.isActive ? (
-                            <Badge className="border-emerald-500/30 bg-emerald-500/20 text-[11px] text-emerald-300">
+                            <Badge className="border-emerald-500/30 bg-emerald-500/20 text-xs text-emerald-300">
                               Active
                             </Badge>
                           ) : (
-                            <Badge className="border-white/10 bg-slate-800 text-[11px] text-slate-400">
+                            <Badge className="border-white/10 bg-slate-800 text-xs text-slate-400">
                               Inactive
                             </Badge>
                           )}

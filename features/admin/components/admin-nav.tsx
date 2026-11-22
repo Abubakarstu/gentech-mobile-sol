@@ -90,7 +90,7 @@ function AdminGroupList({ pathname }: { pathname: string }) {
     <>
       {ADMIN_NAV_GROUPS.map((group) => (
         <div key={group.label} className="space-y-2">
-          <p className="px-3 text-[10px] font-semibold tracking-[0.16em] text-slate-500 uppercase">
+          <p className="px-3 text-xs font-semibold tracking-[0.16em] text-slate-500 uppercase">
             {group.label}
           </p>
           <div className="space-y-1">
@@ -107,7 +107,7 @@ function AdminGroupList({ pathname }: { pathname: string }) {
                   }}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-medium transition-colors",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                     active
                       ? "bg-emerald-400 font-semibold text-slate-950"
                       : "text-slate-400 hover:bg-white/[0.06] hover:text-white",
@@ -129,15 +129,15 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-full shrink-0 flex-col border-b border-white/10 bg-[#08090b] text-slate-300 md:sticky md:top-0 md:h-svh md:w-64 md:border-r md:border-b-0">
+    <aside className="flex w-full shrink-0 flex-col border-b border-white/10 bg-[#181818] text-slate-300 md:sticky md:top-0 md:h-svh md:w-64 md:border-r md:border-b-0">
       <div className="flex h-16 items-center justify-between border-b border-white/10 px-4 md:h-[72px] md:px-6">
         <Link href={ROUTES.admin} className="flex items-center gap-3">
-          <span className="flex size-9 items-center justify-center rounded-xl bg-emerald-400 text-sm font-black text-slate-950">
+          <span className="flex size-9 items-center justify-center rounded-xl bg-emerald-400 text-sm font-bold text-slate-950">
             G
           </span>
           <span>
             <span className="block text-sm font-bold tracking-wide text-white">GenTech</span>
-            <span className="block text-[11px] text-slate-400">Operations workspace</span>
+            <span className="block text-xs text-slate-400">Operations workspace</span>
           </span>
         </Link>
 
@@ -148,7 +148,7 @@ export function AdminNav() {
             <ChevronDown className="size-3.5 text-slate-500 transition-transform group-open:rotate-180" />
           </summary>
           <nav
-            className="absolute top-12 right-0 z-30 max-h-[75svh] w-[min(22rem,calc(100vw-2rem))] space-y-6 overflow-y-auto rounded-xl border border-white/10 bg-[#101114] p-3 shadow-2xl shadow-black/50"
+            className="absolute top-12 right-0 z-30 max-h-[75svh] w-[min(22rem,calc(100vw-2rem))] space-y-6 overflow-y-auto rounded-xl border border-white/10 bg-[#181818] p-3 shadow-2xl shadow-black/50"
             aria-label="Admin sections"
           >
             <AdminGroupList pathname={pathname} />

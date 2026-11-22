@@ -117,7 +117,7 @@ export default async function AdminOrdersPage({
           name="q"
           defaultValue={q}
           placeholder="Search by order number or customer..."
-          className="flex-1 rounded-lg border border-white/10 bg-[#141519] px-3 py-2 text-sm text-white"
+          className="flex-1 rounded-lg border border-white/10 bg-[#1F1F1F] px-3 py-2 text-sm text-white"
         />
         <input type="hidden" name="country" value={country} />
         <input type="hidden" name="status" value={status} />
@@ -131,7 +131,7 @@ export default async function AdminOrdersPage({
 
       {/* Orders list */}
       {orders.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-white/10 bg-[#141519]/60 px-5 py-12 text-center">
+        <div className="rounded-xl border border-dashed border-white/10 bg-[#1F1F1F]/60 px-5 py-12 text-center">
           <p className="text-sm font-semibold text-slate-200">No orders found</p>
         </div>
       ) : (
@@ -141,7 +141,7 @@ export default async function AdminOrdersPage({
             return (
               <div
                 key={order.id}
-                className="rounded-xl border border-white/[0.08] bg-[#141519] p-4"
+                className="rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-4"
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -162,7 +162,7 @@ export default async function AdminOrdersPage({
                     <p className={`text-xs font-medium ${STATUS_COLORS[order.status] || "text-slate-400"}`}>
                       {STATUS_LABELS[order.status] || order.status}
                     </p>
-                    <p className="text-[10px] text-slate-500">
+                    <p className="text-xs text-slate-500">
                       {order.region === "BAHRAIN" ? "🇧🇭" : "🇵🇰"} {order.paymentStatus}
                     </p>
                   </div>

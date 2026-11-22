@@ -30,11 +30,11 @@ export function AdminTopbar({ name }: { name: string }) {
   const groupLabel = active?.group ?? "Admin";
 
   return (
-    <header className="flex min-h-16 items-center justify-between gap-3 border-b border-white/10 bg-[#101114] px-4 sm:px-7 md:min-h-[72px]">
+    <header className="flex min-h-16 items-center justify-between gap-3 border-b border-white/10 bg-[#181818] px-4 sm:px-7 md:min-h-[72px]">
       <div className="min-w-0">
         <nav
           aria-label="Breadcrumb"
-          className="flex items-center gap-1.5 text-[11px] font-medium text-slate-500"
+          className="flex items-center gap-1.5 text-xs font-medium text-slate-500"
         >
           <Link href="/admin" className="transition-colors hover:text-slate-300">
             GenTech
@@ -47,13 +47,13 @@ export function AdminTopbar({ name }: { name: string }) {
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
-        <span className="hidden items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/[0.06] px-3 py-1.5 text-[11px] font-medium text-emerald-200 sm:inline-flex">
+        <span className="hidden items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/[0.06] px-3 py-1.5 text-xs font-medium text-emerald-200 sm:inline-flex">
           <span className="size-1.5 rounded-full bg-emerald-400" />
           Admin workspace
         </span>
         <span className="hidden text-right sm:block">
           <span className="block text-xs font-semibold text-slate-200">{name}</span>
-          <span className="block text-[11px] text-slate-500">Administrator</span>
+          <span className="block text-xs text-slate-500">Administrator</span>
         </span>
         <span
           role="img"

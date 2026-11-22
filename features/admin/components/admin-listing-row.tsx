@@ -238,7 +238,7 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
             aria-modal="true"
             aria-labelledby={`reject-title-${listing.id}`}
             aria-describedby={`reject-description-${listing.id}`}
-            className="w-full max-w-md space-y-4 rounded-xl border border-white/10 bg-[#141519] p-5 shadow-2xl sm:p-6"
+            className="w-full max-w-md space-y-4 rounded-xl border border-white/10 bg-[#1F1F1F] p-5 shadow-2xl sm:p-6"
           >
             <div>
               <h2 id={`reject-title-${listing.id}`} className="text-base font-semibold text-white">
@@ -270,7 +270,7 @@ export function AdminListingRow({ listing }: { listing: AdminListingRowData }) {
               />
               <p
                 id={`reject-count-${listing.id}`}
-                className="mt-0.5 text-right text-[11px] text-slate-500"
+                className="mt-0.5 text-right text-xs text-slate-500"
               >
                 {rejectReason.length}/500
               </p>

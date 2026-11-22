@@ -34,7 +34,7 @@ export default async function AdminPromotionsPage() {
             processing remains a separate integration.
           </p>
         </div>
-        <div className="rounded-lg border border-white/[0.08] bg-[#141519] px-4 py-3">
+        <div className="rounded-lg border border-white/[0.08] bg-[#1F1F1F] px-4 py-3">
           <p className="text-xs text-slate-400">Active packages</p>
           <p className="mt-1 text-xl font-semibold text-slate-100">
             {plans.filter((plan) => plan.isActive).length}

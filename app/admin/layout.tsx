@@ -16,11 +16,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!admin) redirect(ROUTES.dashboard);
 
   return (
-    <div className="dark flex min-h-svh flex-col bg-[#0b0c0f] md:flex-row">
+    <div className="dark flex min-h-svh flex-col bg-[#181818] md:flex-row">
       <AdminNav />
       <div className="min-w-0 flex-1">
         <AdminTopbar name={admin.name} />
-        <main className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-7 sm:py-7">{children}</main>
+        <main id="main-content" className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-7 sm:py-7">{children}</main>
       </div>
     </div>
   );

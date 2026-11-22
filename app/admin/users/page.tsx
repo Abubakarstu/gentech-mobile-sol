@@ -55,7 +55,7 @@ export default async function AdminUsersPage({
       </header>
 
       {result.items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-white/10 bg-[#141519]/60 px-5 py-12 text-center">
+        <div className="rounded-xl border border-dashed border-white/10 bg-[#1F1F1F]/60 px-5 py-12 text-center">
           <Users className="mx-auto size-6 text-slate-500" aria-hidden="true" />
           <p className="mt-3 text-sm font-semibold text-slate-200">No customers found</p>
           <p className="mt-1 text-xs text-slate-500">Try a different name or email address.</p>
@@ -63,7 +63,7 @@ export default async function AdminUsersPage({
       ) : (
         <section
           aria-label={`${result.total.toLocaleString()} customer accounts`}
-          className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.08] bg-[#141519]"
+          className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.08] bg-[#1F1F1F]"
         >
           <div className="border-b border-white/[0.07] px-4 py-3 text-xs font-medium text-slate-400">
             {result.total.toLocaleString()} {result.total === 1 ? "customer" : "customers"}

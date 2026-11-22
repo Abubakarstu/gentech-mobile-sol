@@ -427,15 +427,15 @@ export function AdminFinanceWorkspace({ section }: { section: string }) {
           ["Needs reconciliation", "Not connected", "Connect bank/provider feed"],
           ["Last close", "Not configured", "Set an accounting period"],
         ].map(([label, value, detail]) => (
-          <div key={label} className="rounded-xl border border-white/10 bg-[#141519] p-4">
+          <div key={label} className="rounded-xl border border-white/10 bg-[#1F1F1F] p-4">
             <p className="text-xs text-slate-400">{label}</p>
             <p className="mt-3 text-lg font-semibold text-slate-200">{value}</p>
-            <p className="mt-1 text-[11px] text-slate-500">{detail}</p>
+            <p className="mt-1 text-xs text-slate-500">{detail}</p>
           </div>
         ))}
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]">
+      <section className="overflow-hidden rounded-xl border border-white/10 bg-[#1F1F1F]">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] p-4">
           <div>
             <h2 className="text-sm font-semibold text-slate-100">{content.title} register</h2>
@@ -493,8 +493,8 @@ export function AdminFinanceWorkspace({ section }: { section: string }) {
 
       <section className="grid gap-3 md:grid-cols-3">
         {content.workflows.map((workflow, index) => (
-          <div key={workflow} className="rounded-xl border border-white/10 bg-[#141519] p-4">
-            <p className="text-[10px] font-semibold tracking-widest text-emerald-400 uppercase">
+          <div key={workflow} className="rounded-xl border border-white/10 bg-[#1F1F1F] p-4">
+            <p className="text-xs font-semibold tracking-widest text-emerald-400 uppercase">
               Control {index + 1}
             </p>
             <p className="mt-2 text-xs leading-5 text-slate-300">{workflow}</p>
@@ -618,19 +618,19 @@ function PaymentIntegrations({ activeProvider }: { activeProvider: string }) {
 
       <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
         {providers.map(({ name, type, icon: Icon, status }) => (
-          <article key={name} className="rounded-xl border border-white/10 bg-[#141519] p-5">
+          <article key={name} className="rounded-xl border border-white/10 bg-[#1F1F1F] p-5">
             <div className="flex items-start justify-between gap-3">
               <span className="flex size-10 items-center justify-center rounded-lg bg-white/[0.06] text-emerald-400">
                 <Icon className="size-5" />
               </span>
-              <span className="rounded-full border border-slate-700 px-2.5 py-1 text-[10px] font-medium text-slate-400">
+              <span className="rounded-full border border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-400">
                 {status}
               </span>
             </div>
             <h2 className="mt-4 text-sm font-semibold text-slate-100">{name}</h2>
             <p className="mt-1 min-h-8 text-xs leading-4 text-slate-500">{type}</p>
             {name === "PayFast Pakistan" && (
-              <p className="mt-2 text-[11px] leading-4 text-amber-300">
+              <p className="mt-2 text-xs leading-4 text-amber-300">
                 {activeProvider === "payfast"
                   ? "Inspection payments use the direct API. Keep live mode disabled until merchant sandbox, OTP/3-D Secure, and compliance review are complete. Promotion checkout is not enabled."
                   : "No live payment is accepted. Promotion checkout remains disabled until verified provider processing is connected."}
@@ -649,7 +649,7 @@ function PaymentIntegrations({ activeProvider }: { activeProvider: string }) {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-2">
-        <div className="rounded-xl border border-white/10 bg-[#141519] p-5">
+        <div className="rounded-xl border border-white/10 bg-[#1F1F1F] p-5">
           <h2 className="text-sm font-semibold text-slate-100">Required server-side controls</h2>
           <ul className="mt-4 space-y-3 text-xs leading-5 text-slate-400">
             {[
@@ -667,7 +667,7 @@ function PaymentIntegrations({ activeProvider }: { activeProvider: string }) {
             ))}
           </ul>
         </div>
-        <div className="rounded-xl border border-white/10 bg-[#141519] p-5">
+        <div className="rounded-xl border border-white/10 bg-[#1F1F1F] p-5">
           <h2 className="text-sm font-semibold text-slate-100">Manual bank transfer review</h2>
           <p className="mt-2 text-xs leading-5 text-slate-400">
             For bank transfer, match the incoming bank statement—not a customer-uploaded receipt

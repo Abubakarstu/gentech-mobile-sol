@@ -63,7 +63,7 @@ function CandidateRow({
         <span className="text-muted-foreground flex items-center gap-2 text-xs">
           {listing.brand ? <span>{listing.brand}</span> : null}
           <span>{listing.city}</span>
-          {label ? <Badge variant="secondary" className="text-[10px]">{label}</Badge> : null}
+          {label ? <Badge variant="secondary" className="text-xs">{label}</Badge> : null}
         </span>
       </span>
       <span className="text-primary shrink-0 text-sm font-semibold">

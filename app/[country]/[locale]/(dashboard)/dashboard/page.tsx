@@ -48,12 +48,12 @@ function DashboardHero({
   return (
     <section
       aria-labelledby="dashboard-welcome"
-      className="workspace-hero relative overflow-hidden rounded-3xl border border-slate-800 bg-[linear-gradient(120deg,#0b1220_0%,#102b2a_58%,#123b35_100%)] p-5 text-white shadow-xl shadow-emerald-950/10 sm:p-8"
+      className="workspace-hero rounded-2xl border border-white/10 bg-[#181818] p-5 text-white sm:p-8"
     >
       <div className="relative flex flex-col justify-between gap-7 sm:flex-row sm:items-end">
         <div className="max-w-2xl">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] text-emerald-200 uppercase">
+            <span className="caption-3 rounded-md border border-emerald-300/20 bg-emerald-300/10 px-2 py-1 uppercase tracking-wide text-emerald-300">
               {copy.yourMarketplace}
             </span>
             <Badge className="border-white/10 bg-white/10 text-slate-200">{role}</Badge>
@@ -70,19 +70,19 @@ function DashboardHero({
           </div>
           <h1
             id="dashboard-welcome"
-            className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+            className="heading-4 mt-4 text-white"
           >
             {copy.greeting?.replace("{name}", name.split(" ")[0] ?? name) ?? ""}
           </h1>
-          <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">{copy.liveBody}</p>
-          <p className="mt-3 text-xs text-slate-400" dir="ltr">{email}</p>
+          <p className="body-3 mt-2 max-w-[680px] text-slate-300">{copy.liveBody}</p>
+          <p className="caption-2 mt-3 text-slate-400" dir="ltr">{email}</p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">
           <Link
             href={links.sell}
             className={cn(
               buttonVariants({ size: "sm" }),
-              "min-h-10 rounded-full bg-emerald-300 px-4 font-semibold text-slate-950 hover:bg-emerald-200",
+              "min-h-10 rounded-lg bg-emerald-300 px-4 font-semibold text-slate-950 hover:bg-emerald-200",
             )}
           >
             <Plus className="size-4" />
@@ -90,7 +90,7 @@ function DashboardHero({
           </Link>
           <Link
             href={links.marketplace}
-            className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 text-sm font-medium text-white transition-colors hover:bg-white/[0.12]"
+            className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 text-sm font-medium text-white transition-colors duration-300 hover:bg-white/[0.12]"
           >
             {copy.explorePhones} <ArrowRight className="size-4 rtl:rotate-180" />
           </Link>
@@ -215,7 +215,7 @@ export default async function DashboardPage({ params }: PageProps) {
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold">{copy.sellingOverview}</h2>
+          <h2 className="heading-6">{copy.sellingOverview}</h2>
           <Link href={links.listings} className="text-primary text-sm hover:underline">
             {copy.manageListings}
           </Link>

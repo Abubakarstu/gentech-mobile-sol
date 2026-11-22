@@ -111,7 +111,7 @@ export function AdminPromotionPlans({ plans }: { plans: PromotionPlanDto[] }) {
 
   return (
     <div className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
-      <section className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#141519]">
+      <section className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1F1F1F]">
         <div className="flex items-center justify-between gap-4 border-b border-white/[0.07] p-4 sm:p-5">
           <div>
             <h2 className="font-semibold text-slate-100">Promotion packages</h2>
@@ -145,7 +145,7 @@ export function AdminPromotionPlans({ plans }: { plans: PromotionPlanDto[] }) {
                     >
                       {plan.isActive ? "Active" : "Inactive"}
                     </Badge>
-                    <span className="text-[11px] text-slate-500">
+                    <span className="text-xs text-slate-500">
                       {PLACEMENT_LABELS[plan.placement]}
                     </span>
                   </div>
@@ -204,7 +204,7 @@ export function AdminPromotionPlans({ plans }: { plans: PromotionPlanDto[] }) {
         )}
       </section>
 
-      <section className="h-fit rounded-xl border border-white/[0.08] bg-[#141519] p-4 sm:p-5">
+      <section className="h-fit rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-4 sm:p-5">
         <div className="mb-5 flex items-start gap-3">
           <span className="flex size-9 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-300">
             {editingId ? (
@@ -246,7 +246,7 @@ export function AdminPromotionPlans({ plans }: { plans: PromotionPlanDto[] }) {
                     placement: event.target.value as CreatePromotionPlanInput["placement"],
                   })
                 }
-                className="h-10 w-full rounded-md border border-white/10 bg-[#0b0c0f] px-3 text-sm text-slate-100"
+                className="h-10 w-full rounded-md border border-white/10 bg-[#181818] px-3 text-sm text-slate-100"
               >
                 {PROMOTION_PLACEMENTS.map((placement) => (
                   <option key={placement} value={placement}>
@@ -349,7 +349,7 @@ export function AdminPromotionPlans({ plans }: { plans: PromotionPlanDto[] }) {
           </div>
         </form>
 
-        <p className="mt-4 flex items-start gap-2 border-t border-white/[0.07] pt-4 text-[11px] leading-5 text-slate-500">
+        <p className="mt-4 flex items-start gap-2 border-t border-white/[0.07] pt-4 text-xs leading-5 text-slate-500">
           <Zap className="mt-0.5 size-3.5 shrink-0 text-amber-300" aria-hidden="true" />
           Deactivating hides a plan from new purchases without removing it from existing promotion
           records.

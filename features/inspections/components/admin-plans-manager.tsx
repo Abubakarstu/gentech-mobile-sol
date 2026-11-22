@@ -30,7 +30,7 @@ export function AdminPlansManager({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-[#141519] px-4 py-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-white/[0.08] bg-[#1F1F1F] px-4 py-3">
         <p className="text-xs text-slate-400">
           <span className="font-semibold text-slate-100">{plans.length.toLocaleString()}</span>{" "}
           package{plans.length === 1 ? "" : "s"}
@@ -62,7 +62,7 @@ export function AdminPlansManager({
       ) : null}
 
       {plans.length === 0 && !loadError && !creating ? (
-        <div className="rounded-xl border border-dashed border-white/10 bg-[#141519]/60 px-5 py-12 text-center">
+        <div className="rounded-xl border border-dashed border-white/10 bg-[#1F1F1F]/60 px-5 py-12 text-center">
           <Plus className="mx-auto size-6 text-slate-500" aria-hidden="true" />
           <p className="mt-3 text-sm font-semibold text-slate-200">No inspection packages yet</p>
           <p className="mt-1 text-xs text-slate-500">
@@ -98,7 +98,7 @@ function PlanRow({ plan }: { plan: InspectionPlanDto }) {
   }
 
   return (
-    <article className="rounded-xl border border-white/[0.08] bg-[#141519] p-4 transition-colors hover:border-white/[0.14] sm:p-5">
+    <article className="rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-4 transition-colors hover:border-white/[0.14] sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">

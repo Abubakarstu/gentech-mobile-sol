@@ -50,7 +50,7 @@ export function AdminModulePage({
         {metrics.map((metric) => (
           <Card
             key={metric.label}
-            className="border-white/[0.08] bg-[#141519] shadow-sm shadow-black/20"
+            className="border-white/[0.08] bg-[#1F1F1F] shadow-sm shadow-black/20"
           >
             <CardHeader className="flex-row items-start justify-between space-y-0 pb-2">
               <CardTitle className="text-xs font-medium text-slate-400">{metric.label}</CardTitle>
@@ -67,7 +67,7 @@ export function AdminModulePage({
       </section>
 
       <div className="grid gap-4 xl:grid-cols-[1.35fr_0.85fr]">
-        <Card className="overflow-hidden border-white/[0.08] bg-[#141519] shadow-sm shadow-black/20">
+        <Card className="overflow-hidden border-white/[0.08] bg-[#1F1F1F] shadow-sm shadow-black/20">
           <CardHeader className="flex-row items-center gap-3 border-b border-white/[0.07] pb-4">
             <span className="flex size-9 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-400">
               <Icon className="size-4" aria-hidden="true" />
@@ -90,7 +90,7 @@ export function AdminModulePage({
                   <p className="mt-1 text-xs leading-5 text-slate-400">{workflow.description}</p>
                 </div>
                 <span
-                  className="mt-0.5 flex shrink-0 items-center gap-1.5 rounded-full bg-white/[0.04] px-2 py-1 text-[10px] font-medium text-slate-500"
+                  className="mt-0.5 flex shrink-0 items-center gap-1.5 rounded-full bg-white/[0.04] px-2 py-1 text-xs font-medium text-slate-500"
                   title="Requires a connected data source"
                 >
                   <LockKeyhole className="size-3" aria-hidden="true" />
@@ -101,7 +101,7 @@ export function AdminModulePage({
           </div>
         </Card>
 
-        <Card className="border-white/[0.08] bg-[#141519] shadow-sm shadow-black/20">
+        <Card className="border-white/[0.08] bg-[#1F1F1F] shadow-sm shadow-black/20">
           <CardHeader className="border-b border-white/[0.07] pb-4">
             <div className="flex items-center gap-2">
               <ShieldCheck className="size-4 text-emerald-300" aria-hidden="true" />

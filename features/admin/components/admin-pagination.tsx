@@ -21,7 +21,7 @@ export function AdminPagination({ page, totalPages }: { page: number; totalPages
 
   return (
     <nav
-      className="mt-5 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#141519] px-3 py-3"
+      className="mt-5 flex flex-wrap items-center justify-center gap-3 rounded-xl border border-white/[0.07] bg-[#1F1F1F] px-3 py-3"
       aria-label="Pagination"
     >
       <Link

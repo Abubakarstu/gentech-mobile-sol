@@ -44,14 +44,14 @@ export default function AdminShipmentsPage() {
             text: "Order-linked handover code, buyer and seller confirmation, timestamps, dispute window, and privacy-conscious evidence retention.",
           },
         ].map(({ icon: Icon, title, text }) => (
-          <article key={title} className="rounded-xl border border-white/10 bg-[#141519] p-5">
+          <article key={title} className="rounded-xl border border-white/10 bg-[#1F1F1F] p-5">
             <Icon className="size-5 text-emerald-400" />
             <h2 className="mt-3 text-sm font-semibold text-slate-100">{title}</h2>
             <p className="mt-2 text-xs leading-5 text-slate-400">{text}</p>
           </article>
         ))}
       </section>
-      <section className="rounded-xl border border-white/10 bg-[#141519]">
+      <section className="rounded-xl border border-white/10 bg-[#1F1F1F]">
         <div className="border-b border-white/[0.07] p-4">
           <h2 className="text-sm font-semibold text-slate-100">Shipment register</h2>
           <p className="mt-1 text-xs text-slate-500">

@@ -118,17 +118,16 @@ export default async function AdminOverviewPage() {
 
   return (
     <div className="space-y-7">
-      <section className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-[linear-gradient(115deg,#171b21_0%,#151a1b_55%,#10201c_100%)] px-5 py-6 sm:px-7 sm:py-7">
-        <div className="pointer-events-none absolute -top-24 -right-14 size-64 rounded-full bg-emerald-400/[0.08] blur-3xl" />
-        <div className="relative flex flex-wrap items-end justify-between gap-6">
+      <section className="rounded-2xl border border-white/10 bg-[#1F1F1F] px-5 py-6 sm:px-7 sm:py-7">
+        <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold tracking-[0.16em] text-emerald-300 uppercase">
+            <p className="caption-3 uppercase tracking-wide text-emerald-300">
               Marketplace overview
             </p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-white sm:text-3xl">
+            <h1 className="heading-4 mt-2 text-white">
               Welcome back, {user?.name?.split(" ")[0] ?? "Admin"}
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-400">
+            <p className="body-3 mt-2 max-w-[680px] text-slate-400">
               Keep an eye on marketplace activity, review new listings, and manage your operations
               from one place.
             </p>
@@ -153,10 +152,10 @@ export default async function AdminOverviewPage() {
       <section aria-labelledby="marketplace-metrics-title">
         <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h2 id="marketplace-metrics-title" className="text-sm font-semibold text-slate-100">
+            <h2 id="marketplace-metrics-title" className="title-4 text-slate-100">
               Marketplace at a glance
             </h2>
-            <p className="mt-1 text-xs text-slate-500">Current operational totals</p>
+            <p className="caption-2 mt-1 text-slate-500">Current operational totals</p>
           </div>
           <Link
             href="/admin/analytics"
@@ -173,7 +172,7 @@ export default async function AdminOverviewPage() {
               href={href}
               className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
-              <Card className="h-full border-white/[0.08] bg-[#141519] transition-colors group-hover:border-white/20">
+              <Card className="h-full border-white/[0.08] bg-[#1F1F1F] transition-colors group-hover:border-white/20">
                 <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-xs font-medium text-slate-400">{label}</CardTitle>
                   <span
@@ -222,12 +221,12 @@ export default async function AdminOverviewPage() {
           </div>
           <div className="grid gap-3 sm:grid-cols-2">
             {regionAnalytics.regions.map((region) => (
-              <Card key={region.region} className="border-white/[0.08] bg-[#141519]">
+              <Card key={region.region} className="border-white/[0.08] bg-[#1F1F1F]">
                 <CardHeader className="flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="flex items-center gap-2 text-xs font-medium text-slate-400">
                     <span aria-hidden>{region.flag}</span> {region.label}
                   </CardTitle>
-                  <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] font-semibold text-slate-400">
+                  <span className="rounded-full border border-white/10 px-2 py-0.5 text-xs font-semibold text-slate-400">
                     {region.currency}
                   </span>
                 </CardHeader>
@@ -254,7 +253,7 @@ export default async function AdminOverviewPage() {
       )}
 
       <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
-        <Card className="border-white/[0.08] bg-[#141519]">
+        <Card className="border-white/[0.08] bg-[#1F1F1F]">
           <CardHeader className="flex-row items-start justify-between gap-4 border-b border-white/[0.07] pb-4">
             <div>
               <CardTitle className="text-sm font-semibold text-slate-100">Listing status</CardTitle>
@@ -318,7 +317,7 @@ export default async function AdminOverviewPage() {
           </CardContent>
         </Card>
 
-        <Card className="border-white/[0.08] bg-[#141519]">
+        <Card className="border-white/[0.08] bg-[#1F1F1F]">
           <CardHeader className="border-b border-white/[0.07] pb-4">
             <CardTitle className="text-sm font-semibold text-slate-100">Quick access</CardTitle>
             <p className="text-xs text-slate-500">Jump back into your key workflows</p>
@@ -414,10 +413,10 @@ export default async function AdminOverviewPage() {
             <Link
               key={workspace.href}
               href={workspace.href}
-              className="group rounded-xl border border-white/[0.08] bg-[#141519] p-4 transition-colors hover:border-emerald-400/30 hover:bg-[#181a1f]"
+              className="group rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-4 transition-colors hover:border-emerald-400/30 hover:bg-[#181a1f]"
             >
               <div className="flex items-center justify-between">
-                <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-[10px] font-semibold tracking-wide text-slate-400 uppercase">
+                <span className="rounded-full bg-white/[0.06] px-2.5 py-1 text-xs font-semibold tracking-wide text-slate-400 uppercase">
                   {workspace.label}
                 </span>
                 <ArrowUpRight className="size-4 text-slate-600 transition-colors group-hover:text-emerald-300" />

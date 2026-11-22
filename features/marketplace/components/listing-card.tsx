@@ -13,20 +13,6 @@ import { Badge } from "@/components/ui/badge";
 import { useCompareSelection } from "@/features/compare/components/compare-selection-provider";
 import { FavoriteButton } from "./favorite-button";
 
-const GRADIENTS = [
-  "from-violet-500/20 to-fuchsia-500/20",
-  "from-sky-500/20 to-cyan-500/20",
-  "from-emerald-500/20 to-teal-500/20",
-  "from-amber-500/20 to-orange-500/20",
-  "from-rose-500/20 to-pink-500/20",
-  "from-indigo-500/20 to-blue-500/20",
-];
-
-function gradientFor(id: string): string {
-  const sum = [...id].reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-  return GRADIENTS[sum % GRADIENTS.length]!;
-}
-
 export function ListingCard({
   listing,
   isFavorite = false,
@@ -48,9 +34,7 @@ export function ListingCard({
 
   const body = (
     <>
-      <div
-        className={cn("relative aspect-4/3 w-full bg-gradient-to-br", gradientFor(listing.id))}
-      >
+      <div className="bg-muted relative aspect-4/3 w-full">
         {listing.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img

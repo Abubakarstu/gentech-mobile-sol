@@ -85,13 +85,13 @@ export default async function AdminListingsPage({
 
       <section
         aria-label="Listing filters"
-        className="rounded-xl border border-white/[0.08] bg-[#141519] p-3 sm:p-4"
+        className="rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-3 sm:p-4"
       >
         <div className="mb-3 flex items-center justify-between gap-3">
           <p className="text-xs font-medium text-slate-300">
             {result.total.toLocaleString()} {result.total === 1 ? "listing" : "listings"}
           </p>
-          <p className="text-[11px] text-slate-500">Filter by status</p>
+          <p className="text-xs text-slate-500">Filter by status</p>
         </div>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {FILTERS.map((f) => {
@@ -122,11 +122,11 @@ export default async function AdminListingsPage({
 
       <section
         aria-label="Region filter"
-        className="rounded-xl border border-white/[0.08] bg-[#141519] p-3 sm:p-4"
+        className="rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-3 sm:p-4"
       >
         <div className="mb-3 flex items-center justify-between gap-3">
           <p className="text-xs font-medium text-slate-300">Filter by region</p>
-          <p className="text-[11px] text-slate-500">All regions shown by default</p>
+          <p className="text-xs text-slate-500">All regions shown by default</p>
         </div>
         <div className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
           {["ALL", "BAHRAIN", "PAKISTAN"].map((r) => {
@@ -156,7 +156,7 @@ export default async function AdminListingsPage({
       </section>
 
       {result.items.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-white/10 bg-[#141519]/60 px-5 py-12 text-center">
+        <div className="rounded-xl border border-dashed border-white/10 bg-[#1F1F1F]/60 px-5 py-12 text-center">
           <Package className="mx-auto size-6 text-slate-500" aria-hidden="true" />
           <p className="mt-3 text-sm font-semibold text-slate-200">No listings found</p>
           <p className="mt-1 text-xs text-slate-500">Try another status or adjust your search.</p>
@@ -172,7 +172,7 @@ export default async function AdminListingsPage({
       ) : (
         <section
           aria-label="Listings"
-          className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.08] bg-[#141519]"
+          className="divide-y divide-white/[0.06] overflow-hidden rounded-xl border border-white/[0.08] bg-[#1F1F1F]"
         >
           {result.items.map((listing) => (
             <AdminListingRow key={listing.id} listing={listing} />

@@ -33,7 +33,7 @@ export default async function DealerApplyPage() {
         Back to dashboard
       </Link>
 
-      <section className="relative overflow-hidden rounded-3xl border bg-[linear-gradient(120deg,#0b1220_0%,#102b2a_58%,#123b35_100%)] p-6 text-white shadow-xl sm:p-9">
+      <section className="rounded-2xl border border-white/10 bg-[#181818] p-6 text-white sm:p-9">
         <div className="relative max-w-2xl">
           <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200/20 bg-emerald-200/10 px-3 py-1 text-xs font-medium text-emerald-100">
             <Store className="size-3.5" aria-hidden="true" />

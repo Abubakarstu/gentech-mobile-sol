@@ -31,3 +31,9 @@ When executing specific project functions, adopt the corresponding skill mindset
 - `security-review`: Server-side authorization, input sanitation with Zod, role enforcement (`requireAdmin`).
 - `devops-deployment`: Environment variables, build configuration, Vercel deployments.
 
+## 3. Design Skills
+- `landing-page-design`: Load before choosing any landing-page section, headline, CTA, font, size, spacing, radius, background, icon, or transition.
+- `figma-designer`: Load before any Figma MCP design/edit/review work (`use_figma` calls included).
+- `design-prompt-generator-v2`: Use the 7 step framework when producing design specs or prompts for web UI work.
+- All three are installed under `.agent/skills/`, `.agents/skills/`, and globally in `~/.config/opencode/skills/`. Source and update instructions: `docs/AI_DESIGN_SKILLS.md`.
+

@@ -34,13 +34,13 @@ export default async function AdminAuditPage({
             Recent recorded administrative and security events.
           </p>
         </div>
-        <span className="rounded-full border border-white/10 bg-[#141519] px-3 py-1.5 text-xs text-slate-300">
+        <span className="rounded-full border border-white/10 bg-[#1F1F1F] px-3 py-1.5 text-xs text-slate-300">
           {result.total.toLocaleString()} matching events
         </span>
       </header>
 
       <form
-        className="flex flex-wrap items-end gap-3 rounded-xl border border-white/10 bg-[#141519] p-4"
+        className="flex flex-wrap items-end gap-3 rounded-xl border border-white/10 bg-[#1F1F1F] p-4"
         method="get"
       >
         <label className="flex min-w-56 flex-1 flex-col gap-1.5 text-xs text-slate-400">
@@ -50,7 +50,7 @@ export default async function AdminAuditPage({
             defaultValue={action}
             maxLength={100}
             placeholder="e.g. USER_ROLE_CHANGED"
-            className="h-9 rounded-lg border border-white/10 bg-[#0b0c0f] px-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-emerald-400/50 focus:outline-none"
+            className="h-9 rounded-lg border border-white/10 bg-[#181818] px-3 text-sm text-slate-100 placeholder:text-slate-600 focus:border-emerald-400/50 focus:outline-none"
           />
         </label>
         <button
@@ -61,7 +61,7 @@ export default async function AdminAuditPage({
         </button>
       </form>
 
-      <section className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]">
+      <section className="overflow-hidden rounded-xl border border-white/10 bg-[#1F1F1F]">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left text-xs">
             <thead className="border-b border-white/[0.07] text-slate-500">
@@ -104,7 +104,7 @@ export default async function AdminAuditPage({
             </tbody>
           </table>
         </div>
-        <p className="border-t border-white/[0.07] px-4 py-3 text-[11px] text-slate-500">
+        <p className="border-t border-white/[0.07] px-4 py-3 text-xs text-slate-500">
           Showing up to {limit} newest events. Sensitive before/after payloads, IP addresses, and
           user agents are intentionally not displayed.
         </p>

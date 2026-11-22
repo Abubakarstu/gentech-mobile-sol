@@ -122,7 +122,7 @@ export function ImageUploader({ value, onChange, max = 10, folder }: Props) {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={image.url} alt="" className="h-full w-full object-cover" />
             {index === 0 ? (
-              <span className="bg-primary text-primary-foreground absolute top-1 left-1 flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium">
+              <span className="bg-primary text-primary-foreground absolute top-1 left-1 flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-medium">
                 <Star className="size-2.5" /> Cover
               </span>
             ) : null}

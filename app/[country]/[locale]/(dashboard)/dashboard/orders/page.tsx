@@ -69,7 +69,7 @@ export default async function OrdersPage({
       </div>
 
       {filteredOrders.length === 0 ? (
-        <div className="mt-8 rounded-xl border border-dashed border-white/10 bg-[#141519]/60 px-5 py-12 text-center">
+        <div className="mt-8 rounded-xl border border-dashed border-white/10 bg-[#1F1F1F]/60 px-5 py-12 text-center">
           <p className="text-sm font-semibold text-slate-200">No orders found</p>
           <p className="mt-1 text-xs text-slate-500">
             {statusFilter === "ALL"
@@ -83,7 +83,7 @@ export default async function OrdersPage({
             <a
               key={order.id}
               href={`/${country}/${locale}/dashboard/orders/${order.id}`}
-              className="block rounded-xl border border-white/[0.08] bg-[#141519] p-4 transition-colors hover:bg-white/[0.02]"
+              className="block rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-4 transition-colors hover:bg-white/[0.02]"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -106,7 +106,7 @@ export default async function OrdersPage({
               </div>
               <div className="mt-2 flex items-center gap-2">
                 <span
-                  className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                  className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                     order.paymentStatus === "PAID"
                       ? "bg-green-500/10 text-green-400"
                       : "bg-yellow-500/10 text-yellow-400"
@@ -114,7 +114,7 @@ export default async function OrdersPage({
                 >
                   {order.paymentStatus}
                 </span>
-                <span className="text-[10px] text-slate-500">
+                <span className="text-xs text-slate-500">
                   {order.region === "BAHRAIN" ? "🇧🇭 Bahrain" : "🇵🇰 Pakistan"}
                 </span>
               </div>

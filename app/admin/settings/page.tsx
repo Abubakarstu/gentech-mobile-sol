@@ -55,7 +55,7 @@ export default function AdminSettingsPage() {
       </header>
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {settings.map(({ icon: Icon, title, text }) => (
-          <article key={title} className="rounded-xl border border-white/10 bg-[#141519] p-5">
+          <article key={title} className="rounded-xl border border-white/10 bg-[#1F1F1F] p-5">
             <Icon className="size-4 text-emerald-400" />
             <h2 className="mt-3 text-sm font-semibold text-slate-100">{title}</h2>
             <p className="mt-1 text-xs leading-5 text-slate-400">{text}</p>

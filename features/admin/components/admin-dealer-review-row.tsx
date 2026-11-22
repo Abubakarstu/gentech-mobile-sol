@@ -95,7 +95,7 @@ export function AdminDealerReviewRow({ dealer }: { dealer: DealerApplicationDto 
           {dealer.description ? (
             <p className="max-w-3xl text-sm leading-5 text-slate-300">{dealer.description}</p>
           ) : null}
-          <p className="text-[11px] text-slate-500">
+          <p className="text-xs text-slate-500">
             Applied {new Date(dealer.createdAt).toLocaleDateString()}
           </p>
         </div>
@@ -146,7 +146,7 @@ export function AdminDealerReviewRow({ dealer }: { dealer: DealerApplicationDto 
             required
             rows={3}
             placeholder="Explain what needs to be corrected before applying again."
-            className="border-white/10 bg-[#0b0c0f] text-slate-100"
+            className="border-white/10 bg-[#181818] text-slate-100"
           />
           <div className="flex justify-end gap-2">
             <Button type="button" size="sm" variant="ghost" onClick={() => setRejecting(false)}>

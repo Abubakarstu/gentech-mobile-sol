@@ -75,7 +75,7 @@ export default function AdminSecurityPage() {
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]">
+      <section className="overflow-hidden rounded-xl border border-white/10 bg-[#1F1F1F]">
         <div className="border-b border-white/[0.07] p-5">
           <h2 className="text-sm font-semibold text-slate-100">Control readiness</h2>
           <p className="mt-1 text-xs text-slate-500">
@@ -90,7 +90,7 @@ export default function AdminSecurityPage() {
                 <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-400">{description}</p>
               </div>
               <span
-                className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${status === "Existing" ? "bg-emerald-400/10 text-emerald-300" : "bg-amber-400/10 text-amber-300"}`}
+                className={`rounded-full px-2.5 py-1 text-xs font-medium ${status === "Existing" ? "bg-emerald-400/10 text-emerald-300" : "bg-amber-400/10 text-amber-300"}`}
               >
                 {status}
               </span>
@@ -129,7 +129,7 @@ export default function AdminSecurityPage() {
           <Link
             key={title}
             href={href}
-            className="rounded-xl border border-white/10 bg-[#141519] p-4 transition-colors hover:border-emerald-400/30"
+            className="rounded-xl border border-white/10 bg-[#1F1F1F] p-4 transition-colors hover:border-emerald-400/30"
           >
             <Icon className="size-4 text-emerald-400" />
             <h2 className="mt-3 text-sm font-semibold text-slate-100">{title}</h2>
@@ -138,7 +138,7 @@ export default function AdminSecurityPage() {
         ))}
       </section>
 
-      <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-[#141519] p-4">
+      <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-[#1F1F1F] p-4">
         <ShieldCheck className="mt-0.5 size-4 shrink-0 text-emerald-400" />
         <p className="text-xs leading-5 text-slate-400">
           Never paste production credentials into tickets, chat, source code, browser forms, or this

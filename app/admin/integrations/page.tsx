@@ -71,11 +71,11 @@ export default function AdminIntegrationsPage() {
           <Link
             key={title}
             href={href}
-            className="rounded-xl border border-white/10 bg-[#141519] p-5 transition-colors hover:border-emerald-400/30"
+            className="rounded-xl border border-white/10 bg-[#1F1F1F] p-5 transition-colors hover:border-emerald-400/30"
           >
             <div className="flex items-start justify-between gap-3">
               <Icon className="size-4 text-emerald-400" />
-              <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-2 py-1 text-[10px] text-amber-300">
+              <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-2 py-1 text-xs text-amber-300">
                 {state}
               </span>
             </div>

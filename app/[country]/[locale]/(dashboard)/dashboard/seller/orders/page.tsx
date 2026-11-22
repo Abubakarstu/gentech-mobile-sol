@@ -71,7 +71,7 @@ export default async function SellerOrdersPage() {
       </p>
 
       {orders.length === 0 ? (
-        <div className="mt-8 rounded-xl border border-dashed border-white/10 bg-[#141519]/60 px-5 py-12 text-center">
+        <div className="mt-8 rounded-xl border border-dashed border-white/10 bg-[#1F1F1F]/60 px-5 py-12 text-center">
           <p className="text-sm font-semibold text-slate-200">No orders yet</p>
           <p className="mt-1 text-xs text-slate-500">
             Orders containing your products will appear here.
@@ -85,7 +85,7 @@ export default async function SellerOrdersPage() {
             return (
               <div
                 key={order.id}
-                className="rounded-xl border border-white/[0.08] bg-[#141519] p-4"
+                className="rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-4"
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -103,7 +103,7 @@ export default async function SellerOrdersPage() {
                     <p className={`text-xs font-medium ${STATUS_COLORS[order.status] || "text-slate-400"}`}>
                       {STATUS_LABELS[order.status] || order.status}
                     </p>
-                    <p className="text-[10px] text-slate-500">
+                    <p className="text-xs text-slate-500">
                       {order.region === "BAHRAIN" ? "🇧🇭" : "🇵🇰"} {order.paymentStatus}
                     </p>
                   </div>

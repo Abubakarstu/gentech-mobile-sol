@@ -80,7 +80,7 @@ export function CartItems({ items: initialItems, country, locale, currency, onCa
 
   if (items.length === 0) {
     return (
-      <div className="mt-8 rounded-xl border border-dashed border-white/10 bg-[#141519]/60 px-5 py-12 text-center">
+      <div className="mt-8 rounded-xl border border-dashed border-white/10 bg-[#1F1F1F]/60 px-5 py-12 text-center">
         <p className="text-sm font-semibold text-slate-200">Your cart is empty</p>
         <p className="mt-1 text-xs text-slate-500">Browse listings and add items to your cart.</p>
         <a
@@ -101,7 +101,7 @@ export function CartItems({ items: initialItems, country, locale, currency, onCa
         {items.map((item) => (
           <div
             key={item.id}
-            className="flex items-center gap-4 rounded-xl border border-white/[0.08] bg-[#141519] p-4"
+            className="flex items-center gap-4 rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-4"
           >
             {item.image ? (
               <img src={item.image} alt={item.title} className="size-16 rounded-lg object-cover" />
@@ -151,7 +151,7 @@ export function CartItems({ items: initialItems, country, locale, currency, onCa
         ))}
       </div>
 
-      <div className="mt-6 rounded-xl border border-white/[0.08] bg-[#141519] p-4">
+      <div className="mt-6 rounded-xl border border-white/[0.08] bg-[#1F1F1F] p-4">
         <div className="flex justify-between">
           <span className="text-sm font-medium text-slate-300">Subtotal</span>
           <span className="text-lg font-bold text-white">

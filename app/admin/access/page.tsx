@@ -76,7 +76,7 @@ export default function AdminAccessPage() {
         </div>
       </div>
 
-      <section className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]">
+      <section className="overflow-hidden rounded-xl border border-white/10 bg-[#1F1F1F]">
         <div className="border-b border-white/[0.07] p-5">
           <div className="flex items-center gap-3">
             <span className="flex size-9 items-center justify-center rounded-lg bg-emerald-400/10 text-emerald-400">
@@ -104,7 +104,7 @@ export default function AdminAccessPage() {
                 </p>
               </div>
               <span
-                className={`rounded-full px-2.5 py-1 text-[10px] font-medium ${role.current ? "bg-emerald-400/10 text-emerald-300" : "bg-slate-700/50 text-slate-400"}`}
+                className={`rounded-full px-2.5 py-1 text-xs font-medium ${role.current ? "bg-emerald-400/10 text-emerald-300" : "bg-slate-700/50 text-slate-400"}`}
               >
                 {role.current ? "Current role" : "Future role · not active"}
               </span>
@@ -131,7 +131,7 @@ export default function AdminAccessPage() {
             text: "Separate requester, approver, and executor for refunds and payouts.",
           },
         ].map(({ icon: Icon, title, text }) => (
-          <article key={title} className="rounded-xl border border-white/10 bg-[#141519] p-5">
+          <article key={title} className="rounded-xl border border-white/10 bg-[#1F1F1F] p-5">
             <Icon className="size-4 text-emerald-400" />
             <h2 className="mt-3 text-sm font-semibold text-slate-100">{title}</h2>
             <p className="mt-1 text-xs leading-5 text-slate-400">{text}</p>

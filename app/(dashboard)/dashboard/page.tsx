@@ -33,12 +33,12 @@ function DashboardHero({
   return (
     <section
       aria-labelledby="dashboard-welcome"
-      className="workspace-hero relative overflow-hidden rounded-3xl border border-slate-800 bg-[linear-gradient(120deg,#0b1220_0%,#102b2a_58%,#123b35_100%)] p-5 text-white shadow-xl shadow-emerald-950/10 sm:p-8"
+      className="workspace-hero rounded-2xl border border-white/10 bg-[#181818] p-5 text-white sm:p-8"
     >
       <div className="relative flex flex-col justify-between gap-7 sm:flex-row sm:items-end">
         <div className="max-w-2xl">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] text-emerald-200 uppercase">
+            <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-xs font-semibold tracking-[0.16em] text-emerald-200 uppercase">
               Your marketplace
             </span>
             <Badge className="border-white/10 bg-white/10 text-slate-200">{role}</Badge>

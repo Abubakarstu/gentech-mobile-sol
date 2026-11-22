@@ -82,7 +82,7 @@ export default async function AdminAnalyticsPage() {
           { label: "Active listings", value: formatCount(activeListings) },
           { label: "Orders", value: formatCount(orders) },
         ].map((metric) => (
-          <Card key={metric.label} className="border-white/[0.08] bg-[#141519]">
+          <Card key={metric.label} className="border-white/[0.08] bg-[#1F1F1F]">
             <CardHeader className="pb-2">
               <CardTitle className="text-xs font-medium text-slate-400">{metric.label}</CardTitle>
             </CardHeader>
@@ -103,7 +103,7 @@ export default async function AdminAnalyticsPage() {
         </div>
 
         {funnel.length === 0 ? (
-          <Card className="border-white/[0.08] bg-[#141519]">
+          <Card className="border-white/[0.08] bg-[#1F1F1F]">
             <CardContent className="py-8 text-center text-xs text-slate-500">
               Conversion data is unavailable without a database connection.
             </CardContent>
@@ -111,7 +111,7 @@ export default async function AdminAnalyticsPage() {
         ) : (
           <div className="grid gap-3 lg:grid-cols-2">
             {funnel.map((metric) => (
-              <Card key={metric.region} className="border-white/[0.08] bg-[#141519]">
+              <Card key={metric.region} className="border-white/[0.08] bg-[#1F1F1F]">
                 <CardHeader className="pb-3">
                   <CardTitle className="flex items-center gap-2 text-sm font-semibold text-slate-100">
                     <span aria-hidden>{metric.flag}</span>
@@ -128,7 +128,7 @@ export default async function AdminAnalyticsPage() {
                       { label: "Paid", value: metric.paidOrders },
                     ].map((stage) => (
                       <div key={stage.label} className="rounded-lg bg-white/[0.03] p-2">
-                        <p className="text-[10px] text-slate-500">{stage.label}</p>
+                        <p className="text-xs text-slate-500">{stage.label}</p>
                         <p className="mt-1 text-sm font-semibold text-slate-100 tabular-nums">
                           {formatCount(stage.value)}
                         </p>
@@ -142,7 +142,7 @@ export default async function AdminAnalyticsPage() {
                       { label: "View → order", value: metric.viewToOrderRate },
                     ].map((rate) => (
                       <div key={rate.label}>
-                        <p className="text-[10px] text-slate-500">{rate.label}</p>
+                        <p className="text-xs text-slate-500">{rate.label}</p>
                         <p className="mt-1 text-xs font-semibold text-emerald-300 tabular-nums">
                           {formatRate(rate.value)}
                         </p>
@@ -157,7 +157,7 @@ export default async function AdminAnalyticsPage() {
       </section>
 
       {regions.length === 0 ? (
-        <Card className="border-white/[0.08] bg-[#141519]">
+        <Card className="border-white/[0.08] bg-[#1F1F1F]">
           <CardContent className="py-12 text-center">
             <Globe2 className="mx-auto size-6 text-slate-600" />
             <p className="mt-3 text-sm font-medium text-slate-300">
@@ -171,7 +171,7 @@ export default async function AdminAnalyticsPage() {
       ) : (
         <section className="space-y-5" aria-label="Region breakdown">
           {regions.map((region) => (
-            <Card key={region.region} className="border-white/[0.08] bg-[#141519]">
+            <Card key={region.region} className="border-white/[0.08] bg-[#1F1F1F]">
               <CardHeader className="flex-row items-center justify-between gap-3 border-b border-white/[0.07] pb-4">
                 <div className="flex items-center gap-3">
                   <span className="text-2xl" aria-hidden>
@@ -186,7 +186,7 @@ export default async function AdminAnalyticsPage() {
                     </p>
                   </div>
                 </div>
-                <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-[10px] font-semibold text-emerald-200">
+                <span className="rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-xs font-semibold text-emerald-200">
                   {region.currency}
                 </span>
               </CardHeader>

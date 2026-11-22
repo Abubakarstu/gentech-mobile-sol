@@ -10,12 +10,12 @@ export async function CtaBand() {
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-16">
-      <div className="from-primary/10 to-primary/5 relative overflow-hidden rounded-3xl border bg-gradient-to-br p-8 text-center sm:p-14">
-        <h2 className="text-2xl font-bold tracking-tight text-balance sm:text-3xl">{t("title")}</h2>
-        <p className="text-muted-foreground mx-auto mt-3 max-w-md text-pretty">{t("body")}</p>
+      <div className="surface-flat rounded-2xl p-8 text-center sm:p-14">
+        <h2 className="heading-4">{t("title")}</h2>
+        <p className="body-3 text-muted-foreground mx-auto mt-4 max-w-[680px]">{t("body")}</p>
         <LocalizedLink
           href="/sell"
-          className={cn(buttonVariants({ size: "lg" }), "mt-6 rounded-full")}
+          className={cn(buttonVariants({ size: "lg" }), "mt-6 rounded-lg")}
         >
           {t("button")}
           <ArrowRight className="size-4 rtl:rotate-180" />

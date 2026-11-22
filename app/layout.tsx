@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
@@ -12,8 +13,17 @@ import { isRtlLocale } from "@/lib/countries/types";
 import { buildSiteStructuredData } from "@/lib/seo/structured-data";
 import "./globals.css";
 
-const geistSans = { variable: "font-sans" };
-const geistMono = { variable: "font-mono" };
+const geistSans = Geist({
+  subsets: ["latin"],
+  variable: "--font-geist-sans",
+  display: "swap",
+});
+
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+  display: "swap",
+});
 
 
 
@@ -39,7 +49,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0a" },
+    { media: "(prefers-color-scheme: dark)", color: "#181818" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -63,6 +73,12 @@ export default async function RootLayout({
         <JsonLd data={buildSiteStructuredData(APP_URL)} />
       </head>
       <body className="flex min-h-full flex-col">
+        <a
+          href="#main-content"
+          className="bg-background text-foreground focus:not-sr-only sr-only fixed top-3 start-3 z-100 rounded-lg border px-4 py-2 text-sm font-semibold"
+        >
+          Skip to content
+        </a>
         <Providers>
           {children}
           <Toaster richColors position="top-center" />

@@ -155,7 +155,7 @@ export function BrandManager({ brands }: BrandManagerProps) {
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search brands…"
               aria-label="Search brands"
-              className="border-white/10 bg-[#141519] pl-9 text-white placeholder:text-slate-500"
+              className="border-white/10 bg-[#1F1F1F] pl-9 text-white placeholder:text-slate-500"
             />
           </div>
           <Button
@@ -168,7 +168,7 @@ export function BrandManager({ brands }: BrandManagerProps) {
         </div>
       </header>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-white/[0.07] bg-[#141519] px-4 py-3 text-xs">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-white/[0.07] bg-[#1F1F1F] px-4 py-3 text-xs">
         <span className="font-semibold text-slate-100">{brands.length.toLocaleString()}</span>
         <span className="text-slate-500">total brands</span>
         <span className="hidden h-4 w-px bg-white/10 sm:block" aria-hidden="true" />
@@ -185,7 +185,7 @@ export function BrandManager({ brands }: BrandManagerProps) {
       {showAddForm && (
         <form
           onSubmit={handleCreate}
-          className="space-y-4 rounded-xl border border-white/10 bg-[#141519] p-5 shadow-lg"
+          className="space-y-4 rounded-xl border border-white/10 bg-[#1F1F1F] p-5 shadow-lg"
         >
           <h3 className="text-sm font-semibold text-white">Create New Mobile Brand</h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
@@ -276,11 +276,11 @@ export function BrandManager({ brands }: BrandManagerProps) {
       {/* Brands Table */}
       <section
         aria-label="Brand catalog"
-        className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]"
+        className="overflow-hidden rounded-xl border border-white/10 bg-[#1F1F1F]"
       >
         <div className="overflow-x-auto">
           <table className="w-full min-w-[700px] text-left text-sm text-slate-300">
-            <thead className="border-b border-white/10 bg-[#08090b] text-xs font-semibold tracking-wider text-slate-400 uppercase">
+            <thead className="border-b border-white/10 bg-[#181818] text-xs font-semibold tracking-wider text-slate-400 uppercase">
               <tr>
                 <th className="px-6 py-4">Brand</th>
                 <th className="px-4 py-4">Slug</th>
@@ -337,11 +337,11 @@ export function BrandManager({ brands }: BrandManagerProps) {
                           aria-pressed={brand.isActive}
                         >
                           {brand.isActive ? (
-                            <Badge className="border-emerald-500/30 bg-emerald-500/20 text-[11px] text-emerald-300">
+                            <Badge className="border-emerald-500/30 bg-emerald-500/20 text-xs text-emerald-300">
                               Active
                             </Badge>
                           ) : (
-                            <Badge className="border-white/10 bg-slate-800 text-[11px] text-slate-400">
+                            <Badge className="border-white/10 bg-slate-800 text-xs text-slate-400">
                               Inactive
                             </Badge>
                           )}

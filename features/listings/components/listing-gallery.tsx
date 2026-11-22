@@ -20,7 +20,7 @@ export function ListingGallery({
 
   if (images.length === 0) {
     return (
-      <div className="from-primary/10 to-primary/5 text-foreground/30 flex aspect-4/3 w-full flex-col items-center justify-center gap-2 rounded-xl border bg-gradient-to-br">
+      <div className="text-muted-foreground bg-muted flex aspect-4/3 w-full flex-col items-center justify-center gap-2 rounded-xl border">
         <Smartphone className="size-16" />
         {brand ? <span className="text-foreground/50 font-medium">{brand}</span> : null}
       </div>

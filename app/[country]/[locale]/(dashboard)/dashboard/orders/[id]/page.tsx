@@ -67,7 +67,7 @@ export default async function OrderDetailPage({
           {STATUS_LABELS[order.status] || order.status}
         </span>
         <span
-          className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
             order.paymentStatus === "PAID"
               ? "bg-green-500/10 text-green-400"
               : "bg-yellow-500/10 text-yellow-400"
@@ -100,7 +100,7 @@ export default async function OrderDetailPage({
           {order.items.map((item) => (
             <div
               key={item.id}
-              className="flex items-center justify-between rounded-lg border border-white/[0.08] bg-[#141519] p-4"
+              className="flex items-center justify-between rounded-lg border border-white/[0.08] bg-[#1F1F1F] p-4"
             >
               <div>
                 <p className="text-sm font-medium text-white">{item.title}</p>
@@ -117,7 +117,7 @@ export default async function OrderDetailPage({
       </section>
 
       {/* Order Summary */}
-      <section className="mt-6 rounded-lg border border-white/[0.08] bg-[#141519] p-4">
+      <section className="mt-6 rounded-lg border border-white/[0.08] bg-[#1F1F1F] p-4">
         <h2 className="text-lg font-semibold">Order Summary</h2>
         <div className="mt-3 space-y-2 text-sm">
           <div className="flex justify-between">
@@ -159,7 +159,7 @@ export default async function OrderDetailPage({
 
       {/* Delivery Info */}
       {order.deliveryAddress ? (
-        <section className="mt-6 rounded-lg border border-white/[0.08] bg-[#141519] p-4">
+        <section className="mt-6 rounded-lg border border-white/[0.08] bg-[#1F1F1F] p-4">
           <h2 className="text-lg font-semibold">Delivery Information</h2>
           <div className="mt-3 space-y-1 text-sm">
             {order.shippingMethod && (
@@ -180,7 +180,7 @@ export default async function OrderDetailPage({
       ) : null}
 
       {/* Payment Info */}
-      <section className="mt-6 rounded-lg border border-white/[0.08] bg-[#141519] p-4">
+      <section className="mt-6 rounded-lg border border-white/[0.08] bg-[#1F1F1F] p-4">
         <h2 className="text-lg font-semibold">Payment Information</h2>
         <div className="mt-3 space-y-1 text-sm">
           <p className="text-slate-400">

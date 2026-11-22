@@ -97,10 +97,10 @@ export default function AdminFinancePage() {
           ["Open approvals", "Not connected", "Finance workflow API"],
           ["Current accounting period", "Not configured", "Finance policy and period close"],
         ].map(([label, value, detail]) => (
-          <section key={label} className="rounded-xl border border-white/10 bg-[#141519] p-4">
+          <section key={label} className="rounded-xl border border-white/10 bg-[#1F1F1F] p-4">
             <p className="text-xs text-slate-400">{label}</p>
             <p className="mt-3 text-lg font-semibold text-slate-200">{value}</p>
-            <p className="mt-1 text-[11px] text-slate-500">{detail}</p>
+            <p className="mt-1 text-xs text-slate-500">{detail}</p>
           </section>
         ))}
       </div>
@@ -128,7 +128,7 @@ export default function AdminFinancePage() {
               <Link
                 key={slug}
                 href={`/admin/finance/${slug}`}
-                className="group flex items-start gap-3 rounded-xl border border-white/10 bg-[#141519] p-4 transition-colors hover:border-emerald-400/30"
+                className="group flex items-start gap-3 rounded-xl border border-white/10 bg-[#1F1F1F] p-4 transition-colors hover:border-emerald-400/30"
               >
                 <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white/[0.05] text-emerald-400">
                   <Icon className="size-4" />
@@ -143,7 +143,7 @@ export default function AdminFinancePage() {
         </section>
       ))}
 
-      <section className="rounded-xl border border-white/10 bg-[#141519] p-5">
+      <section className="rounded-xl border border-white/10 bg-[#1F1F1F] p-5">
         <div className="flex items-start gap-3">
           <ShieldCheck className="mt-0.5 size-5 shrink-0 text-emerald-400" />
           <div>

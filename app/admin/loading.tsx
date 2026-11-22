@@ -14,7 +14,7 @@ export default function AdminLoading() {
         {Array.from({ length: 4 }, (_, index) => (
           <div
             key={index}
-            className="space-y-4 rounded-xl border border-white/[0.07] bg-[#141519] p-4"
+            className="space-y-4 rounded-xl border border-white/[0.07] bg-[#1F1F1F] p-4"
           >
             <Skeleton className="h-3 w-24" />
             <Skeleton className="h-7 w-16" />
@@ -23,7 +23,7 @@ export default function AdminLoading() {
         ))}
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-white/[0.07] bg-[#141519]">
+      <div className="overflow-hidden rounded-xl border border-white/[0.07] bg-[#1F1F1F]">
         <div className="space-y-3 border-b border-white/[0.07] p-4">
           <Skeleton className="h-4 w-40" />
           <Skeleton className="h-3 w-64 max-w-full" />

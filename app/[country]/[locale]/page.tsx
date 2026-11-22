@@ -11,6 +11,7 @@ import { ROUTES } from "@/lib/constants";
 import { getListingFeed } from "@/features/listings/services/listing.service";
 import { getCategoriesWithCounts } from "@/features/marketplace/services/category.service";
 import { HomeHero } from "@/features/marketplace/components/home-hero";
+import { TaglineReveal } from "@/components/marketing/tagline-reveal";
 import { CategoryGrid } from "@/features/marketplace/components/category-grid";
 import { ListingsGrid } from "@/features/marketplace/components/listings-grid";
 import { SectionHeader } from "@/features/marketplace/components/section-header";
@@ -76,7 +77,10 @@ export default async function LocalizedHomepage({ params }: PageProps) {
         locale={locale}
         popularCategories={categories}
         locations={locations}
+        featuredListing={featured[0]}
       />
+
+      <TaglineReveal text={t("tagline")} />
 
       <section className="mx-auto max-w-6xl px-4 py-12">
         <SectionHeader title={t("browseByCategory")} href={ROUTES.marketplace} />

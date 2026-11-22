@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
@@ -256,7 +256,7 @@ export function LocationManager({ countries }: { countries: CountryWithCities[] 
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search locations"
               aria-label="Search locations"
-              className="border-white/10 bg-[#141519] pl-9 text-white placeholder:text-slate-500"
+              className="border-white/10 bg-[#1F1F1F] pl-9 text-white placeholder:text-slate-500"
             />
           </div>
           <Button
@@ -275,14 +275,14 @@ export function LocationManager({ countries }: { countries: CountryWithCities[] 
               setShowCountryForm((value) => !value);
               setShowCityForm(false);
             }}
-            className="min-h-10 border-white/10 bg-[#141519] text-white hover:bg-white/10"
+            className="min-h-10 border-white/10 bg-[#1F1F1F] text-white hover:bg-white/10"
           >
             <Plus className="size-4" /> Add country
           </Button>
         </div>
       </header>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-white/[0.07] bg-[#141519] px-4 py-3 text-xs">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-xl border border-white/[0.07] bg-[#1F1F1F] px-4 py-3 text-xs">
         <span className="font-semibold text-slate-100">{countries.length.toLocaleString()}</span>
         <span className="text-slate-500">countries</span>
         <span className="font-semibold text-slate-100">{cityCount.toLocaleString()}</span>
@@ -294,7 +294,7 @@ export function LocationManager({ countries }: { countries: CountryWithCities[] 
       {showCountryForm ? (
         <form
           onSubmit={handleCreateCountry}
-          className="grid gap-3 rounded-xl border border-white/10 bg-[#141519] p-4 sm:grid-cols-[1fr_10rem_auto]"
+          className="grid gap-3 rounded-xl border border-white/10 bg-[#1F1F1F] p-4 sm:grid-cols-[1fr_10rem_auto]"
         >
           <Input
             value={countryName}
@@ -329,7 +329,7 @@ export function LocationManager({ countries }: { countries: CountryWithCities[] 
       {showCityForm ? (
         <form
           onSubmit={handleCreateCity}
-          className="grid gap-3 rounded-xl border border-white/10 bg-[#141519] p-4 sm:grid-cols-2 lg:grid-cols-4"
+          className="grid gap-3 rounded-xl border border-white/10 bg-[#1F1F1F] p-4 sm:grid-cols-2 lg:grid-cols-4"
         >
           <select
             value={cityCountryId}
@@ -396,7 +396,7 @@ export function LocationManager({ countries }: { countries: CountryWithCities[] 
           {visibleCountries.map((country) => (
             <section
               key={country.id}
-              className="overflow-hidden rounded-xl border border-white/10 bg-[#141519]"
+              className="overflow-hidden rounded-xl border border-white/10 bg-[#1F1F1F]"
             >
               <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
                 {editingCountry?.id === country.id ? (
@@ -642,7 +642,7 @@ export function LocationManager({ countries }: { countries: CountryWithCities[] 
                               minLength={2}
                               maxLength={80}
                               aria-label={`New area name for ${city.name}`}
-                              className="border-white/10 bg-[#141519] text-white"
+                              className="border-white/10 bg-[#1F1F1F] text-white"
                             />
                             <Button
                               type="submit"
@@ -688,7 +688,7 @@ export function LocationManager({ countries }: { countries: CountryWithCities[] 
                                       minLength={2}
                                       maxLength={80}
                                       aria-label={`Edit ${area.name}`}
-                                      className="h-9 border-white/10 bg-[#141519] text-white"
+                                      className="h-9 border-white/10 bg-[#1F1F1F] text-white"
                                     />
                                     <Button type="submit" size="sm" disabled={pending}>
                                       Save

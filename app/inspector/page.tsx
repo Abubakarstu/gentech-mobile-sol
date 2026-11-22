@@ -25,21 +25,21 @@ export default async function InspectorPage() {
     <div className="space-y-8">
       <section
         aria-labelledby="inspector-welcome"
-        className="workspace-hero relative overflow-hidden rounded-3xl border border-slate-800 bg-[linear-gradient(120deg,#0b1220_0%,#13263a_56%,#163b42_100%)] p-5 text-white shadow-xl shadow-sky-950/10 sm:p-8"
+        className="workspace-hero rounded-2xl border border-white/10 bg-[#181818] p-5 text-white sm:p-8"
       >
         <div className="relative flex flex-col justify-between gap-7 sm:flex-row sm:items-end">
           <div className="max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] text-sky-200 uppercase">
+            <span className="caption-3 inline-flex items-center gap-2 rounded-md border border-sky-300/20 bg-sky-300/10 px-2 py-1 uppercase tracking-wide text-sky-300">
               <ClipboardCheck className="size-3.5" />
               Inspector workspace
             </span>
             <h1
               id="inspector-welcome"
-              className="mt-4 text-3xl font-semibold tracking-tight text-white sm:text-4xl"
+              className="heading-4 mt-4 text-white"
             >
               Make trust part of every deal.
             </h1>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-slate-300">
+            <p className="body-3 mt-2 max-w-[680px] text-slate-300">
               Welcome, {user.name.split(" ")[0]}. Claim requests, coordinate a visit, and give
               buyers a clear, dependable inspection report.
             </p>
@@ -47,13 +47,13 @@ export default async function InspectorPage() {
           <div className="flex shrink-0 flex-wrap items-center gap-2">
             <Link
               href="#inspection-queue"
-              className="inline-flex min-h-10 items-center gap-2 rounded-full bg-sky-300 px-4 text-sm font-semibold text-slate-950 transition-colors hover:bg-sky-200"
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-sky-300 px-4 text-sm font-semibold text-slate-950 transition-colors duration-300 hover:bg-sky-200"
             >
               Open queue <ArrowDown className="size-4" />
             </Link>
             <Link
               href={isAdmin ? "/admin/inspections" : ROUTES.dashboard}
-              className="inline-flex min-h-10 items-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 text-sm font-medium text-white transition-colors hover:bg-white/[0.12]"
+              className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.06] px-4 text-sm font-medium text-white transition-colors duration-300 hover:bg-white/[0.12]"
             >
               {isAdmin ? "Admin panel" : "My dashboard"} <ArrowRight className="size-4" />
             </Link>
@@ -78,7 +78,7 @@ export default async function InspectorPage() {
 
       <section id="inspection-queue" aria-labelledby="inspection-queue-title" className="space-y-4">
         <div>
-          <h2 id="inspection-queue-title" className="text-lg font-semibold tracking-tight">
+          <h2 id="inspection-queue-title" className="heading-6">
             Inspection queue
           </h2>
           <p className="text-muted-foreground mt-1 text-sm">
