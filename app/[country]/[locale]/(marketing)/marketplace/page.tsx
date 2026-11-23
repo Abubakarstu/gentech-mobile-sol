@@ -52,6 +52,12 @@ function hasActiveFilters(filters: ListingFilters): boolean {
       filters.ptaStatus ||
       filters.cpidStatus ||
       filters.warranty ||
+      filters.processor ||
+      filters.operatingSystem ||
+      filters.screenSize ||
+      filters.connectivity ||
+      filters.accessoryType ||
+      filters.compatibility ||
       filters.isInspected ||
       filters.isVerifiedSeller ||
       filters.isDealer ||
@@ -99,7 +105,7 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
     getActiveLocationTree(countryCode),
     getMarketplaceCategories(region),
     getMarketplaceBrands(),
-    getListingFilterOptions(region),
+    getListingFilterOptions(region, filters.category),
   ]);
 
   const canSaveSearch = hasActiveFilters(filters);

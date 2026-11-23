@@ -158,7 +158,11 @@ const SAMPLE_LISTINGS: Array<{
 ];
 
 /** Builds a plausible description + structured attributes from a sample listing. */
-function buildListingContent(item: (typeof SAMPLE_LISTINGS)[number]) {
+function buildListingContent(
+  item: (typeof SAMPLE_LISTINGS)[number] & {
+    attributes?: Record<string, string | number | boolean>;
+  },
+) {
   const combo = item.title.match(/(\d+)\s?GB\s?\/\s?(\d+)\s?GB/i);
   const storageOnly = item.title.match(/(\d+)\s?(GB|TB)\b/i);
   const attributes: Record<string, unknown> = {};
@@ -169,6 +173,7 @@ function buildListingContent(item: (typeof SAMPLE_LISTINGS)[number]) {
     attributes.storage = `${storageOnly[1]}${storageOnly[2].toUpperCase()}`;
   }
   if (/pta/i.test(item.title)) attributes.ptaApproved = true;
+  if (item.attributes) Object.assign(attributes, item.attributes);
 
   const conditionText = item.condition.toLowerCase().replace("_", " ");
   const description = `${item.title} in ${conditionText} condition, available in ${item.city}. ${

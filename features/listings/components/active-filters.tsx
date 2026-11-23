@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { X } from "lucide-react";
 
 import { ROUTES } from "@/lib/constants";
+import { getCategoryFilterProfile, specOptionKey } from "@/lib/catalog/category-filters";
 import { useLocalizedRouteInfo, useLocalizedHref } from "@/lib/localized-routing";
 import { formatPrice } from "@/utils/format";
 import type { BrandItem, CategoryItem, ListingFilters } from "@/types/marketplace";
@@ -26,7 +27,11 @@ export function ActiveFilters({ filters, categories, brands }: Props) {
   const tCondition = useTranslations("condition");
   const tStatus = useTranslations("status");
   const tListings = useTranslations("listings");
+  const tValues = useTranslations("filterValues");
   const showPakistanSignals = country === "PK";
+  const shows = (key: string) => getCategoryFilterProfile(filters.category).filters.includes(key as never);
+  const specLabel = (value: string) =>
+    tValues.has(specOptionKey(value)) ? tValues(specOptionKey(value)) : value;
   const language = locale ?? "en";
   const currency = country === "BH" ? "BHD" : "PKR";
 
@@ -51,36 +56,56 @@ export function ActiveFilters({ filters, categories, brands }: Props) {
     const max = filters.maxPrice !== undefined ? formatPrice(filters.maxPrice, { currency, locale: language }) : tFilters("any");
     chips.push({ label: `${min} – ${max}`, patch: { minPrice: null, maxPrice: null } });
   }
-  if (filters.storage) {
+  if (shows("storage") && filters.storage) {
     const value = /^\d+(?:\.\d+)?$/.test(filters.storage)
       ? `${filters.storage}${tFilters("gb")}`
       : filters.storage;
     chips.push({ label: `${value} ${tFilters("storage")}`, patch: { storage: null } });
   }
-  if (filters.ram) {
+  if (shows("ram") && filters.ram) {
     const value = /^\d+(?:\.\d+)?$/.test(filters.ram) ? `${filters.ram}${tFilters("gb")}` : filters.ram;
     chips.push({ label: `${value} ${tFilters("ram")}`, patch: { ram: null } });
   }
-  if (filters.color) chips.push({ label: `${tFilters("color")}: ${filters.color}`, patch: { color: null } });
-  if (filters.batteryHealthMin !== undefined) {
+  if (shows("color") && filters.color) {
+    chips.push({ label: `${tFilters("color")}: ${filters.color}`, patch: { color: null } });
+  }
+  if (shows("processor") && filters.processor) {
+    chips.push({ label: `${tFilters("processor")}: ${specLabel(filters.processor)}`, patch: { processor: null } });
+  }
+  if (shows("operatingSystem") && filters.operatingSystem) {
+    chips.push({ label: `${tFilters("operatingSystem")}: ${specLabel(filters.operatingSystem)}`, patch: { operatingSystem: null } });
+  }
+  if (shows("screenSize") && filters.screenSize) {
+    chips.push({ label: `${tFilters("screenSize")}: ${specLabel(filters.screenSize)}`, patch: { screenSize: null } });
+  }
+  if (shows("connectivity") && filters.connectivity) {
+    chips.push({ label: `${tFilters("connectivity")}: ${specLabel(filters.connectivity)}`, patch: { connectivity: null } });
+  }
+  if (shows("accessoryType") && filters.accessoryType) {
+    chips.push({ label: `${tFilters("accessoryType")}: ${specLabel(filters.accessoryType)}`, patch: { accessoryType: null } });
+  }
+  if (shows("compatibility") && filters.compatibility) {
+    chips.push({ label: `${tFilters("compatibility")}: ${specLabel(filters.compatibility)}`, patch: { compatibility: null } });
+  }
+  if (shows("batteryHealthMin") && filters.batteryHealthMin !== undefined) {
     chips.push({
       label: `${tFilters("batteryHealth")} ${filters.batteryHealthMin}%+`,
       patch: { batteryHealthMin: null },
     });
   }
-  if (showPakistanSignals && filters.ptaStatus) {
+  if (showPakistanSignals && shows("ptaStatus") && filters.ptaStatus) {
     chips.push({
       label: `${tFilters("ptaStatus")}: ${tStatus(filters.ptaStatus)}`,
       patch: { ptaStatus: null },
     });
   }
-  if (showPakistanSignals && filters.cpidStatus) {
+  if (showPakistanSignals && shows("cpidStatus") && filters.cpidStatus) {
     chips.push({
       label: `${tFilters("cpidStatus")}: ${tStatus(filters.cpidStatus)}`,
       patch: { cpidStatus: null },
     });
   }
-  if (filters.warranty) {
+  if (shows("warranty") && filters.warranty) {
     chips.push({
       label: `${tFilters("warranty")}: ${tStatus(filters.warranty)}`,
       patch: { warranty: null },

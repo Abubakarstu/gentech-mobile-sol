@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsScripts } from "@/features/analytics/components/analytics-scripts";
@@ -87,6 +89,8 @@ export default async function RootLayout({
           <PageViewTracker />
         </Suspense>
         <AnalyticsScripts />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

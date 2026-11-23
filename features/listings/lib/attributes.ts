@@ -21,6 +21,12 @@ const LABELS: Record<string, string> = {
   hasCharger: "Charger",
   hasHeadphones: "Headphones",
   repairHistory: "Repair History",
+  processor: "Processor / Chipset",
+  operatingSystem: "Operating System",
+  screenSize: "Screen Size",
+  connectivity: "Connectivity",
+  accessoryType: "Accessory Type",
+  compatibility: "Compatibility",
 };
 
 const PTA_STATUS_LABELS: Record<string, string> = {

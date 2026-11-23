@@ -524,14 +524,66 @@ const BAHRAIN_LISTING_BASE: ListingCardData[] = [
   },
 ];
 
+/** Adds category-specific demo attributes so preview filters behave like the database. */
+function withCategorySpecs(listing: ListingCardData): ListingCardData {
+  const enriched = { ...listing };
+  const title = listing.title.toLowerCase();
+  const category = listing.categorySlug;
+
+  if (category === "laptops") {
+    enriched.processor = title.includes("m3")
+      ? "Apple M3"
+      : title.includes("i7")
+        ? "Intel Core i7"
+        : "Intel Core i5";
+    enriched.operatingSystem = title.includes("macbook") ? "macOS" : "Windows 11";
+    const size = title.match(/(\d{2})(?:-inch|")/);
+    if (size) enriched.screenSize = `${size[1]}"`;
+  } else if (category === "tablets") {
+    enriched.processor = title.includes("m4")
+      ? "Apple M4"
+      : title.includes("m2")
+        ? "Apple M2"
+        : "Snapdragon 8 Gen 2";
+    enriched.operatingSystem = title.includes("ipad") ? "iPadOS" : "Android";
+    const size = title.match(/(\d{2})(?:-inch|")/);
+    if (size) enriched.screenSize = `${size[1]}"`;
+    enriched.connectivity = title.includes("cellular") ? "Wi-Fi + Cellular" : "Wi-Fi";
+  } else if (category?.endsWith("accessories") || category === "earphones-headphones") {
+    enriched.accessoryType = category === "earphones-headphones"
+      ? "Headphones"
+      : category === "chargers-cables"
+        ? "Charger"
+        : category === "power-banks"
+          ? "Power Bank"
+          : category === "cases-covers"
+            ? "Case"
+            : category === "laptop-accessories"
+              ? title.includes("keyboard") ? "Keyboard" : "Hub"
+              : "Stylus";
+    enriched.connectivity = title.includes("usb-c")
+      ? "USB-C"
+      : title.includes("lightning")
+        ? "Lightning"
+        : "Bluetooth";
+    enriched.compatibility = title.includes("ipad") || category === "tablet-accessories"
+      ? "iPad"
+      : title.includes("laptop") || category === "laptop-accessories"
+        ? "Laptop"
+        : title.includes("iphone") ? "iPhone" : "Universal";
+  }
+
+  return enriched;
+}
+
 const PAKISTAN_LISTINGS: ListingCardData[] = PAKISTAN_LISTING_BASE.map((listing) => ({
-  ...listing,
+  ...withCategorySpecs(listing),
   currency: "PKR",
   region: Region.PAKISTAN,
 }));
 
 const BAHRAIN_LISTINGS: ListingCardData[] = BAHRAIN_LISTING_BASE.map((listing) => ({
-  ...listing,
+  ...withCategorySpecs(listing),
   currency: "BHD",
   region: Region.BAHRAIN,
 }));

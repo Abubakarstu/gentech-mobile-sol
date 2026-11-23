@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { PAGINATION, PTA_STATUS, CPID_STATUS, WARRANTY_TYPE } from "@/lib/constants";
+import { sanitizeListingFilters } from "@/lib/catalog/category-filters";
 import type { ListingFilters } from "@/types/marketplace";
 
 export const LISTING_SORTS = ["recent", "price_asc", "price_desc", "popular"] as const;
@@ -47,6 +48,13 @@ const schema = z.object({
     .enum(Object.keys(WARRANTY_TYPE) as [string, ...string[]])
     .optional()
     .catch(undefined),
+  // Category-specific specification filters.
+  processor: z.string().trim().min(1).max(40).optional().catch(undefined),
+  operatingSystem: z.string().trim().min(1).max(40).optional().catch(undefined),
+  screenSize: z.string().trim().min(1).max(20).optional().catch(undefined),
+  connectivity: z.string().trim().min(1).max(40).optional().catch(undefined),
+  accessoryType: z.string().trim().min(1).max(40).optional().catch(undefined),
+  compatibility: z.string().trim().min(1).max(40).optional().catch(undefined),
   isInspected: z
     .enum(["true", "false"])
     .transform((v) => v === "true")
@@ -89,6 +97,12 @@ export function parseListingFilters(raw: RawSearchParams): ListingFilters {
     ptaStatus: first(raw.ptaStatus),
     cpidStatus: first(raw.cpidStatus),
     warranty: first(raw.warranty),
+    processor: first(raw.processor),
+    operatingSystem: first(raw.operatingSystem),
+    screenSize: first(raw.screenSize),
+    connectivity: first(raw.connectivity),
+    accessoryType: first(raw.accessoryType),
+    compatibility: first(raw.compatibility),
     isInspected: first(raw.isInspected),
     isVerifiedSeller: first(raw.isVerifiedSeller),
     isDealer: first(raw.isDealer),
@@ -101,10 +115,10 @@ export function parseListingFilters(raw: RawSearchParams): ListingFilters {
       ? undefined
       : parsed.maxPrice;
 
-  return {
+  return sanitizeListingFilters({
     ...parsed,
     minPrice,
     maxPrice,
     pageSize: PAGINATION.defaultPageSize,
-  };
+  });
 }

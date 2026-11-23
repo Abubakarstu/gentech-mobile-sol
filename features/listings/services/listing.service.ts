@@ -1,6 +1,7 @@
 import "server-only";
 
 import type { Region } from "@/lib/generated/prisma/enums";
+import { categorySlugsForFilter } from "@/lib/catalog/category-filters";
 import type {
   ListingCardData,
   ListingDetail,
@@ -70,15 +71,23 @@ export async function getSelectedListingCards(
   }
 }
 
-export async function getListingFilterOptions(region?: Region): Promise<ListingFilterOptions> {
+export async function getListingFilterOptions(
+  region?: Region,
+  category?: string,
+): Promise<ListingFilterOptions> {
   try {
-    return await getListingFilterOptionsRecord();
+    return await getListingFilterOptionsRecord(region, category);
   } catch (error) {
     console.warn(
       "[listings] Could not load attribute filter options; using preview values.",
       error instanceof Error ? error.message : error,
     );
-    const source = getDemoListings(region);
+    const slugs = categorySlugsForFilter(category);
+    const source = slugs.length > 0
+      ? getDemoListings(region).filter((listing) =>
+          listing.categorySlug ? slugs.includes(listing.categorySlug) : false,
+        )
+      : getDemoListings(region);
     const values = (key: "storage" | "ram" | "color") =>
       [
         ...new Set(

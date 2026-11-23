@@ -7,6 +7,17 @@ import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 import { LISTING_CONDITIONS, PTA_STATUS, CPID_STATUS, WARRANTY_TYPE } from "@/lib/constants";
+import {
+  ACCESSORY_TYPE_OPTIONS,
+  COMPATIBILITY_OPTIONS,
+  CONNECTIVITY_OPTIONS,
+  getCategoryFilterProfile,
+  OPERATING_SYSTEM_OPTIONS,
+  PROCESSOR_OPTIONS,
+  SCREEN_SIZE_OPTIONS,
+  specOptionKey,
+  type CategoryFilterKey,
+} from "@/lib/catalog/category-filters";
 import { useLocalizedRouteInfo } from "@/lib/localized-routing";
 import type {
   BrandItem,
@@ -162,6 +173,40 @@ function BatteryHealthFilter({ value, onApply }: { value?: number; onApply?: () 
   );
 }
 
+function OptionLinks({
+  values,
+  active,
+  keyName,
+  buildHref,
+  format,
+}: {
+  values: readonly string[];
+  active?: string;
+  keyName: string;
+  buildHref: (patch: Record<string, string | null>) => string;
+  format?: (value: string) => string;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {values.map((value) => {
+        const isActive = active === value;
+        return (
+          <Link
+            key={value}
+            href={buildHref({ [keyName]: isActive ? null : value })}
+            className={cn(
+              "rounded-full border px-2.5 py-1 text-xs transition-colors",
+              isActive ? "border-primary bg-primary text-primary-foreground" : "hover:bg-accent",
+            )}
+          >
+            {format ? format(value) : value}
+          </Link>
+        );
+      })}
+    </div>
+  );
+}
+
 export function MarketplaceFilters({
   categories,
   brands,
@@ -176,8 +221,13 @@ export function MarketplaceFilters({
   const tCondition = useTranslations("condition");
   const tStatus = useTranslations("status");
   const tCategories = useTranslations("categories");
+  const tValues = useTranslations("filterValues");
   const { country } = useLocalizedRouteInfo();
   const showPakistanSignals = country === "PK";
+  const profile = getCategoryFilterProfile(filters.category);
+  const shows = (key: CategoryFilterKey) => profile.filters.includes(key);
+  const specLabel = (value: string) =>
+    tValues.has(specOptionKey(value)) ? tValues(specOptionKey(value)) : value;
 
   return (
     <div className="text-sm">
@@ -276,118 +326,161 @@ export function MarketplaceFilters({
         </select>
       </FilterGroup>
 
-      {filterOptions.storage.length > 0 ? (
+      {shows("storage") && filterOptions.storage.length > 0 ? (
         <FilterGroup title={t("storage")}>
-          <div className="flex flex-wrap gap-1.5">
-            {filterOptions.storage.map((storage) => {
-              const active = filters.storage === storage;
-              return (
-                <Link
-                  key={storage}
-                  href={buildHref({ storage: active ? null : storage })}
-                  className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
-                    active
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "hover:bg-accent",
-                  )}
-                >
-                  {/^\d+(?:\.\d+)?$/.test(storage) ? `${storage}${t("gb")}` : storage}
-                </Link>
-              );
-            })}
-          </div>
+          <OptionLinks
+            values={filterOptions.storage}
+            active={filters.storage}
+            keyName="storage"
+            buildHref={buildHref}
+            format={(value) => (/^\d+(?:\.\d+)?$/.test(value) ? `${value}${t("gb")}` : value)}
+          />
         </FilterGroup>
       ) : null}
 
-      {filterOptions.ram.length > 0 ? (
+      {shows("ram") && filterOptions.ram.length > 0 ? (
         <FilterGroup title={t("ram")}>
-          <div className="flex flex-wrap gap-1.5">
-            {filterOptions.ram.map((ram) => {
-              const active = filters.ram === ram;
-              return (
-                <Link
-                  key={ram}
-                  href={buildHref({ ram: active ? null : ram })}
-                  className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
-                    active
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "hover:bg-accent",
-                  )}
-                >
-                  {/^\d+(?:\.\d+)?$/.test(ram) ? `${ram}${t("gb")}` : ram}
-                </Link>
-              );
-            })}
-          </div>
+          <OptionLinks
+            values={filterOptions.ram}
+            active={filters.ram}
+            keyName="ram"
+            buildHref={buildHref}
+            format={(value) => (/^\d+(?:\.\d+)?$/.test(value) ? `${value}${t("gb")}` : value)}
+          />
         </FilterGroup>
       ) : null}
 
-      {filterOptions.colors.length > 0 ? (
+      {shows("color") && filterOptions.colors.length > 0 ? (
         <FilterGroup title={t("color")}>
-          <div className="flex flex-wrap gap-1.5">
-            {filterOptions.colors.map((color) => {
-              const active = filters.color === color;
-              return (
-                <Link
-                  key={color}
-                  href={buildHref({ color: active ? null : color })}
-                  className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
-                    active
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "hover:bg-accent",
-                  )}
-                >
-                  {color}
-                </Link>
-              );
-            })}
-          </div>
+          <OptionLinks
+            values={filterOptions.colors}
+            active={filters.color}
+            keyName="color"
+            buildHref={buildHref}
+          />
         </FilterGroup>
       ) : null}
 
-      <FilterGroup title={t("batteryHealth")}>
-        <BatteryHealthFilter
-          key={filters.batteryHealthMin ?? "any"}
-          value={filters.batteryHealthMin}
-          onApply={onApply}
-        />
-      </FilterGroup>
+      {shows("processor") ? (
+        <FilterGroup title={t("processor")}>
+          <OptionLinks
+            values={PROCESSOR_OPTIONS}
+            active={filters.processor}
+            keyName="processor"
+            buildHref={buildHref}
+            format={specLabel}
+          />
+        </FilterGroup>
+      ) : null}
 
-      {showPakistanSignals ? (
+      {shows("operatingSystem") ? (
+        <FilterGroup title={t("operatingSystem")}>
+          <OptionLinks
+            values={OPERATING_SYSTEM_OPTIONS}
+            active={filters.operatingSystem}
+            keyName="operatingSystem"
+            buildHref={buildHref}
+            format={specLabel}
+          />
+        </FilterGroup>
+      ) : null}
+
+      {shows("screenSize") ? (
+        <FilterGroup title={t("screenSize")}>
+          <OptionLinks
+            values={SCREEN_SIZE_OPTIONS}
+            active={filters.screenSize}
+            keyName="screenSize"
+            buildHref={buildHref}
+            format={specLabel}
+          />
+        </FilterGroup>
+      ) : null}
+
+      {shows("connectivity") ? (
+        <FilterGroup title={t("connectivity")}>
+          <OptionLinks
+            values={CONNECTIVITY_OPTIONS}
+            active={filters.connectivity}
+            keyName="connectivity"
+            buildHref={buildHref}
+            format={specLabel}
+          />
+        </FilterGroup>
+      ) : null}
+
+      {shows("accessoryType") ? (
+        <FilterGroup title={t("accessoryType")}>
+          <OptionLinks
+            values={ACCESSORY_TYPE_OPTIONS}
+            active={filters.accessoryType}
+            keyName="accessoryType"
+            buildHref={buildHref}
+            format={specLabel}
+          />
+        </FilterGroup>
+      ) : null}
+
+      {shows("compatibility") ? (
+        <FilterGroup title={t("compatibility")}>
+          <OptionLinks
+            values={COMPATIBILITY_OPTIONS}
+            active={filters.compatibility}
+            keyName="compatibility"
+            buildHref={buildHref}
+            format={specLabel}
+          />
+        </FilterGroup>
+      ) : null}
+
+      {shows("batteryHealthMin") ? (
+        <FilterGroup title={t("batteryHealth")}>
+          <BatteryHealthFilter
+            key={filters.batteryHealthMin ?? "any"}
+            value={filters.batteryHealthMin}
+            onApply={onApply}
+          />
+        </FilterGroup>
+      ) : null}
+
+      {showPakistanSignals && (shows("ptaStatus") || shows("cpidStatus")) ? (
         <>
-          <FilterGroup title={t("ptaStatus")}>
-            <StatusLinks
-              values={Object.values(PTA_STATUS)}
-              active={filters.ptaStatus}
-              buildHref={buildHref}
-              keyName="ptaStatus"
-              translate={(value) => tStatus(value)}
-            />
-          </FilterGroup>
-          <FilterGroup title={t("cpidStatus")}>
-            <StatusLinks
-              values={Object.values(CPID_STATUS)}
-              active={filters.cpidStatus}
-              buildHref={buildHref}
-              keyName="cpidStatus"
-              translate={(value) => tStatus(value)}
-            />
-          </FilterGroup>
+          {shows("ptaStatus") ? (
+            <FilterGroup title={t("ptaStatus")}>
+              <StatusLinks
+                values={Object.values(PTA_STATUS)}
+                active={filters.ptaStatus}
+                buildHref={buildHref}
+                keyName="ptaStatus"
+                translate={(value) => tStatus(value)}
+              />
+            </FilterGroup>
+          ) : null}
+          {shows("cpidStatus") ? (
+            <FilterGroup title={t("cpidStatus")}>
+              <StatusLinks
+                values={Object.values(CPID_STATUS)}
+                active={filters.cpidStatus}
+                buildHref={buildHref}
+                keyName="cpidStatus"
+                translate={(value) => tStatus(value)}
+              />
+            </FilterGroup>
+          ) : null}
         </>
       ) : null}
 
-      <FilterGroup title={t("warranty")}>
-        <StatusLinks
-          values={Object.values(WARRANTY_TYPE)}
-          active={filters.warranty}
-          buildHref={buildHref}
-          keyName="warranty"
-          translate={(value) => tStatus(value)}
-        />
-      </FilterGroup>
+      {shows("warranty") ? (
+        <FilterGroup title={t("warranty")}>
+          <StatusLinks
+            values={Object.values(WARRANTY_TYPE)}
+            active={filters.warranty}
+            buildHref={buildHref}
+            keyName="warranty"
+            translate={(value) => tStatus(value)}
+          />
+        </FilterGroup>
+      ) : null}
 
       <FilterGroup title={t("trust")}>
         <ul className="space-y-0.5">

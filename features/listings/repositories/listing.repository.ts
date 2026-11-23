@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { categorySlugsForFilter } from "@/lib/catalog/category-filters";
 import { Prisma } from "@/lib/generated/prisma/client";
 import type { Region } from "@/lib/generated/prisma/enums";
 import { uniqueSlug } from "@/utils/slug";
@@ -62,8 +63,9 @@ function buildListingConditions(filters: ListingFilters, ranked: boolean): Prism
     );
   }
   if (filters.category) {
+    const slugs = [...categorySlugsForFilter(filters.category)];
     conditions.push(
-      Prisma.sql`l."categoryId" IN (SELECT "id" FROM "category" WHERE "slug" = ${filters.category})`,
+      Prisma.sql`l."categoryId" IN (SELECT "id" FROM "category" WHERE "slug" = ANY(${slugs}))`,
     );
   }
   if (filters.brand) {
@@ -105,6 +107,24 @@ function buildListingConditions(filters: ListingFilters, ranked: boolean): Prism
   }
   if (filters.warranty) {
     conditions.push(Prisma.sql`l."attributes"->>'warranty' = ${filters.warranty}`);
+  }
+  if (filters.processor) {
+    conditions.push(Prisma.sql`l."attributes"->>'processor' = ${filters.processor}`);
+  }
+  if (filters.operatingSystem) {
+    conditions.push(Prisma.sql`l."attributes"->>'operatingSystem' = ${filters.operatingSystem}`);
+  }
+  if (filters.screenSize) {
+    conditions.push(Prisma.sql`l."attributes"->>'screenSize' = ${filters.screenSize}`);
+  }
+  if (filters.connectivity) {
+    conditions.push(Prisma.sql`l."attributes"->>'connectivity' = ${filters.connectivity}`);
+  }
+  if (filters.accessoryType) {
+    conditions.push(Prisma.sql`l."attributes"->>'accessoryType' = ${filters.accessoryType}`);
+  }
+  if (filters.compatibility) {
+    conditions.push(Prisma.sql`l."attributes"->>'compatibility' = ${filters.compatibility}`);
   }
   if (filters.isInspected !== undefined) {
     conditions.push(
@@ -338,7 +358,12 @@ export async function searchListingsRanked(filters: ListingFilters, region?: Reg
   return searchListingRows(filters, true, region);
 }
 
-export async function getListingFilterOptions(): Promise<ListingFilterOptions> {
+export async function getListingFilterOptions(
+  region?: Region,
+  category?: string,
+): Promise<ListingFilterOptions> {
+  const slugs = category ? [...categorySlugsForFilter(category)] : [];
+
   async function getValues(attribute: "storage" | "ram" | "color"): Promise<string[]> {
     const expression = {
       storage: Prisma.sql`"attributes"->>'storage'`,
@@ -352,6 +377,12 @@ export async function getListingFilterOptions(): Promise<ListingFilterOptions> {
         AND "deletedAt" IS NULL
         AND jsonb_typeof("attributes"->${attribute}) = 'string'
         AND length(trim(${expression})) BETWEEN 1 AND 40
+        AND (${region ? Prisma.sql`"region"::text = ${region}` : Prisma.sql`TRUE`})
+        AND (
+          ${slugs.length > 0
+            ? Prisma.sql`"categoryId" IN (SELECT "id" FROM "category" WHERE "slug" = ANY(${slugs}))`
+            : Prisma.sql`TRUE`}
+        )
       ORDER BY "value" ASC
       LIMIT 100
     `);
@@ -588,6 +619,14 @@ function buildAttributes(
   if (input.hasCharger !== undefined) attributes.hasCharger = input.hasCharger;
   if (input.hasHeadphones !== undefined) attributes.hasHeadphones = input.hasHeadphones;
   if (input.repairHistory) attributes.repairHistory = input.repairHistory;
+
+  // Category-specific specifications.
+  if (input.processor) attributes.processor = input.processor;
+  if (input.operatingSystem) attributes.operatingSystem = input.operatingSystem;
+  if (input.screenSize) attributes.screenSize = input.screenSize;
+  if (input.connectivity) attributes.connectivity = input.connectivity;
+  if (input.accessoryType) attributes.accessoryType = input.accessoryType;
+  if (input.compatibility) attributes.compatibility = input.compatibility;
 
   return Object.keys(attributes).length > 0 ? attributes : undefined;
 }

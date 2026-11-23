@@ -48,6 +48,13 @@ export interface ListingCardData {
   model?: string;
   modelNumber?: string;
   warranty?: string;
+  /** Category-specific specifications shared by tablets, laptops and accessories. */
+  processor?: string;
+  operatingSystem?: string;
+  screenSize?: string;
+  connectivity?: string;
+  accessoryType?: string;
+  compatibility?: string;
   isInspected?: boolean;
   isVerifiedSeller?: boolean;
   isDealer?: boolean;
@@ -76,6 +83,12 @@ export interface ListingFilters {
   ptaStatus?: string;
   cpidStatus?: string;
   warranty?: string;
+  processor?: string;
+  operatingSystem?: string;
+  screenSize?: string;
+  connectivity?: string;
+  accessoryType?: string;
+  compatibility?: string;
   isInspected?: boolean;
   isVerifiedSeller?: boolean;
   isDealer?: boolean;

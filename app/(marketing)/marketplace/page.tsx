@@ -40,6 +40,12 @@ function hasActiveFilters(filters: ListingFilters): boolean {
     filters.ptaStatus ||
     filters.cpidStatus ||
     filters.warranty ||
+    filters.processor ||
+    filters.operatingSystem ||
+    filters.screenSize ||
+    filters.connectivity ||
+    filters.accessoryType ||
+    filters.compatibility ||
     filters.isInspected ||
     filters.isVerifiedSeller ||
     filters.isDealer ||
@@ -64,7 +70,7 @@ export default async function MarketplacePage({
     getActiveLocationTree(),
     getMarketplaceCategories(),
     getMarketplaceBrands(),
-    getListingFilterOptions(),
+    getListingFilterOptions(undefined, filters.category),
   ]);
   const canSaveSearch = hasActiveFilters(filters);
   const isAuthenticated = Boolean(user);

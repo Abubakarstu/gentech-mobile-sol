@@ -25,6 +25,8 @@ export interface SeedListing {
   views: number;
   ageDays: number;
   images: string[];
+  /** Structured characteristics used by category-aware marketplace filters. */
+  attributes?: Record<string, string | number | boolean>;
 }
 
 export const IMAGES_PER_LISTING = 3;
@@ -188,6 +190,52 @@ const EXPANSION_TEMPLATES: readonly DeviceTemplate[] = [
 
 const MAX_GENERATED_PER_REGION = 100;
 
+const DEVICE_STORAGE = ["128GB", "256GB", "512GB"] as const;
+const DEVICE_RAM = ["8GB", "12GB", "16GB"] as const;
+
+/** Deterministic specification attributes for category-specific marketplace filters. */
+function deviceAttributes(template: DeviceTemplate, variantIndex: number): Record<string, string> {
+  const model = template.model.toLowerCase();
+  const attributes: Record<string, string> = {};
+  const storage = DEVICE_STORAGE[variantIndex % DEVICE_STORAGE.length]!;
+  const ram = DEVICE_RAM[variantIndex % DEVICE_RAM.length]!;
+
+  if (template.categorySlug === "laptops") {
+    attributes.storage = storage;
+    attributes.ram = ram;
+    attributes.processor = model.includes("m3")
+      ? "Apple M3"
+      : model.includes("m4")
+        ? "Apple M4"
+        : model.includes("i7")
+          ? "Intel Core i7"
+          : "Intel Core i5";
+    attributes.operatingSystem = model.includes("macbook") ? "macOS" : "Windows 11";
+    attributes.screenSize = model.includes("13") ? '13"' : model.includes("15") ? '15"' : '14"';
+  } else if (template.categorySlug === "tablets") {
+    attributes.storage = storage;
+    attributes.ram = ram;
+    attributes.processor = model.includes("m4")
+      ? "Apple M4"
+      : model.includes("m2")
+        ? "Apple M2"
+        : "Snapdragon 8 Gen 2";
+    attributes.operatingSystem = model.includes("ipad") ? "iPadOS" : "Android";
+    attributes.screenSize = model.includes("11") ? '11"' : '12"';
+    attributes.connectivity = variantIndex % 2 === 0 ? "Wi-Fi" : "Wi-Fi + Cellular";
+  } else if (template.categorySlug === "laptop-accessories") {
+    attributes.accessoryType = model.includes("hub") ? "Hub" : "Keyboard";
+    attributes.connectivity = "USB-C";
+    attributes.compatibility = "Laptop";
+  } else if (template.categorySlug === "tablet-accessories") {
+    attributes.accessoryType = model.includes("keyboard") ? "Keyboard" : "Stylus";
+    attributes.connectivity = "Bluetooth";
+    attributes.compatibility = "iPad";
+  }
+
+  return attributes;
+}
+
 /**
  * Builds deterministic generated listings for one region. `count` must not
  * exceed 100; the seed uses 88 for Pakistan (with 12 curated listings) and 100
@@ -227,6 +275,7 @@ export function buildGeneratedListings(region: SeedRegion, count: number): SeedL
       views: 90 + ((index * 53 + variant.slug.length * 29) % 2100),
       ageDays: index % 30,
       images: listingImages(template.categorySlug, seedOffset + index),
+      attributes: deviceAttributes(template, index % VARIANTS.length),
     });
   }
 
@@ -263,6 +312,7 @@ export function buildExpansionListings(region: SeedRegion): SeedListing[] {
         views: 120 + ((index * 47 + template.slug.length * 31) % 1800),
         ageDays: index % 21,
         images: listingImages(template.categorySlug, seedOffset + index),
+        attributes: deviceAttributes(template, variantIndex),
       };
     }),
   );

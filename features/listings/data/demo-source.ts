@@ -1,4 +1,5 @@
 import { getDemoListings } from "@/features/marketplace/data/fixtures";
+import { categorySlugsForFilter } from "@/lib/catalog/category-filters";
 import type { Region } from "@/lib/generated/prisma/enums";
 import type { ListingCardData, ListingFilters, ListingSearchResult } from "@/types/marketplace";
 
@@ -12,7 +13,10 @@ export function searchDemoListings(filters: ListingFilters, region?: Region): Li
 
   let items = source.filter((l) => {
     if (q && !`${l.title} ${l.brand ?? ""}`.toLowerCase().includes(q)) return false;
-    if (filters.category && l.categorySlug !== filters.category) return false;
+    if (filters.category) {
+      const slugs = categorySlugsForFilter(filters.category);
+      if (!l.categorySlug || !slugs.includes(l.categorySlug)) return false;
+    }
     if (filters.brand && l.brandSlug !== filters.brand) return false;
     if (filters.condition && l.condition !== filters.condition) return false;
     if (filters.city && l.city.toLowerCase() !== filters.city.toLowerCase()) return false;
@@ -29,6 +33,12 @@ export function searchDemoListings(filters: ListingFilters, region?: Region): Li
     if (filters.ptaStatus && l.ptaStatus !== filters.ptaStatus) return false;
     if (filters.cpidStatus && l.cpidStatus !== filters.cpidStatus) return false;
     if (filters.warranty && l.warranty !== filters.warranty) return false;
+    if (filters.processor && l.processor !== filters.processor) return false;
+    if (filters.operatingSystem && l.operatingSystem !== filters.operatingSystem) return false;
+    if (filters.screenSize && l.screenSize !== filters.screenSize) return false;
+    if (filters.connectivity && l.connectivity !== filters.connectivity) return false;
+    if (filters.accessoryType && l.accessoryType !== filters.accessoryType) return false;
+    if (filters.compatibility && l.compatibility !== filters.compatibility) return false;
     if (filters.isInspected !== undefined && l.isInspected !== filters.isInspected) return false;
     if (filters.isVerifiedSeller !== undefined && l.isVerifiedSeller !== filters.isVerifiedSeller)
       return false;

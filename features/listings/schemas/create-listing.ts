@@ -60,6 +60,14 @@ export const createListingSchema = z.object({
   hasHeadphones: z.boolean().optional(),
   repairHistory: z.string().trim().max(500).optional(),
 
+  // Category-specific attributes (tablets, laptops and accessories).
+  processor: z.string().trim().max(40).optional(),
+  operatingSystem: z.string().trim().max(40).optional(),
+  screenSize: z.string().trim().max(20).optional(),
+  connectivity: z.string().trim().max(40).optional(),
+  accessoryType: z.string().trim().max(40).optional(),
+  compatibility: z.string().trim().max(40).optional(),
+
   images: z
     .array(uploadedImageSchema)
     .min(1, "Add at least one photo")

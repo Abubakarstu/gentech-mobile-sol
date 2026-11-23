@@ -9,6 +9,15 @@ import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { LISTING_CONDITION_LABELS, PTA_STATUS, CPID_STATUS, NETWORK_TYPE, WARRANTY_TYPE, ROUTES } from "@/lib/constants";
+import {
+  ACCESSORY_TYPE_OPTIONS,
+  COMPATIBILITY_OPTIONS,
+  CONNECTIVITY_OPTIONS,
+  getCategoryFilterProfile,
+  OPERATING_SYSTEM_OPTIONS,
+  PROCESSOR_OPTIONS,
+  SCREEN_SIZE_OPTIONS,
+} from "@/lib/catalog/category-filters";
 import type { BrandItem, CategoryItem } from "@/types/marketplace";
 import type { LocationTree } from "@/features/locations/services/location.service";
 import { LocationPicker, type LocationSelection } from "@/features/locations/components/location-picker";
@@ -69,6 +78,9 @@ export function CreateListingForm({
   const countryId = useWatch({ control, name: "countryId" }) ?? "";
   const cityId = useWatch({ control, name: "cityId" }) ?? "";
   const areaId = useWatch({ control, name: "areaId" }) ?? "";
+  const categorySlug = useWatch({ control, name: "categorySlug" }) ?? "";
+  const profile = getCategoryFilterProfile(categorySlug || undefined);
+  const shows = (key: (typeof profile.filters)[number]) => profile.filters.includes(key);
 
   function setImages(next: UploadedImage[]) {
     setValue("images", next, { shouldValidate: true });
@@ -211,33 +223,107 @@ export function CreateListingForm({
         </div>
       </section>
 
-      {/* Phone specs */}
+      {/* Category-aware specifications */}
       <section className="grid gap-4">
         <h3 className="text-sm font-semibold">Specifications (optional)</h3>
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="grid gap-2">
-            <Label htmlFor="storage">Storage</Label>
-            <Input id="storage" placeholder="256GB" {...register("storage")} />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="ram">RAM</Label>
-            <Input id="ram" placeholder="8GB" {...register("ram")} />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="color">Color</Label>
-            <Input id="color" placeholder="Titanium Blue" {...register("color")} />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="batteryHealth">Battery health (%)</Label>
-            <Input
-              id="batteryHealth"
-              inputMode="numeric"
-              placeholder="92"
-              {...register("batteryHealth")}
-            />
-            <FieldError message={errors.batteryHealth?.message} />
-          </div>
-          {showPakistanSignals ? (
+          {shows("storage") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="storage">Storage</Label>
+              <Input id="storage" placeholder="256GB" {...register("storage")} />
+            </div>
+          ) : null}
+          {shows("ram") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="ram">RAM</Label>
+              <Input id="ram" placeholder="8GB" {...register("ram")} />
+            </div>
+          ) : null}
+          {shows("color") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="color">Color</Label>
+              <Input id="color" placeholder="Titanium Blue" {...register("color")} />
+            </div>
+          ) : null}
+          {shows("batteryHealthMin") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="batteryHealth">Battery health (%)</Label>
+              <Input
+                id="batteryHealth"
+                inputMode="numeric"
+                placeholder="92"
+                {...register("batteryHealth")}
+              />
+              <FieldError message={errors.batteryHealth?.message} />
+            </div>
+          ) : null}
+          {shows("processor") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="processor">Processor / Chipset</Label>
+              <select id="processor" className={selectClass} defaultValue="" {...register("processor")}>
+                <option value="">Unknown</option>
+                {PROCESSOR_OPTIONS.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {shows("operatingSystem") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="operatingSystem">Operating System</Label>
+              <select id="operatingSystem" className={selectClass} defaultValue="" {...register("operatingSystem")}>
+                <option value="">Unknown</option>
+                {OPERATING_SYSTEM_OPTIONS.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {shows("screenSize") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="screenSize">Screen Size</Label>
+              <select id="screenSize" className={selectClass} defaultValue="" {...register("screenSize")}>
+                <option value="">Unknown</option>
+                {SCREEN_SIZE_OPTIONS.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {shows("connectivity") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="connectivity">Connectivity</Label>
+              <select id="connectivity" className={selectClass} defaultValue="" {...register("connectivity")}>
+                <option value="">Unknown</option>
+                {CONNECTIVITY_OPTIONS.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {shows("accessoryType") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="accessoryType">Accessory Type</Label>
+              <select id="accessoryType" className={selectClass} defaultValue="" {...register("accessoryType")}>
+                <option value="">Unknown</option>
+                {ACCESSORY_TYPE_OPTIONS.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {shows("compatibility") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="compatibility">Compatibility</Label>
+              <select id="compatibility" className={selectClass} defaultValue="" {...register("compatibility")}>
+                <option value="">Unknown</option>
+                {COMPATIBILITY_OPTIONS.map((value) => (
+                  <option key={value} value={value}>{value}</option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+          {showPakistanSignals && shows("ptaStatus") ? (
             <>
               <div className="flex items-end pb-2 sm:col-span-2">
                 <label className="flex items-center gap-2 text-sm">
@@ -256,18 +342,20 @@ export function CreateListingForm({
                   ))}
                 </select>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="cpidStatus">CPID Status (optional)</Label>
-                <select id="cpidStatus" className={selectClass} defaultValue="" {...register("cpidStatus")}>
-                  <option value="">Unknown</option>
-                  {Object.entries(CPID_STATUS).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label.replace(/_/g, " ")}
-                    </option>
-                  ))}
-                </select>
-              </div>
             </>
+          ) : null}
+          {showPakistanSignals && shows("cpidStatus") ? (
+            <div className="grid gap-2">
+              <Label htmlFor="cpidStatus">CPID Status (optional)</Label>
+              <select id="cpidStatus" className={selectClass} defaultValue="" {...register("cpidStatus")}>
+                <option value="">Unknown</option>
+                {Object.entries(CPID_STATUS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label.replace(/_/g, " ")}
+                  </option>
+                ))}
+              </select>
+            </div>
           ) : null}
         </div>
       </section>

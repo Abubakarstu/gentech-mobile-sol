@@ -4,9 +4,17 @@ Last Updated: 2026-11-23
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (325/325 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Baseline Technical Quality:** Verified (330/330 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
+
+### Category-aware intelligent filters + Vercel analytics (2026-11-23)
+
+- **Change:** Marketplace filters now hide/show by the product category the buyer is exploring. A shared `lib/catalog/category-filters.ts` profile maps smartphones, tablets, laptops, accessories, watches and root categories to their relevant filter set; stale params from a previous category are stripped during URL parsing so they never leak into the UI or query.
+- **New filter dimensions:** Tablets and laptops gain processor/chipset, operating system and screen size; tablets and accessories gain connectivity; accessories gain accessory type and compatibility. PTA/CPID and battery health stay phone/tablet-specific and PK-only, while storage/RAM/warranty/trust remain category-aware. Curated options are fully localized in English, Arabic and Urdu.
+- **Data + query:** Added category-scoped option derivation, parent→child category expansion (`laptops-tablets`, `mobile-phones`, `accessories`), new JSONB filter clauses, category-aware create-listing fields and deterministic seed attributes so laptop/tablet/accessory filters return real results in both BH and PK.
+- **Analytics:** Installed and mounted `@vercel/analytics` and `@vercel/speed-insights` in the root layout, so Vercel Web Analytics and Speed Insights populate the project portal automatically on deployment (no env vars or configuration needed).
+- **Verification:** `pnpm db:seed` → `15 categories, 18 brands, 260 listings (130 bahrain, 130 pakistan), 780 image links`; `pnpm typecheck` 0 errors; `pnpm test` 330/330 (new `tests/marketplace/category-aware-filters.test.ts`); `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` passed. No migrations or resets were run.
 
 ### Listing image sources (2026-11-23)
 
