@@ -104,7 +104,8 @@ pnpm dev             # http://localhost:3000
 | `pnpm db:migrate` | Create/apply a dev migration + generate client |
 | `pnpm db:push`    | Push schema without a migration (prototyping)  |
 | `pnpm db:studio`  | Open Prisma Studio                             |
-| `pnpm db:seed`    | Run the seed script                            |
+| `pnpm db:seed`    | Run the catalog seed script                    |
+| `pnpm db:seed:admin` | Seed a credential-backed ADMIN user (requires `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD`) |
 
 > Tip: to run a build without a populated `.env` (CI), prefix with
 > `SKIP_ENV_VALIDATION=1`.

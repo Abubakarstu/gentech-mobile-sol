@@ -4,7 +4,7 @@ Last Updated: 2026-11-23
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (280/280 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 47 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Baseline Technical Quality:** Verified (321/321 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
 
@@ -14,6 +14,13 @@ Last Updated: 2026-11-23
 - **Validation:** `lib/validation/image-url.ts` enforces https, ≤2048 characters, no credentials, and rejects localhost/private/loopback/numeric hosts; `createListingSchema` also rejects duplicate URLs. External hosts bypass the Next.js optimizer (`unoptimized`) and CSP `img-src` now permits https images, so seller links render without per-host config.
 - **UX:** the URL textarea accepts newline/whitespace/comma separated links, validates the whole batch atomically, previews broken links, and lets any photo become the cover. Multi-file picks beyond the remaining allowance report how many were accepted.
 - **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 321/321 (new `tests/listings/listing-image-sources.test.ts` and `tests/listings/image-uploader.test.tsx`); `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` passed. No migrations or database changes were made.
+
+### Admin credential seed (2026-11-23)
+
+- **Issue:** the documented `admin@demo.gentech.test` sign-in stopped working after real-account onboarding removed all demo accounts and their seed (`34475b2`). The production database was already fully migrated, but no credential-backed user existed for that email.
+- **Fix:** added `prisma/seed-admin.ts` and `pnpm db:seed:admin`. It takes `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` from the environment (no password committed), hashes with Better Auth's `hashPassword`, and idempotently upserts the `user`, `profile`, and `credential` `account` rows with `role=ADMIN`.
+- **Verification:** `pnpm exec prisma migrate status` → `45 migrations found`, `Database schema is up to date!`; admin seed completed; live `POST /api/auth/sign-in/email` with the supplied credentials returned `200` with `role: "ADMIN"`; authenticated `GET /admin` returned `200`. No migration or reset was run.
+- **Security note:** this restores a publicly known demo admin credential in Production. Remove or rotate the account after any demo use.
 
 ## Latest Change: Real-Account Onboarding (2026-11-19)
 
