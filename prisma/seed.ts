@@ -190,8 +190,10 @@ const SAMPLE_REPORTS: Array<{
   listingSlug: string;
   verdict: "RECOMMENDED" | "RECOMMENDED_WITH_NOTES" | "NOT_RECOMMENDED";
   summary: string;
-  imei: string;
-  ptaApproved: boolean;
+  /** Phone-only identity signals; omitted on laptop inspection reports. */
+  imei?: string;
+  ptaApproved?: boolean;
+  inspectionKind?: "PHONE" | "LAPTOP";
   batteryHealth: number;
   items: Array<{ category: string; label: string; result: ItemResult; comment?: string }>;
 }> = [
@@ -252,6 +254,25 @@ const SAMPLE_REPORTS: Array<{
       { category: "Connectivity", label: "Wi-Fi / GPS", result: "PASS" },
       { category: "Biometrics & Sensors", label: "Fingerprint", result: "PASS" },
       { category: "Software & Identity", label: "Google account lock", result: "PASS", comment: "Removed" },
+    ],
+  },
+  {
+    listingSlug: "pk-macbook-air-m3-13-sealed",
+    verdict: "RECOMMENDED",
+    summary:
+      "Clean laptop with a bright, even display and firm hinges. Keyboard and trackpad tested across all keys and gestures. Battery condition is strong and the unit is free of account locks. Safe to buy.",
+    inspectionKind: "LAPTOP",
+    batteryHealth: 94,
+    items: [
+      { category: "Display", label: "Screen scratches", result: "PASS" },
+      { category: "Display", label: "Dead pixels / backlight bleed", result: "PASS" },
+      { category: "Chassis & Keyboard", label: "Hinge firmness", result: "PASS" },
+      { category: "Chassis & Keyboard", label: "Keyboard (all keys)", result: "PASS" },
+      { category: "Performance", label: "RAM recognition", result: "PASS" },
+      { category: "Performance", label: "Storage health", result: "PASS" },
+      { category: "Battery & Charging", label: "Battery condition %", result: "PASS", comment: "94% — very good" },
+      { category: "Ports & Connectivity", label: "USB / HDMI ports", result: "PASS" },
+      { category: "OS & Security", label: "Find My Device / account lock", result: "PASS", comment: "Clean" },
     ],
   },
 ];
@@ -517,6 +538,7 @@ async function main() {
           listingId: listing.id,
           requesterId: buyerUser.id,
           inspectorId: inspectorUser.id,
+          inspectionKind: rep.inspectionKind ?? "PHONE",
           planId: compPlan?.id ?? null,
           planName: compPlan?.name ?? "Comprehensive Inspection",
           feeAmount: compPlan?.price ?? 2999,
@@ -531,8 +553,8 @@ async function main() {
               grade: scoreToGrade(overallScore),
               verdict: rep.verdict,
               summary: rep.summary,
-              imei: rep.imei,
-              ptaApproved: rep.ptaApproved,
+              imei: rep.imei ?? null,
+              ptaApproved: rep.ptaApproved ?? null,
               batteryHealth: rep.batteryHealth,
               isPublished: true,
               publishedAt: new Date(),

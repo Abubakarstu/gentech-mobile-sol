@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  bookInspectionSchema,
   reportItemSchema,
   scheduleInspectionSchema,
   submitReportSchema,
@@ -117,6 +118,41 @@ describe("report item validation", () => {
     expect(reportItemSchema.safeParse({ ...passItem, score: 10 }).success).toBe(true);
     expect(reportItemSchema.safeParse({ ...passItem, score: 11 }).success).toBe(false);
     expect(reportItemSchema.safeParse({ ...passItem, score: 4.5 }).success).toBe(false);
+  });
+});
+
+describe("standalone booking validation", () => {
+  const booking = {
+    planId: "plan-1",
+    deviceInfo: "MacBook Air M3 16GB",
+    inspectionKind: "LAPTOP" as const,
+    contactName: "Buyer Name",
+    contactPhone: "03001234567",
+    countryId: "country-1",
+    cityId: "city-1",
+  };
+
+  it("accepts a laptop booking", () => {
+    expect(bookInspectionSchema.safeParse(booking).success).toBe(true);
+  });
+
+  it("defaults legacy bookings to a phone inspection", () => {
+    const parsed = bookInspectionSchema.safeParse({
+      planId: booking.planId,
+      deviceInfo: booking.deviceInfo,
+      contactName: booking.contactName,
+      contactPhone: booking.contactPhone,
+      countryId: booking.countryId,
+      cityId: booking.cityId,
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.inspectionKind).toBe("PHONE");
+  });
+
+  it("rejects an unknown device family", () => {
+    expect(bookInspectionSchema.safeParse({ ...booking, inspectionKind: "TABLET" }).success).toBe(
+      false,
+    );
   });
 });
 

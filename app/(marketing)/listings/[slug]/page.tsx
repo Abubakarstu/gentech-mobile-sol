@@ -271,6 +271,7 @@ export default async function ListingDetailPage({ params }: PageProps) {
             defaultCity={detail.city}
             locations={locations}
             showPakistanSignals
+            categorySlug={detail.categorySlug}
           />
         </aside>
       </div>

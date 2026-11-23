@@ -641,9 +641,12 @@ model InspectionRequest {
   paymentMethod String?
   paidAt        DateTime?
 
-  // Free-text phone being inspected when the request isn't tied to a listing
-  // (e.g. a buyer booking an inspection for a phone found off-platform).
+  // Free-text device being inspected when the request isn't tied to a listing
+  // (e.g. a buyer booking an inspection for a device found off-platform).
   deviceInfo String?
+
+  /// Checklist family: PHONE | LAPTOP. NULL means a legacy phone request.
+  inspectionKind String?
 
   // Where the inspection happens + how to reach the requester
   contactName  String?

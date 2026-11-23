@@ -309,11 +309,34 @@ export const INSPECTION_ITEM_RESULT_LABELS: Record<InspectionItemResult, string>
   NOT_APPLICABLE: "N/A",
 };
 
+/** Device families supported by the inspection workflow. */
+export const INSPECTION_KINDS = {
+  PHONE: "PHONE",
+  LAPTOP: "LAPTOP",
+} as const;
+
+export type InspectionKind = (typeof INSPECTION_KINDS)[keyof typeof INSPECTION_KINDS];
+
+export const INSPECTION_KIND_VALUES = Object.values(INSPECTION_KINDS) as [
+  InspectionKind,
+  ...InspectionKind[],
+];
+
+export const INSPECTION_KIND_LABELS: Record<InspectionKind, string> = {
+  PHONE: "Phone",
+  LAPTOP: "Laptop",
+};
+
+export interface InspectionChecklistGroup {
+  category: string;
+  items: readonly string[];
+}
+
 /**
- * Default checklist scaffold an inspector fills in per request. Grouped by the
- * phone component being inspected. Reused to pre-populate a blank report form.
+ * Default phone checklist scaffold an inspector fills in per request. Kept as the
+ * named export for backwards compatibility; use `INSPECTION_CHECKLISTS` for new code.
  */
-export const INSPECTION_CHECKLIST: ReadonlyArray<{ category: string; items: readonly string[] }> = [
+export const INSPECTION_CHECKLIST: ReadonlyArray<InspectionChecklistGroup> = [
   { category: "Display", items: ["Screen scratches", "Touch response", "Dead pixels / burn-in", "True Tone / brightness"] },
   { category: "Body & Frame", items: ["Dents & scratches", "Bent frame", "Buttons", "SIM tray"] },
   { category: "Battery", items: ["Battery health %", "Charging (wired)", "Charging (wireless)", "Drain under load"] },
@@ -322,6 +345,26 @@ export const INSPECTION_CHECKLIST: ReadonlyArray<{ category: string; items: read
   { category: "Biometrics & Sensors", items: ["Face ID / fingerprint", "Proximity sensor", "Gyroscope", "Speakers & mics"] },
   { category: "Software & Identity", items: ["IMEI check", "PTA approval", "iCloud / account lock", "OS version"] },
 ] as const;
+
+/** Laptop checklist — no IMEI/PTA; focuses on chassis, input, performance and ports. */
+export const LAPTOP_INSPECTION_CHECKLIST: ReadonlyArray<InspectionChecklistGroup> = [
+  { category: "Display", items: ["Screen scratches", "Dead pixels / backlight bleed", "Brightness & colour", "Webcam"] },
+  { category: "Chassis & Keyboard", items: ["Dents & scratches", "Hinge firmness", "Keyboard (all keys)", "Trackpad & gestures"] },
+  { category: "Performance", items: ["CPU / benchmark", "RAM recognition", "Storage health", "Thermals & fan noise"] },
+  { category: "Battery & Charging", items: ["Battery condition %", "Charging (adapter)", "Drain under load", "Power button"] },
+  { category: "Ports & Connectivity", items: ["USB / HDMI ports", "Wi-Fi", "Bluetooth", "Speakers & microphone"] },
+  { category: "OS & Security", items: ["OS version & activation", "BIOS / firmware password", "Find My Device / account lock", "Serial number check"] },
+] as const;
+
+export const INSPECTION_CHECKLISTS: Record<InspectionKind, ReadonlyArray<InspectionChecklistGroup>> = {
+  PHONE: INSPECTION_CHECKLIST,
+  LAPTOP: LAPTOP_INSPECTION_CHECKLIST,
+};
+
+/** Checklist used to pre-populate a blank report form for a device family. */
+export function getInspectionChecklist(kind: InspectionKind): ReadonlyArray<InspectionChecklistGroup> {
+  return INSPECTION_CHECKLISTS[kind] ?? INSPECTION_CHECKLIST;
+}
 
 /**
  * PTA (Pakistan Telecommunication Authority) status for mobile devices.

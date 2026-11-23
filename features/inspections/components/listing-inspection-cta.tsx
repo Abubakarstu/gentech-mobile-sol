@@ -4,10 +4,11 @@ import * as React from "react";
 import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 
-import { ROUTES } from "@/lib/constants";
+import { INSPECTION_KINDS, INSPECTION_KIND_LABELS, ROUTES } from "@/lib/constants";
 import { formatPrice } from "@/utils/format";
 import { Button } from "@/components/ui/button";
 import { RequestInspectionForm } from "@/features/inspections/components/request-inspection-form";
+import { inspectionKindForCategory } from "@/features/inspections/lib/inspection-kind";
 import type { InspectionPlanDto } from "@/features/inspections/types";
 import type { LocationTree } from "@/features/locations/services/location.service";
 
@@ -18,6 +19,7 @@ interface Props {
   defaultCity?: string;
   locations: LocationTree;
   showPakistanSignals?: boolean;
+  categorySlug?: string | null;
 }
 
 /** Sidebar card on the listing detail page — the buyer's entry point to inspections. */
@@ -28,10 +30,14 @@ export function ListingInspectionCta({
   defaultCity,
   locations,
   showPakistanSignals = false,
+  categorySlug,
 }: Props) {
   const [open, setOpen] = React.useState(false);
   const fromPrice = plans.length > 0 ? Math.min(...plans.map((p) => p.price)) : null;
   const currency = plans[0]?.currency ?? "PKR";
+  const isLaptop = inspectionKindForCategory(categorySlug) === INSPECTION_KINDS.LAPTOP;
+  const deviceLabel =
+    INSPECTION_KIND_LABELS[isLaptop ? INSPECTION_KINDS.LAPTOP : INSPECTION_KINDS.PHONE].toLowerCase();
 
   return (
     <div className="bg-card rounded-xl border p-4">
@@ -40,10 +46,11 @@ export function ListingInspectionCta({
           <ShieldCheck className="size-5" />
         </div>
         <div className="min-w-0">
-          <h3 className="font-semibold">Not sure about this phone?</h3>
+          <h3 className="font-semibold">Not sure about this {deviceLabel}?</h3>
           <p className="text-muted-foreground mt-0.5 text-sm">
-            Get it checked by a certified GenTech inspector before you buy — battery, IMEI,
-            {showPakistanSignals ? " PTA," : ""} cameras and more.
+            {isLaptop
+              ? "Get it checked by a certified GenTech inspector before you buy — display, keyboard, performance, battery and more."
+              : `Get it checked by a certified GenTech inspector before you buy — battery, IMEI,${showPakistanSignals ? " PTA," : ""} cameras and more.`}
           </p>
         </div>
       </div>

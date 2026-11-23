@@ -38,7 +38,7 @@
     "account": "اکاؤنٹ",
     "admin": "ایڈمن",
     "logout": "لاگ آؤٹ",
-    "inspection": "فون معائنہ",
+    "inspection": "آلہ کا معائنہ",
     "savedSearches": "محفوظ تلاشیں",
     "inspections": "معائنے",
     "inspector": "انسپکٹر",
@@ -535,7 +535,7 @@
     "viewConversations": "پیغامات",
     "yourSavedFilters": "محفوظ تلاشیں",
     "trackRequests": "معائنے",
-    "getInspected": "فون معائنہ",
+    "getInspected": "آلہ کا معائنہ کروائیں",
     "sellingOverview": "جائزہ",
     "manageListings": "میری لسٹنگز",
     "verified": "تصدیق شدہ"

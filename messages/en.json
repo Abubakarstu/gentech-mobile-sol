@@ -38,7 +38,7 @@
     "account": "Account",
     "admin": "Admin",
     "logout": "Log Out",
-    "inspection": "Phone Inspection",
+    "inspection": "Device Inspection",
     "savedSearches": "Saved Searches",
     "inspections": "Inspections",
     "inspector": "Inspector",
@@ -536,7 +536,7 @@
     "viewConversations": "View conversations",
     "yourSavedFilters": "Your saved filters",
     "trackRequests": "Track your requests",
-    "getInspected": "Get a phone inspected",
+    "getInspected": "Get a device inspected",
     "sellingOverview": "Selling overview",
     "manageListings": "Manage listings"
   }

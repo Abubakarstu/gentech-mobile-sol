@@ -3,10 +3,16 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Loader2, ShieldCheck, Smartphone } from "lucide-react";
+import { Laptop, Loader2, ShieldCheck, Smartphone } from "lucide-react";
 import { toast } from "sonner";
 
-import { ROUTES } from "@/lib/constants";
+import {
+  INSPECTION_KINDS,
+  INSPECTION_KIND_LABELS,
+  INSPECTION_KIND_VALUES,
+  ROUTES,
+  type InspectionKind,
+} from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/utils/format";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -26,10 +32,13 @@ interface Props {
   initialPlanId?: string;
 }
 
-/** PakWheels-style booking form — describe the phone + your details, pick a package. */
+/** PakWheels-style booking form — describe the device + your details, pick a package. */
 export function BookInspectionForm({ plans, isAuthenticated, initialPlanId, locations }: Props) {
   const router = useRouter();
   const [planId, setPlanId] = React.useState(initialPlanId ?? plans[0]?.id ?? "");
+  const [inspectionKind, setInspectionKind] = React.useState<InspectionKind>(
+    INSPECTION_KINDS.PHONE,
+  );
   const [pending, setPending] = React.useState(false);
   const [location, setLocation] = React.useState<LocationSelection>({
     countryId: "",
@@ -44,6 +53,7 @@ export function BookInspectionForm({ plans, isAuthenticated, initialPlanId, loca
     const result = await bookInspectionAction({
       planId,
       deviceInfo: String(form.get("deviceInfo") ?? ""),
+      inspectionKind,
       contactName: String(form.get("contactName") ?? ""),
       contactPhone: String(form.get("contactPhone") ?? ""),
       countryId: location.countryId,
@@ -63,6 +73,9 @@ export function BookInspectionForm({ plans, isAuthenticated, initialPlanId, loca
       toast.error(result.error ?? "Could not book the inspection.");
     }
   }
+
+  const DeviceIcon = inspectionKind === INSPECTION_KINDS.LAPTOP ? Laptop : Smartphone;
+  const deviceLabel = INSPECTION_KIND_LABELS[inspectionKind];
 
   if (plans.length === 0) {
     return (
@@ -128,19 +141,45 @@ export function BookInspectionForm({ plans, isAuthenticated, initialPlanId, loca
         </div>
       </fieldset>
 
-      {/* Step 2 — phone */}
-      <fieldset className="space-y-2">
-        <legend className="text-sm font-semibold">2. Which phone should we inspect?</legend>
+      {/* Step 2 — device family + model */}
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-semibold">2. Which device should we inspect?</legend>
+        <div className="grid grid-cols-2 gap-2">
+          {INSPECTION_KIND_VALUES.map((kind) => {
+            const Icon = kind === INSPECTION_KINDS.LAPTOP ? Laptop : Smartphone;
+            return (
+              <button
+                key={kind}
+                type="button"
+                onClick={() => setInspectionKind(kind)}
+                aria-pressed={inspectionKind === kind}
+                className={cn(
+                  "flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-sm font-medium transition-colors",
+                  inspectionKind === kind
+                    ? "border-primary ring-primary/30 bg-primary/5 ring-2"
+                    : "hover:border-primary/40",
+                )}
+              >
+                <Icon className="size-4" />
+                {INSPECTION_KIND_LABELS[kind]}
+              </button>
+            );
+          })}
+        </div>
         <div className="space-y-1.5">
-          <Label htmlFor="deviceInfo">Phone make & model</Label>
+          <Label htmlFor="deviceInfo">{deviceLabel} make & model</Label>
           <div className="relative">
-            <Smartphone className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
+            <DeviceIcon className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2" />
             <Input
               id="deviceInfo"
               name="deviceInfo"
               required
               maxLength={120}
-              placeholder="e.g. iPhone 14 Pro 256GB, or Samsung S23 Ultra"
+              placeholder={
+                inspectionKind === INSPECTION_KINDS.LAPTOP
+                  ? "e.g. MacBook Air M3 16GB, or Dell XPS 13"
+                  : "e.g. iPhone 14 Pro 256GB, or Samsung S23 Ultra"
+              }
               className="pl-9"
             />
           </div>

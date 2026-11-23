@@ -38,7 +38,7 @@
     "account": "الحساب",
     "admin": "الإدارة",
     "logout": "تسجيل الخروج",
-    "inspection": "فحص الهاتف",
+    "inspection": "فحص الأجهزة",
     "savedSearches": "عمليات البحث المحفوظة",
     "inspections": "الفحوصات",
     "inspector": "المفتش",
@@ -536,7 +536,7 @@
     "viewConversations": "عرض المحادثات",
     "yourSavedFilters": "فلاترك المحفوظة",
     "trackRequests": "تابع طلباتك",
-    "getInspected": "افحص هاتفًا",
+    "getInspected": "افحص جهازًا",
     "sellingOverview": "نظرة عامة على البيع",
     "manageListings": "إدارة الإعلانات"
   }

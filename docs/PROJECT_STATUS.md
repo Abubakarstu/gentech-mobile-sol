@@ -4,9 +4,17 @@ Last Updated: 2026-11-23
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (330/330 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Baseline Technical Quality:** Verified (340/340 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
+
+### Laptop inspections (2026-11-23)
+
+- **Change:** Inspections are now device-family aware. A shared `INSPECTION_KINDS` registry in `lib/constants.ts` keeps the original phone checklist unchanged and adds a distinct laptop checklist (Display, Chassis & Keyboard, Performance, Battery & Charging, Ports & Connectivity, OS & Security). `features/inspections/lib/inspection-kind.ts` maps listing categories (`laptops`, `laptops-tablets`) to the laptop checklist and defaults every other category to phone.
+- **Capture + workflow:** Standalone booking offers a Phone/Laptop selector and sends `inspectionKind`; listing-backed requests derive it server-side from the listing category. The inspector form renders the matching checklist, hides IMEI/PTA for laptops, keeps battery condition for both, and server-side normalisation strips phone identity signals from laptop reports. Laptop reports do not create `PhoneHistory` entries.
+- **Data:** Added a nullable `inspectionKind TEXT` column to `inspection_request` via additive migration `20261123130000_add_inspection_request_kind` (with a laptop backfill from category slug) and applied it with `pnpm db:deploy`. No destructive migration, reset, or data loss.
+- **Localization + demo:** Neutral "Device Inspection" copy replaces phone-only labels in EN/AR/UR, and the seed now includes a published laptop inspection report on the MacBook Air listing (4 published reports total).
+- **Verification:** `pnpm db:seed` → `15 categories, 18 brands, 260 listings (130 bahrain, 130 pakistan), 780 image links, 4 published reports`; `pnpm typecheck` 0 errors; `pnpm test` 340/340 (new `tests/inspections/inspection-checklist.test.ts` and booking-kind schema cases); `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` passed.
 
 ### Category-aware intelligent filters + Vercel analytics (2026-11-23)
 

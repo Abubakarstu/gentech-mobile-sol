@@ -3,6 +3,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 import {
+  INSPECTION_KINDS,
   INSPECTION_PAYMENT_STATUSES,
   INSPECTION_STATUSES,
   type InspectionItemResult,
@@ -25,6 +26,10 @@ import {
   canSubmitInspectionReport,
 } from "@/features/inspections/lib/inspection-state";
 import { maskReportImei } from "@/features/inspections/lib/imei";
+import {
+  inspectionKindForCategory,
+  resolveInspectionKind,
+} from "@/features/inspections/lib/inspection-kind";
 import type {
   BookInspectionInput,
   InspectionPlanInput,
@@ -88,6 +93,7 @@ const requestSelect = {
   paymentMethod: true,
   paidAt: true,
   deviceInfo: true,
+  inspectionKind: true,
   contactName: true,
   contactPhone: true,
   city: true,
@@ -108,6 +114,7 @@ const requestSelect = {
       slug: true,
       price: true,
       currency: true,
+      category: { select: { slug: true } },
       images: {
         where: { isPrimary: true },
         take: 1,
@@ -197,6 +204,7 @@ function toRequestDto(row: RequestRow): InspectionRequestDto {
     paymentMethod: (row.paymentMethod as PaymentMethod | null) ?? null,
     paidAt: row.paidAt ? row.paidAt.toISOString() : null,
     deviceInfo: row.deviceInfo,
+    inspectionKind: resolveInspectionKind(row.inspectionKind, row.listing?.category.slug),
     contactName: row.contactName,
     contactPhone: row.contactPhone,
     city: row.city,
@@ -322,10 +330,16 @@ export async function createRequest(
   requesterId: string,
 ): Promise<string> {
   const { city, area } = await resolveRequestLocation(input);
-  const plan = await prisma.inspectionPlan.findUnique({
-    where: { id: input.planId },
-    select: { id: true, name: true, price: true, currency: true, isActive: true },
-  });
+  const [plan, listing] = await Promise.all([
+    prisma.inspectionPlan.findUnique({
+      where: { id: input.planId },
+      select: { id: true, name: true, price: true, currency: true, isActive: true },
+    }),
+    prisma.listing.findUnique({
+      where: { id: input.listingId },
+      select: { category: { select: { slug: true } } },
+    }),
+  ]);
   if (!plan || !plan.isActive) {
     throw new Error("Selected inspection package is unavailable.");
   }
@@ -336,6 +350,7 @@ export async function createRequest(
     data: {
       status: INSPECTION_STATUSES.REQUESTED,
       listingId: input.listingId,
+      inspectionKind: inspectionKindForCategory(listing?.category.slug),
       requesterId,
       planId: plan.id,
       planName: plan.name,
@@ -357,22 +372,35 @@ export async function createRequest(
 }
 
 /**
- * Standalone booking: the buyer describes the phone (`deviceInfo`) rather than
- * selecting a listing. Snapshots the plan fee. Returns the new request id.
+ * Standalone booking: the buyer describes the device (`deviceInfo`) and selects
+ * its family rather than picking a listing. Snapshots the plan fee. Returns the id.
  */
 export async function createBooking(
   input: BookInspectionInput,
   requesterId: string,
 ): Promise<string> {
   const { city, area } = await resolveRequestLocation(input);
-  const plan = await prisma.inspectionPlan.findUnique({
-    where: { id: input.planId },
-    select: { id: true, name: true, price: true, currency: true, isActive: true },
-  });
+  const [plan, listing] = await Promise.all([
+    prisma.inspectionPlan.findUnique({
+      where: { id: input.planId },
+      select: { id: true, name: true, price: true, currency: true, isActive: true },
+    }),
+    input.listingId
+      ? prisma.listing.findUnique({
+          where: { id: input.listingId },
+          select: { category: { select: { slug: true } } },
+        })
+      : Promise.resolve(null),
+  ]);
   if (!plan || !plan.isActive) {
     throw new Error("Selected inspection package is unavailable.");
   }
 
+  // Listing-backed bookings always use the listing's category, even if a client
+  // sends a conflicting family. Only standalone bookings honour the selector.
+  const kind = input.listingId
+    ? inspectionKindForCategory(listing?.category.slug)
+    : (input.inspectionKind ?? INSPECTION_KINDS.PHONE);
   const preferredAt = input.preferredAt ? new Date(input.preferredAt) : null;
 
   const created = await prisma.inspectionRequest.create({
@@ -380,6 +408,7 @@ export async function createBooking(
       status: INSPECTION_STATUSES.REQUESTED,
       listingId: input.listingId ?? null,
       deviceInfo: input.deviceInfo,
+      inspectionKind: kind,
       requesterId,
       planId: plan.id,
       planName: plan.name,
@@ -719,8 +748,10 @@ export async function createReport(
       inspectorId: true,
       requesterId: true,
       listingId: true,
+      inspectionKind: true,
       status: true,
       paymentStatus: true,
+      listing: { select: { category: { select: { slug: true } } } },
       report: { select: { id: true } },
     },
   });
@@ -743,6 +774,8 @@ export async function createReport(
     };
   }
 
+  const kind = resolveInspectionKind(request.inspectionKind, request.listing?.category.slug);
+  const isPhoneInspection = kind === INSPECTION_KINDS.PHONE;
   const overallScore = computeOverallScore(input.items);
   const grade = scoreToGrade(overallScore);
 
@@ -767,8 +800,10 @@ export async function createReport(
         grade,
         verdict: input.verdict,
         summary: input.summary,
-        imei: input.imei,
-        ptaApproved: input.ptaApproved,
+        // Laptop reports never carry phone-only identity signals, even if a
+        // client sends them. Server-side normalisation keeps published data clean.
+        imei: isPhoneInspection ? input.imei : null,
+        ptaApproved: isPhoneInspection ? input.ptaApproved : null,
         batteryHealth: input.batteryHealth,
         items: {
           create: input.items.map((item, index) => ({
@@ -796,8 +831,8 @@ export async function createReport(
 
   if (!completed) return { ok: false, reason: "ALREADY_REPORTED" };
 
-  // Create phone history event for inspection completion
-  if (request.listingId) {
+  // Phone history tracks device identity only; laptop inspections must not pollute it.
+  if (isPhoneInspection && request.listingId) {
     await addHistoryEvent({
       listingId: request.listingId,
       eventType: "INSPECTION",

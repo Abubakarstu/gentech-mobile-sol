@@ -120,7 +120,7 @@ export async function requestInspection(
   return createRequest(input, requesterId);
 }
 
-/** Standalone booking — buyer describes the phone. Returns the new request id. */
+/** Standalone booking — buyer describes the device. Returns the new request id. */
 export async function bookInspection(
   input: BookInspectionInput,
   requesterId: string,
@@ -157,7 +157,7 @@ export async function scheduleInspection(
       userId: request.requester.id,
       type: NOTIFICATION_TYPES.INSPECTION_SCHEDULED,
       title: "Your inspection is scheduled",
-      body: `We'll inspect ${request.listing?.title ?? "the phone"} on ${scheduledAt.toLocaleString("en-PK")}.`,
+      body: `We'll inspect ${request.listing?.title ?? "the device"} on ${scheduledAt.toLocaleString("en-PK")}.`,
       url: ROUTES.inspections,
       email: true,
     }).catch((error) => warn("schedule notification failed", error));

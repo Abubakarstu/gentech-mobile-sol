@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import {
   INSPECTION_ITEM_RESULTS,
+  INSPECTION_KINDS,
+  INSPECTION_KIND_VALUES,
   INSPECTION_VERDICTS,
   type InspectionItemResult,
   type InspectionVerdict,
@@ -51,7 +53,7 @@ export const requestInspectionSchema = z.object({
 export type RequestInspectionInput = z.infer<typeof requestInspectionSchema>;
 
 /**
- * Standalone booking (PakWheels-style): the buyer describes the phone they want
+ * Standalone booking (PakWheels-style): the buyer describes the device they want
  * inspected instead of picking an existing listing. `listingId` is optional so the
  * same flow can also be pre-filled from a listing.
  */
@@ -60,8 +62,9 @@ export const bookInspectionSchema = z.object({
   deviceInfo: z
     .string()
     .trim()
-    .min(2, "Tell us which phone to inspect")
+    .min(2, "Tell us which device to inspect")
     .max(120),
+  inspectionKind: z.enum(INSPECTION_KIND_VALUES).default(INSPECTION_KINDS.PHONE),
   listingId: z.string().optional(),
   contactName: z.string().trim().min(2, "Enter your name").max(80),
   contactPhone: z.string().trim().min(7, "Enter a valid phone number").max(20),

@@ -127,7 +127,7 @@ export default async function DashboardPage() {
       icon: ShieldCheck,
       label: "Inspections",
       value: inspectionCount > 0 ? String(inspectionCount) : "—",
-      hint: inspectionCount > 0 ? "Track your requests" : "Get a phone inspected",
+      hint: inspectionCount > 0 ? "Track your requests" : "Get a device inspected",
       href: ROUTES.inspections,
     },
   ];

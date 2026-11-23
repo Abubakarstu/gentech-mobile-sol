@@ -48,7 +48,7 @@ export async function requestInspectionAction(
   }
 }
 
-/** Buyer books a standalone inspection (describes the phone; no listing needed). */
+/** Buyer books a standalone inspection (describes the device; no listing needed). */
 export async function bookInspectionAction(input: BookInspectionInput): Promise<ActionResult> {
   const user = await getCurrentUser();
   if (!user) return { ok: false, error: SIGN_IN_REQUIRED };

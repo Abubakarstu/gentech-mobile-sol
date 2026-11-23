@@ -64,7 +64,7 @@ export default async function InspectorReportPage({ params }: PageProps) {
       ) : canSubmitInspectionReport(request) ? (
         <div className="bg-card rounded-xl border p-5">
           <h2 className="mb-4 text-lg font-semibold">Complete the inspection</h2>
-          <SubmitReportForm requestId={request.id} />
+          <SubmitReportForm requestId={request.id} inspectionKind={request.inspectionKind} />
         </div>
       ) : (
         <div className="bg-card rounded-xl border p-5">

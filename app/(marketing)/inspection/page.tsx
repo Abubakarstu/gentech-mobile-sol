@@ -13,21 +13,21 @@ import { Button } from "@/components/ui/button";
 import { getActiveLocationTree } from "@/features/locations/services/location.service";
 
 export const metadata: Metadata = {
-  title: "Phone Inspection Service",
+  title: "Device Inspection Service",
   description:
-    "Buy used phones with confidence. Book a certified GenTech inspector to physically verify any phone — battery, IMEI, PTA, cameras and 40+ checkpoints.",
+    "Buy used phones and laptops with confidence. Book a certified GenTech inspector to verify condition, battery, IMEI, PTA, performance and more.",
 };
 
 const STEPS = [
   {
     icon: ClipboardCheck,
     title: "Book an inspection",
-    body: "Tell us which phone to check and pick a package — right here, or from any listing.",
+    body: "Tell us which device to check and pick a package — right here, or from any listing.",
   },
   {
     icon: ScanLine,
-    title: "We inspect the phone",
-    body: "A certified inspector meets the seller and runs a full physical + software check.",
+    title: "We inspect the device",
+    body: "A certified inspector meets the seller and runs a full physical and software check.",
   },
   {
     icon: ShieldCheck,
@@ -52,11 +52,11 @@ export default async function InspectionServicePage() {
           GenTech Certified Inspection
         </span>
         <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl">
-          Buy used phones with total confidence
+          Buy used phones and laptops with confidence
         </h1>
         <p className="text-muted-foreground mx-auto mt-3 max-w-2xl">
-          Not sure about a phone you found? Let a certified inspector verify its condition, battery
-          health, IMEI and PTA status before you pay — so there are no surprises.
+          Not sure about a device you found? Let a certified inspector verify its condition, battery,
+          IMEI, PTA status or laptop performance before you pay, so there are no surprises.
         </p>
         <div className="mt-6 flex justify-center gap-3">
           <Button render={<Link href="#book" />}>Book an inspection</Button>

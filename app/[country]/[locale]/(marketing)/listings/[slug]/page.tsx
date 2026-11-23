@@ -326,6 +326,7 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
             defaultCity={detail.city}
             locations={locations}
             showPakistanSignals={showPakistanSignals}
+            categorySlug={detail.categorySlug}
           />
         </aside>
       </div>
