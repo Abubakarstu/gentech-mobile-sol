@@ -4,7 +4,7 @@ Last Updated: 2026-11-23
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (324/324 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Baseline Technical Quality:** Verified (325/325 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
 
@@ -22,12 +22,19 @@ Last Updated: 2026-11-23
 - **Localization:** Added English, Arabic, and Urdu strings for the new trust and guidance messages, plus a `navigation.navigation` label used by the shared header and footer.
 - **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 324/324; `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` passed. Local route HTML contains the new hero, trust strip, category grid, and listing cards.
 
+### Laptop, tablet and accessory catalog expansion (2026-11-23)
+
+- **Change:** Added `Laptops & Tablets` as a shared root category with `Laptops` and `Tablets` children, plus `Laptop Accessories` and `Tablet Accessories` under `Accessories`. `prisma/seed-listings.ts` adds `buildExpansionListings()` with six new templates (MacBook Air M3, Dell XPS 13, iPad Pro M4, Galaxy Tab S9 FE, USB-C hub, iPad Magic Keyboard) × five conditions per region. Existing 200 listings are untouched; the catalog now holds **130 PK + 130 BH = 260 listings**.
+- **Assets/icons:** New Unsplash pools cover laptops and both accessory types, child categories now persist their icon slug, and `CategoryIcon` supports `laptop` and `keyboard`. English, Arabic and Urdu translation keys were added for every new category.
+- **Idempotency:** expansion slugs and `listing_image` ids are deterministic, so re-running `pnpm db:seed` updates the same 60 expansion rows and 780 total image links instead of creating duplicates. No migrations or resets were run.
+- **Verification:** `pnpm db:seed` → `15 categories, 18 brands, 260 listings (130 bahrain, 130 pakistan), 780 image links (3/listing)`; active DB group-by → laptops `10/region`, tablets `20 BH / 22 PK`, laptop accessories `5/region`, tablet accessories `5/region`. `pnpm typecheck` 0 errors; `pnpm test` 325/325 (new expansion assertions in `tests/seed/seed-listings.test.ts`).
+
 ### Seeded 200 image-backed listings (2026-11-23)
 
-- **Change:** `prisma/seed-listings.ts` deterministically generates 88 additional Pakistan listings and 100 Bahrain listings. Combined with the 12 curated Pakistan listings, the active catalog is exactly **100 PK + 100 BH = 200 listings**. `prisma/seed.ts` upserts each listing with its region, currency (`PKR` / `BHD`), city, category, brand and three stable external Unsplash image links.
+- **Change:** `prisma/seed-listings.ts` deterministically generates 88 additional Pakistan listings and 100 Bahrain listings. Combined with the 12 curated Pakistan listings, the original active catalog was **100 PK + 100 BH = 200 listings**. `prisma/seed.ts` upserts each listing with its region, currency (`PKR` / `BHD`), city, category, brand and three stable external Unsplash image links.
 - **Region fix:** seeded categories now use `region: null` so the shared phone/accessory tree is visible in both BH and PK catalog filters; previously they defaulted to Pakistan-only.
-- **Idempotency:** listing slugs and `listing_image` ids are deterministic, so re-running `pnpm db:seed` updates the same 200 rows and 600 image links instead of creating duplicates. Soft-deleted legacy rows are untouched and excluded from the seed summary.
-- **Verification:** `pnpm db:seed` → `200 listings (100 bahrain, 100 pakistan), 600 image links (3/listing)`; active DB query → `200` total, `100` per region, `200` listings with images; live `/bh/en` and `/pk/en` HTML contain generated slugs and `images.unsplash.com` URLs. `pnpm typecheck` 0 errors; `pnpm test` 324/324 (new `tests/seed/seed-listings.test.ts`); `pnpm lint` 0 errors / 46 warnings; `next build` passed. No migrations or resets were run.
+- **Idempotency:** listing slugs and `listing_image` ids are deterministic, so re-running `pnpm db:seed` updates the same rows and image links instead of creating duplicates. Soft-deleted legacy rows are untouched and excluded from the seed summary.
+- **Verification:** earlier `pnpm db:seed` run → `200 listings (100 bahrain, 100 pakistan), 600 image links (3/listing)`; live `/bh/en` and `/pk/en` HTML contained generated slugs and `images.unsplash.com` URLs. `pnpm typecheck` 0 errors; `pnpm test` 324/324 (new `tests/seed/seed-listings.test.ts`); `pnpm lint` 0 errors / 46 warnings; `next build` passed. No migrations or resets were run.
 
 ### Admin credential seed (2026-11-23)
 

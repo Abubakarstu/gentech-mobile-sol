@@ -319,6 +319,10 @@
   "categories": {
     "smartphones": "الهواتف الذكية",
     "tablets": "الأجهزة اللوحية",
+    "laptops": "أجهزة الكمبيوتر المحمولة",
+    "laptops-tablets": "الكمبيوتر المحمولة والأجهزة اللوحية",
+    "laptop-accessories": "ملحقات اللابتوب",
+    "tablet-accessories": "ملحقات الأجهزة اللوحية",
     "smart-watches": "الساعات الذكية",
     "earphones-headphones": "السماعات",
     "chargers-cables": "الشواحن والكابلات",

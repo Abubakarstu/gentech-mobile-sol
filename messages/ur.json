@@ -319,6 +319,10 @@
   "categories": {
     "smartphones": "اسمارٹ فونز",
     "tablets": "ٹیبلٹس",
+    "laptops": "لیپ ٹاپس",
+    "laptops-tablets": "لیپ ٹاپ اور ٹیبلٹس",
+    "laptop-accessories": "لیپ ٹاپ لوازمات",
+    "tablet-accessories": "ٹیبلٹ لوازمات",
     "smart-watches": "اسمارٹ واچز",
     "earphones-headphones": "ہیڈ فونز",
     "chargers-cables": "چارجز اور کیبلز",

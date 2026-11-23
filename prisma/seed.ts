@@ -1,7 +1,7 @@
 /**
  * Database seed — catalog reference data.
  *
- * Seeds the phone-focused category tree and popular brands. Idempotent: safe to
+ * Seeds the phone, laptop, tablet and accessory category tree plus popular brands. Idempotent: safe to
  * run repeatedly (everything upserts by unique slug).
  *
  * Run via `pnpm db:seed` or automatically after `pnpm db:migrate`.
@@ -10,7 +10,12 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../lib/generated/prisma/client";
 
-import { buildGeneratedListings, IMAGES_PER_LISTING, listingImages } from "./seed-listings";
+import {
+  buildExpansionListings,
+  buildGeneratedListings,
+  IMAGES_PER_LISTING,
+  listingImages,
+} from "./seed-listings";
 
 // Prisma 7 no longer auto-loads .env; load it for standalone `pnpm db:seed` runs.
 try {
@@ -24,17 +29,16 @@ const CATEGORIES: Array<{
   name: string;
   slug: string;
   icon?: string;
-  children?: Array<{ name: string; slug: string }>;
+  children?: Array<{ name: string; slug: string; icon: string }>;
 }> = [
   {
     name: "Mobile Phones",
     slug: "mobile-phones",
     icon: "smartphone",
     children: [
-      { name: "Smartphones", slug: "smartphones" },
-      { name: "Feature Phones", slug: "feature-phones" },
-      { name: "Tablets", slug: "tablets" },
-      { name: "Smart Watches", slug: "smart-watches" },
+      { name: "Smartphones", slug: "smartphones", icon: "smartphone" },
+      { name: "Feature Phones", slug: "feature-phones", icon: "phone" },
+      { name: "Smart Watches", slug: "smart-watches", icon: "watch" },
     ],
   },
   {
@@ -42,10 +46,21 @@ const CATEGORIES: Array<{
     slug: "accessories",
     icon: "cable",
     children: [
-      { name: "Chargers & Cables", slug: "chargers-cables" },
-      { name: "Cases & Covers", slug: "cases-covers" },
-      { name: "Power Banks", slug: "power-banks" },
-      { name: "Earphones & Headphones", slug: "earphones-headphones" },
+      { name: "Chargers & Cables", slug: "chargers-cables", icon: "cable" },
+      { name: "Cases & Covers", slug: "cases-covers", icon: "shield" },
+      { name: "Power Banks", slug: "power-banks", icon: "battery-charging" },
+      { name: "Earphones & Headphones", slug: "earphones-headphones", icon: "headphones" },
+      { name: "Laptop Accessories", slug: "laptop-accessories", icon: "keyboard" },
+      { name: "Tablet Accessories", slug: "tablet-accessories", icon: "tablet" },
+    ],
+  },
+  {
+    name: "Laptops & Tablets",
+    slug: "laptops-tablets",
+    icon: "laptop",
+    children: [
+      { name: "Laptops", slug: "laptops", icon: "laptop" },
+      { name: "Tablets", slug: "tablets", icon: "tablet" },
     ],
   },
 ];
@@ -64,6 +79,11 @@ const BRANDS = [
   "Nokia",
   "Huawei",
   "Motorola",
+  "Lenovo",
+  "Dell",
+  "HP",
+  "Asus",
+  "Anker",
 ];
 
 /** Inspection packages (PakWheels-style tiers). Prices in PKR. */
@@ -284,12 +304,19 @@ async function main() {
       for (const [childIndex, child] of (root.children ?? []).entries()) {
         await prisma.category.upsert({
           where: { slug: child.slug },
-          update: { name: child.name, parentId: parent.id, position: childIndex, region: null },
+          update: {
+            name: child.name,
+            parentId: parent.id,
+            position: childIndex,
+            icon: child.icon,
+            region: null,
+          },
           create: {
             name: child.name,
             slug: child.slug,
             parentId: parent.id,
             position: childIndex,
+            icon: child.icon,
             region: null,
           },
         });
@@ -342,7 +369,9 @@ async function main() {
         images: listingImages(item.categorySlug, index),
       })),
       ...buildGeneratedListings("PAKISTAN", 100 - SAMPLE_LISTINGS.length),
+      ...buildExpansionListings("PAKISTAN"),
       ...buildGeneratedListings("BAHRAIN", 100),
+      ...buildExpansionListings("BAHRAIN"),
     ];
 
     for (const item of seedListings) {

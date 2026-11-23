@@ -10,17 +10,23 @@ import type { BrandItem, CategoryItem, ListingCardData } from "@/types/marketpla
 export const DEMO_CATEGORIES: CategoryItem[] = [
   { id: "c1", name: "Smartphones", slug: "smartphones", icon: "smartphone", count: 1240 },
   { id: "c2", name: "Tablets", slug: "tablets", icon: "tablet", count: 312 },
-  { id: "c3", name: "Smart Watches", slug: "smart-watches", icon: "watch", count: 198 },
-  { id: "c4", name: "Earphones", slug: "earphones-headphones", icon: "headphones", count: 540 },
-  { id: "c5", name: "Chargers & Cables", slug: "chargers-cables", icon: "cable", count: 421 },
-  { id: "c6", name: "Power Banks", slug: "power-banks", icon: "battery-charging", count: 276 },
-  { id: "c7", name: "Cases & Covers", slug: "cases-covers", icon: "shield", count: 833 },
-  { id: "c8", name: "Feature Phones", slug: "feature-phones", icon: "phone", count: 154 },
+  { id: "c3", name: "Laptops", slug: "laptops", icon: "laptop", count: 268 },
+  { id: "c4", name: "Smart Watches", slug: "smart-watches", icon: "watch", count: 198 },
+  { id: "c5", name: "Earphones", slug: "earphones-headphones", icon: "headphones", count: 540 },
+  { id: "c6", name: "Chargers & Cables", slug: "chargers-cables", icon: "cable", count: 421 },
+  { id: "c7", name: "Laptop Accessories", slug: "laptop-accessories", icon: "keyboard", count: 342 },
+  { id: "c8", name: "Tablet Accessories", slug: "tablet-accessories", icon: "tablet", count: 214 },
+  { id: "c9", name: "Power Banks", slug: "power-banks", icon: "battery-charging", count: 276 },
+  { id: "c10", name: "Cases & Covers", slug: "cases-covers", icon: "shield", count: 833 },
+  { id: "c11", name: "Feature Phones", slug: "feature-phones", icon: "phone", count: 154 },
 ];
 
 const BAHRAIN_CATEGORY_COUNTS: Record<string, number> = {
   smartphones: 384,
   tablets: 96,
+  laptops: 84,
+  "laptop-accessories": 106,
+  "tablet-accessories": 72,
   "smart-watches": 71,
   "earphones-headphones": 168,
   "chargers-cables": 132,
@@ -38,6 +44,11 @@ export const DEMO_BRANDS: BrandItem[] = [
   { id: "b6", name: "Infinix", slug: "infinix" },
   { id: "b7", name: "Realme", slug: "realme" },
   { id: "b8", name: "Google", slug: "google" },
+  { id: "b9", name: "Lenovo", slug: "lenovo" },
+  { id: "b10", name: "Dell", slug: "dell" },
+  { id: "b11", name: "HP", slug: "hp" },
+  { id: "b12", name: "Asus", slug: "asus" },
+  { id: "b13", name: "Anker", slug: "anker" },
 ];
 
 function daysAgo(days: number): string {

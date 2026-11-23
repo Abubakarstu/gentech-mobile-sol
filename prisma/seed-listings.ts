@@ -1,9 +1,10 @@
 /**
  * Deterministic catalog fixture generator for marketplace seed data.
  *
- * Produces 100 Pakistan listings (12 curated + 88 generated) and 100 Bahrain
- * listings. Every listing carries external image links so seeded catalogs are
- * visually populated without uploading binary assets.
+ * Produces 100 Pakistan listings (12 curated + 88 generated), 100 Bahrain
+ * listings, and 30 expansion listings per region for laptops, tablets and their
+ * accessories. Every listing carries external image links so seeded catalogs
+ * are visually populated without uploading binary assets.
  */
 
 export type SeedRegion = "BAHRAIN" | "PAKISTAN";
@@ -56,6 +57,27 @@ const PHOTO_IDS = {
     "1592750475338-74b7b21085ab",
     "1603891128711-11b4b03bb138",
     "1580910051074-3eb694886505",
+  ],
+  laptops: [
+    "1496181133206-80ce9b88a853",
+    "1517336714731-489689fd1ca8",
+    "1527443224154-c4a3942d3acf",
+    "1593642632823-8f785ba67e45",
+    "1541807084-5c52b6b3adef",
+  ],
+  "laptop-accessories": [
+    "1587829741301-dc798b83add3",
+    "1527863030438-95d54bf9b9cf",
+    "1511381939415-e44015466834",
+    "1572569511254-d8f925fe2cbb",
+    "1505740420928-5e560c06d30e",
+  ],
+  "tablet-accessories": [
+    "1572569511254-d8f925fe2cbb",
+    "1583394838336-acd977736f90",
+    "1505740420928-5e560c06d30e",
+    "1546868871-7041f2a55e12",
+    "1511381939415-e44015466834",
   ],
   "smart-watches": [
     "1546868871-7041f2a55e12",
@@ -154,7 +176,17 @@ const DEVICE_TEMPLATES: readonly DeviceTemplate[] = [
   { brandSlug: "apple", categorySlug: "earphones-headphones", model: "AirPods Pro 2 USB-C", slug: "airpods-pro-2-usb-c", pricePkr: 64000, priceBhd: 61 },
 ];
 
-const MAX_GENERATED_PER_REGION = DEVICE_TEMPLATES.length * VARIANTS.length;
+/** Newer device categories added without changing the existing 200 seeded rows. */
+const EXPANSION_TEMPLATES: readonly DeviceTemplate[] = [
+  { brandSlug: "apple", categorySlug: "laptops", model: "MacBook Air M3 13-inch", slug: "macbook-air-m3-13", pricePkr: 385000, priceBhd: 365 },
+  { brandSlug: "dell", categorySlug: "laptops", model: "XPS 13 9340", slug: "dell-xps-13-9340", pricePkr: 340000, priceBhd: 322 },
+  { brandSlug: "apple", categorySlug: "tablets", model: "iPad Pro 11-inch M4", slug: "ipad-pro-11-m4", pricePkr: 365000, priceBhd: 345 },
+  { brandSlug: "samsung", categorySlug: "tablets", model: "Galaxy Tab S9 FE 128GB", slug: "galaxy-tab-s9-fe-128gb", pricePkr: 145000, priceBhd: 138 },
+  { brandSlug: "anker", categorySlug: "laptop-accessories", model: "USB-C Hub 8-in-1", slug: "anker-usbc-hub-8in1", pricePkr: 18500, priceBhd: 18 },
+  { brandSlug: "apple", categorySlug: "tablet-accessories", model: "Magic Keyboard for iPad", slug: "ipad-magic-keyboard", pricePkr: 92000, priceBhd: 88 },
+];
+
+const MAX_GENERATED_PER_REGION = 100;
 
 /**
  * Builds deterministic generated listings for one region. `count` must not
@@ -199,4 +231,39 @@ export function buildGeneratedListings(region: SeedRegion, count: number): SeedL
   }
 
   return listings;
+}
+
+/** Builds the laptop, tablet and accessory inventory added to both regions. */
+export function buildExpansionListings(region: SeedRegion): SeedListing[] {
+  const prefix = region === "BAHRAIN" ? "bh" : "pk";
+  const cities = region === "BAHRAIN" ? BH_CITIES : PK_CITIES;
+  const seedOffset = region === "BAHRAIN" ? 900 : 700;
+
+  return EXPANSION_TEMPLATES.flatMap((template, templateIndex) =>
+    VARIANTS.map((variant, variantIndex) => {
+      const index = templateIndex * VARIANTS.length + variantIndex;
+      const city = cities[(index + templateIndex) % cities.length]!;
+      const price =
+        region === "BAHRAIN"
+          ? Number((template.priceBhd * variant.factor).toFixed(3))
+          : Math.round(template.pricePkr * variant.factor);
+
+      return {
+        title: `${template.model} — ${variant.label}`,
+        slug: `${prefix}-${template.slug}-${variant.slug}`,
+        price,
+        condition: variant.condition,
+        city,
+        brandSlug: template.brandSlug,
+        categorySlug: template.categorySlug,
+        region,
+        currency: region === "BAHRAIN" ? "BHD" : "PKR",
+        isFeatured: templateIndex % 2 === 0 && variantIndex === 0,
+        negotiable: variantIndex % 3 !== 0,
+        views: 120 + ((index * 47 + template.slug.length * 31) % 1800),
+        ageDays: index % 21,
+        images: listingImages(template.categorySlug, seedOffset + index),
+      };
+    }),
+  );
 }
