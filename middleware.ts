@@ -112,7 +112,8 @@ function addSecurityHeaders(
     "default-src 'self'",
     "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https://res.cloudinary.com https://lh3.googleusercontent.com https://platform-lookaside.fbsbx.com",
+    // Listing images may be embedded from any validated https URL.
+    "img-src 'self' data: https:",
     "font-src 'self'",
     "connect-src 'self'",
     "media-src 'self'",

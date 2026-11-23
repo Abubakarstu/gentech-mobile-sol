@@ -1,12 +1,19 @@
 # GenTech Marketplace — Project Status Tracker
 
-Last Updated: 2026-11-19
+Last Updated: 2026-11-23
 
 ## Overall Status
 
 - **Baseline Technical Quality:** Verified (280/280 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 47 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
+
+### Listing image sources (2026-11-23)
+
+- **Change:** the listing photo picker now accepts both multiple file uploads and multiple pasted image URLs in one posting (max 10 photos, freely mixed). URL entry is enabled for listings only; inspection report photos remain upload-only.
+- **Validation:** `lib/validation/image-url.ts` enforces https, ≤2048 characters, no credentials, and rejects localhost/private/loopback/numeric hosts; `createListingSchema` also rejects duplicate URLs. External hosts bypass the Next.js optimizer (`unoptimized`) and CSP `img-src` now permits https images, so seller links render without per-host config.
+- **UX:** the URL textarea accepts newline/whitespace/comma separated links, validates the whole batch atomically, previews broken links, and lets any photo become the cover. Multi-file picks beyond the remaining allowance report how many were accepted.
+- **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 321/321 (new `tests/listings/listing-image-sources.test.ts` and `tests/listings/image-uploader.test.tsx`); `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` passed. No migrations or database changes were made.
 
 ## Latest Change: Real-Account Onboarding (2026-11-19)
 
@@ -88,7 +95,7 @@ Last Updated: 2026-11-19
 
 ## Technical Health Metrics
 - **Auth API Origin:** Browser auth uses the current origin; Vercel production/preview URLs are detected without URL environment variables.
-- **Tests Passing:** 281 / 281
+- **Tests Passing:** 321 / 321
 - **TypeScript Errors:** 0
 - **Production Build:** Success after clean Prisma generation (265 pages); `pnpm db:generate` runs in both `build` and `vercel-build`, and the clean build log reports zero `Module not found` warnings.
 - **Region Analytics:** Admin dashboard and analytics page report Bahrain/Pakistan users, listings, orders, payments, and city/area breakdowns. BHD (3 dp) and PKR (0 dp) stay in their own currency — no cross-conversion. Admin listings region filter restored after a bad `main` merge dropped it.

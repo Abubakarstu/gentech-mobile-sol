@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Smartphone } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { isOptimizableImageUrl } from "@/lib/validation/image-url";
 import type { ListingImageData } from "@/types/marketplace";
 
 export function ListingGallery({
@@ -37,6 +38,7 @@ export function ListingGallery({
           alt={title}
           fill
           priority
+          unoptimized={!isOptimizableImageUrl(current.url)}
           sizes="(max-width: 1024px) 100vw, 60vw"
           className="object-cover"
         />
@@ -55,7 +57,14 @@ export function ListingGallery({
                 index === active ? "border-primary" : "border-transparent",
               )}
             >
-              <Image src={image.url} alt="" fill sizes="64px" className="object-cover" />
+              <Image
+                src={image.url}
+                alt=""
+                fill
+                unoptimized={!isOptimizableImageUrl(image.url)}
+                sizes="64px"
+                className="object-cover"
+              />
             </button>
           ))}
         </div>

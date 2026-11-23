@@ -1,10 +1,16 @@
 import { z } from "zod";
 
+import { isValidImageUrl, MAX_IMAGE_URL_LENGTH } from "@/lib/validation/image-url";
+
 export const CONDITION_VALUES = ["NEW", "OPEN_BOX", "USED", "REFURBISHED", "FOR_PARTS"] as const;
 
+/** Accepts both Cloudinary upload results and seller-supplied https image URLs. */
 export const uploadedImageSchema = z.object({
-  url: z.url(),
-  publicId: z.string().optional(),
+  url: z
+    .string()
+    .max(MAX_IMAGE_URL_LENGTH)
+    .refine(isValidImageUrl, "Enter a valid https image URL."),
+  publicId: z.string().max(255).optional(),
   width: z.number().int().positive().optional(),
   height: z.number().int().positive().optional(),
 });
@@ -54,7 +60,13 @@ export const createListingSchema = z.object({
   hasHeadphones: z.boolean().optional(),
   repairHistory: z.string().trim().max(500).optional(),
 
-  images: z.array(uploadedImageSchema).min(1, "Add at least one photo").max(10),
+  images: z
+    .array(uploadedImageSchema)
+    .min(1, "Add at least one photo")
+    .max(10)
+    .refine((images) => new Set(images.map((image) => image.url)).size === images.length, {
+      message: "Duplicate photos are not allowed.",
+    }),
 });
 
 export type CreateListingInput = z.infer<typeof createListingSchema>;

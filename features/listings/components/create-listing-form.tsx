@@ -91,7 +91,7 @@ export function CreateListingForm({
       {/* Photos */}
       <section className="space-y-2">
         <Label>Photos</Label>
-        <ImageUploader value={images} onChange={setImages} />
+        <ImageUploader value={images} onChange={setImages} allowUrl />
         <FieldError message={errors.images?.message} />
       </section>
 

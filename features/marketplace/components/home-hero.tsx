@@ -2,6 +2,7 @@ import Image from "next/image";
 import { ShieldCheck } from "lucide-react";
 
 import { getServerTranslations } from "@/lib/i18n/get-server-translations";
+import { isOptimizableImageUrl } from "@/lib/validation/image-url";
 import { APP } from "@/lib/constants";
 import { getCountryName } from "@/lib/countries";
 import type { CountryCode, LocaleCode } from "@/lib/countries/types";
@@ -89,6 +90,7 @@ export async function HomeHero({
                     src={featuredListing.imageUrl}
                     alt={featuredListing.title}
                     fill
+                    unoptimized={!isOptimizableImageUrl(featuredListing.imageUrl)}
                     sizes="(max-width: 1024px) 100vw, 40vw"
                     className="object-cover"
                   />
