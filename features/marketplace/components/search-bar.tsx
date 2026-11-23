@@ -107,8 +107,8 @@ export function SearchBar({
         onSubmit={onSubmit}
         className={cn(
           "flex w-full items-center gap-2",
-          variant === "hero" &&
-            "bg-card rounded-2xl border p-2 shadow-sm sm:gap-0 sm:rounded-full sm:p-1.5",
+          variant === "hero" && "bg-card rounded-xl border p-1.5 shadow-sm sm:gap-0",
+          variant === "compact" && "bg-card rounded-lg border p-1 shadow-sm",
           className,
         )}
       >
@@ -135,6 +135,8 @@ export function SearchBar({
               "ps-9",
               variant === "hero" &&
                 "h-11 border-0 bg-transparent shadow-none focus-visible:ring-0",
+              variant === "compact" &&
+                "h-9 border-0 bg-transparent shadow-none focus-visible:ring-0",
             )}
           />
         </div>
@@ -144,7 +146,11 @@ export function SearchBar({
             value={city}
             onChange={(e) => setCity(e.target.value)}
             aria-label={t("allCities")}
-            className="border-input bg-background h-11 rounded-md border px-3 text-sm sm:border-0 sm:bg-transparent"
+            className={cn(
+              "border-input bg-background h-11 rounded-md border px-3 text-sm",
+              variant === "hero" && "sm:border-0 sm:bg-transparent",
+              variant === "compact" && "h-9 border-0 bg-transparent px-2",
+            )}
           >
             <option value="">{t("allCities")}</option>
             {relevantLocations.flatMap((entry) =>
@@ -157,14 +163,21 @@ export function SearchBar({
           </select>
         ) : null}
 
-        <Button type="submit" size={variant === "hero" ? "lg" : "default"} className="rounded-full">
+        <Button
+          type="submit"
+          size={variant === "hero" ? "lg" : "default"}
+          className={cn(
+            "shrink-0 rounded-lg bg-brand text-brand-foreground hover:bg-brand/90",
+            variant === "compact" && "h-9 px-3 text-sm",
+          )}
+        >
           <Search className="size-4 sm:hidden" />
           <span className="hidden sm:inline">{t("button")}</span>
         </Button>
       </form>
 
       {showDropdown && results ? (
-        <div className="bg-popover absolute top-full z-50 mt-2 max-h-[min(60vh,22rem)] w-full overflow-y-auto overscroll-contain rounded-xl border shadow-lg">
+        <div className="bg-popover absolute top-full z-50 mt-2 max-h-[min(60vh,22rem)] w-full overflow-y-auto overscroll-contain rounded-xl border border-brand/20 shadow-lg">
           {results.listings.length > 0 ? (
             <Group label={t("groupListings")}>
               {results.listings.map((listing) => (

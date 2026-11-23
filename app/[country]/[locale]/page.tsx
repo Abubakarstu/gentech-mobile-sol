@@ -10,7 +10,10 @@ import { getCountryName } from "@/lib/countries";
 import { ROUTES } from "@/lib/constants";
 import { getListingFeed } from "@/features/listings/services/listing.service";
 import { getCategoriesWithCounts } from "@/features/marketplace/services/category.service";
+import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { HomeHero } from "@/features/marketplace/components/home-hero";
+import { TrustStrip } from "@/features/marketplace/components/trust-strip";
 import { TaglineReveal } from "@/components/marketing/tagline-reveal";
 import { CategoryGrid } from "@/features/marketplace/components/category-grid";
 import { ListingsGrid } from "@/features/marketplace/components/listings-grid";
@@ -71,51 +74,57 @@ export default async function LocalizedHomepage({ params }: PageProps) {
       : [];
 
   return (
-    <>
-      <HomeHero
-        country={countryCode}
-        locale={locale}
-        popularCategories={categories}
-        locations={locations}
-        featuredListing={featured[0]}
-      />
-
-      <TaglineReveal text={t("tagline")} />
-
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <SectionHeader title={t("browseByCategory")} href={ROUTES.marketplace} />
-        <CategoryGrid categories={categories} />
-      </section>
-
-      <section className="mx-auto max-w-6xl px-4 pb-12">
-        <SectionHeader
-          title={t("featuredListings")}
-          description={t("featuredDescription")}
-          href={`${ROUTES.marketplace}?featured=1`}
+    <div className="flex min-h-svh flex-col">
+      <SiteHeader />
+      <main id="main-content" className="flex-1">
+        <HomeHero
+          country={countryCode}
+          locale={locale}
+          popularCategories={categories}
+          locations={locations}
+          featuredListing={featured[0]}
         />
-        <ListingsGrid
-          listings={featured}
-          favoriteIds={favoriteIds}
-          isAuthenticated={isAuthenticated}
-        />
-      </section>
 
-      <HowItWorks />
+        <TrustStrip />
 
-      <section className="mx-auto max-w-6xl px-4 py-12">
-        <SectionHeader
-          title={t("recentListings")}
-          description={t("recentDescription")}
-          href={ROUTES.marketplace}
-        />
-        <ListingsGrid
-          listings={latest}
-          favoriteIds={favoriteIds}
-          isAuthenticated={isAuthenticated}
-        />
-      </section>
+        <TaglineReveal text={t("tagline")} />
 
-      <CtaBand />
-    </>
+        <section className="mx-auto max-w-7xl px-4 py-12">
+          <SectionHeader title={t("browseByCategory")} href={ROUTES.categories} />
+          <CategoryGrid categories={categories} />
+        </section>
+
+        <section className="mx-auto max-w-7xl px-4 pb-12">
+          <SectionHeader
+            title={t("featuredListings")}
+            description={t("featuredDescription")}
+            href={`${ROUTES.marketplace}?featured=1`}
+          />
+          <ListingsGrid
+            listings={featured}
+            favoriteIds={favoriteIds}
+            isAuthenticated={isAuthenticated}
+          />
+        </section>
+
+        <HowItWorks />
+
+        <section className="mx-auto max-w-7xl px-4 py-12">
+          <SectionHeader
+            title={t("recentListings")}
+            description={t("recentDescription")}
+            href={ROUTES.marketplace}
+          />
+          <ListingsGrid
+            listings={latest}
+            favoriteIds={favoriteIds}
+            isAuthenticated={isAuthenticated}
+          />
+        </section>
+
+        <CtaBand />
+      </main>
+      <SiteFooter />
+    </div>
   );
 }

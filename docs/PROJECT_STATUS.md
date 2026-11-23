@@ -15,6 +15,13 @@ Last Updated: 2026-11-23
 - **UX:** the URL textarea accepts newline/whitespace/comma separated links, validates the whole batch atomically, previews broken links, and lets any photo become the cover. Multi-file picks beyond the remaining allowance report how many were accepted.
 - **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 321/321 (new `tests/listings/listing-image-sources.test.ts` and `tests/listings/image-uploader.test.tsx`); `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` passed. No migrations or database changes were made.
 
+### Alibaba inspired public marketplace redesign (2026-11-23)
+
+- **Change:** Public catalog now uses a warm orange marketplace theme inspired by Alibaba's dense, search first layout. `app/globals.css` adds brand tokens and warm neutral surfaces; `SiteHeader`, `SiteFooter`, `HomeHero`, `TrustStrip`, `CategoryGrid`, `ListingCard`, `ListingsGrid`, `SectionHeader`, `HowItWorks`, and `CtaBand` were restyled around them. The localized homepage now renders inside the shared header, `main#main-content`, and footer shell.
+- **Layout:** Header keeps the floating translucent pattern but adds a country scoped category rail, orange logo tile, and compact orange search action. Homepage leads with a flat warm hero and prominent search, then a three signal trust strip, category tiles, dense product grids, guided steps, and a flat orange seller CTA. Marketplace, categories, and listing cards use the same tokens for a consistent public surface.
+- **Localization:** Added English, Arabic, and Urdu strings for the new trust and guidance messages, plus a `navigation.navigation` label used by the shared header and footer.
+- **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 324/324; `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` passed. Local route HTML contains the new hero, trust strip, category grid, and listing cards.
+
 ### Seeded 200 image-backed listings (2026-11-23)
 
 - **Change:** `prisma/seed-listings.ts` deterministically generates 88 additional Pakistan listings and 100 Bahrain listings. Combined with the 12 curated Pakistan listings, the active catalog is exactly **100 PK + 100 BH = 200 listings**. `prisma/seed.ts` upserts each listing with its region, currency (`PKR` / `BHD`), city, category, brand and three stable external Unsplash image links.

@@ -23,6 +23,7 @@
     "seeAll": "عرض الكل"
   },
   "navigation": {
+    "navigation": "التنقل الرئيسي",
     "home": "الرئيسية",
     "marketplace": "السوق",
     "categories": "الفئات",
@@ -56,6 +57,14 @@
     "browseByBrand": "تصفح حسب العلامة",
     "viewAll": "عرض الكل",
     "popular": "شائع:",
+    "trustTitle": "اشترِ بثقة",
+    "trustVerified": "بائعون موثوقون",
+    "trustVerifiedBody": "تحقق من هوية البائع قبل الشراء",
+    "trustInspected": "تقارير فحص",
+    "trustInspectedBody": "اعرف حالة الجهاز قبل الدفع",
+    "trustNearby": "إعلانات محلية",
+    "trustNearbyBody": "تصفح حسب المدينة وقابل البائع بالقرب منك",
+    "howItWorksLead": "ابحث وقارن وأبرم الصفقة مع البائعين في مدينتك.",
     "noListings": "لا توجد خطط فحص متاحة بعد."
   },
   "howItWorks": {

@@ -23,6 +23,7 @@
     "seeAll": "See all"
   },
   "navigation": {
+    "navigation": "Main navigation",
     "home": "Home",
     "marketplace": "Marketplace",
     "categories": "Categories",
@@ -56,6 +57,14 @@
     "browseByBrand": "Browse by Brand",
     "viewAll": "View All",
     "popular": "Popular:",
+    "trustTitle": "Buy with confidence",
+    "trustVerified": "Verified sellers",
+    "trustVerifiedBody": "Check who you are buying from",
+    "trustInspected": "Inspection reports",
+    "trustInspectedBody": "See the condition before you pay",
+    "trustNearby": "Local listings",
+    "trustNearbyBody": "Filter by city and meet nearby",
+    "howItWorksLead": "Search, compare, and close the deal with sellers in your city.",
     "noListings": "No inspection plans available yet."
   },
   "howItWorks": {

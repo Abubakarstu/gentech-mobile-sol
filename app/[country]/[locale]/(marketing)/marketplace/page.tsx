@@ -26,6 +26,7 @@ import { SaveSearchButton } from "@/features/saved-searches/components/save-sear
 import type { ListingFilters } from "@/types/marketplace";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { getActiveLocationTree } from "@/features/locations/services/location.service";
 import {
   getMarketplaceBrands,
@@ -126,10 +127,13 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
       : null;
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <div className="mx-auto max-w-7xl px-4 py-6">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-border/70 pb-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <h1 className="heading-4 flex items-center gap-2">
+            <span aria-hidden="true" className="bg-brand h-5 w-1 shrink-0 rounded-full" />
+            {t("title")}
+          </h1>
           <p className="text-muted-foreground text-sm">
             {t("results", { count: feed.total })}
             {filters.q ? ` ${t("resultsFor", { query: filters.q })}` : ""}
@@ -159,13 +163,13 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
           <CompareControls />
           <LocalizedLink
             href={ROUTES.valuation}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hover:text-brand")}
           >
             {t("checkValue")}
           </LocalizedLink>
           <LocalizedLink
             href={ROUTES.imeiCheck}
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            className={cn(buttonVariants({ variant: "outline", size: "sm" }), "hover:text-brand")}
           >
             {t("verifyImei")}
           </LocalizedLink>
@@ -177,7 +181,7 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
 
         <div className="flex gap-6">
           <aside className="hidden w-60 shrink-0 lg:block">
-            <div className="bg-card sticky top-20 rounded-xl border p-4">
+            <div className="bg-card sticky top-28 rounded-xl border p-4">
               <MarketplaceFilters
                 categories={categories}
                 brands={brands}

@@ -34,13 +34,13 @@ export function ListingCard({
 
   const body = (
     <>
-      <div className="bg-muted relative aspect-4/3 w-full">
+      <div className="bg-muted relative aspect-4/3 w-full overflow-hidden">
         {listing.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={listing.imageUrl}
             alt={listing.title}
-            className="h-full w-full object-cover"
+            className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
           />
         ) : (
           <div className="text-foreground/30 flex h-full flex-col items-center justify-center gap-2">
@@ -58,7 +58,7 @@ export function ListingCard({
           )}
         >
           {listing.isFeatured ? (
-            <Badge className="bg-amber-500 text-white hover:bg-amber-500">{t("featured")}</Badge>
+            <Badge className="bg-brand text-brand-foreground hover:bg-brand">{t("featured")}</Badge>
           ) : null}
           {showPakistanSignals && listing.ptaStatus === "PTA_APPROVED" ? (
             <Badge
@@ -100,13 +100,13 @@ export function ListingCard({
       </div>
 
       <div className="space-y-2 p-3">
-        <p className="text-primary text-base font-bold">
+        <p className="text-brand text-lg font-semibold">
           {formatPrice(listing.price, { currency: listing.currency, locale: language })}
         </p>
         <h3 className="line-clamp-2 text-sm leading-snug font-medium">{listing.title}</h3>
 
         <div className="text-muted-foreground flex items-center gap-2 text-xs">
-          <Badge variant="secondary" className="font-normal">
+          <Badge variant="secondary" className="bg-brand-soft text-brand font-normal">
             {tCondition.has(listing.condition)
               ? tCondition(listing.condition)
               : LISTING_CONDITION_LABELS[listing.condition]}
@@ -135,9 +135,9 @@ export function ListingCard({
   return (
     <article
       className={cn(
-        "group bg-card relative overflow-hidden rounded-xl border transition-shadow hover:shadow-md",
+        "group bg-card relative overflow-hidden rounded-xl border transition-[border-color,box-shadow] duration-300 hover:border-brand/60 hover:shadow-lg",
         selectionMode && "cursor-pointer",
-        isSelected && "ring-primary ring-2",
+        isSelected && "ring-brand ring-2",
         isDisabled && "opacity-60",
       )}
     >
@@ -160,7 +160,7 @@ export function ListingCard({
             className={cn(
               "absolute top-2 start-2 z-10 flex size-6 items-center justify-center rounded-md border-2 shadow-sm",
               isSelected
-                ? "bg-primary border-primary text-primary-foreground"
+                ? "bg-brand border-brand text-brand-foreground"
                 : "bg-background/90 border-muted-foreground/50",
             )}
           >
@@ -182,7 +182,7 @@ export function ListingCard({
               onClick={() => selectOne(listing.id)}
               title={tCompare("addToCompare")}
               aria-label={tCompare("addToCompare")}
-              className="bg-background/90 hover:bg-background absolute top-2 end-11 z-10 rounded-md border p-1.5 shadow-sm"
+              className="bg-background/90 hover:text-brand absolute top-2 end-11 z-10 rounded-md border p-1.5 shadow-sm transition-colors"
             >
               <GitCompareArrows className="text-muted-foreground size-4" />
             </button>

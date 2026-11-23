@@ -40,9 +40,12 @@ export default async function CategoriesPage({ params }: PageProps) {
   const categories = await getCategoriesWithCounts(undefined, getRegionForCountry(countryCode));
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10">
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold tracking-tight">{t("title")}</h1>
+    <div className="mx-auto max-w-7xl px-4 py-10">
+      <header className="mb-8 border-b border-border/70 pb-4">
+        <h1 className="heading-4 flex items-center gap-2">
+          <span aria-hidden="true" className="bg-brand h-5 w-1 shrink-0 rounded-full" />
+          {t("title")}
+        </h1>
         <p className="text-muted-foreground mt-1">{t("subtitle")}</p>
       </header>
       <CategoryGrid categories={categories} />

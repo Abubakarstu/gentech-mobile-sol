@@ -23,6 +23,7 @@
     "seeAll": "سب دیکھیں"
   },
   "navigation": {
+    "navigation": "مرکزی نیویگیشن",
     "home": "ہوم",
     "marketplace": "مارکیٹ پلیس",
     "categories": "زمرے",
@@ -56,6 +57,14 @@
     "browseByBrand": "برانڈ کے مطابق دیکھیں",
     "viewAll": "سب دیکھیں",
     "popular": "مقبول:",
+    "trustTitle": "اعتماد کے ساتھ خریدیں",
+    "trustVerified": "تصدیق شدہ فروخت کنندگان",
+    "trustVerifiedBody": "خرید سے پہلے بیچنے والے کو چیک کریں",
+    "trustInspected": "معائنہ رپورٹس",
+    "trustInspectedBody": "ادائیگی سے پہلے ڈیوائس کی حالت دیکھیں",
+    "trustNearby": "مقامی لسٹنگز",
+    "trustNearbyBody": "شہر کے مطابق دیکھیں اور قریب ملیں",
+    "howItWorksLead": "تلاش کریں، موازنہ کریں، اور اپنے شہر کے فروخت کنندگان سے ڈیل کریں۔",
     "noListings": "ابھی کوئی معائنہ پلان دستیاب نہیں ہے۔"
   },
   "howItWorks": {

@@ -28,16 +28,17 @@ export async function HomeHero({
   const t = await getServerTranslations("homepage");
   const tSearch = await getServerTranslations("search");
   const tCategories = await getServerTranslations("categories");
+  const countryName = getCountryName(country, locale);
 
   return (
-    <section aria-labelledby="home-hero-title" className="border-b">
-      <div className="mx-auto grid max-w-6xl gap-12 px-4 py-16 sm:py-24 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)] lg:items-center">
+    <section aria-labelledby="home-hero-title" className="border-b border-brand/10 bg-brand-soft/50">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:py-16 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-center">
         <div className="max-w-[680px]">
           <p className="caption-3 text-muted-foreground flex items-center gap-2 uppercase tracking-wide">
-            <span className="bg-primary text-primary-foreground grid size-6 place-items-center rounded-md text-xs font-semibold">
+            <span className="bg-brand text-brand-foreground grid size-6 place-items-center rounded-md text-xs font-semibold">
               {APP.name.charAt(0)}
             </span>
-            {APP.name} · {getCountryName(country, locale)}
+            {APP.name} · {countryName}
           </p>
 
           <h1
@@ -47,16 +48,16 @@ export async function HomeHero({
             {t("heroTitle")}
           </h1>
 
-          <p className="body-3 text-muted-foreground mt-6 max-w-[680px]">
-            {t("heroSubtitle", { country: getCountryName(country, locale) })}
+          <p className="body-3 text-muted-foreground mt-5 max-w-[680px]">
+            {t("heroSubtitle", { country: countryName })}
           </p>
 
-          <div className="mt-8">
+          <div className="mt-7">
             <SearchBar variant="hero" locations={locations} placeholder={tSearch("placeholder")} />
           </div>
 
           <p className="caption-2 text-muted-foreground mt-4 flex items-center gap-2">
-            <ShieldCheck className="text-emerald-600 size-4 dark:text-emerald-400" />
+            <ShieldCheck className="text-brand size-4" />
             {t("featuredDescription")}
           </p>
 
@@ -67,7 +68,7 @@ export async function HomeHero({
                 <LocalizedLink
                   key={category.id}
                   href={`/marketplace?category=${category.slug}`}
-                  className="bg-muted hover:bg-accent hover-lift rounded-lg px-3 py-2 text-sm font-medium"
+                  className="bg-card hover:border-brand hover:text-brand rounded-lg border border-border/70 px-3 py-2 text-sm font-medium transition-colors"
                 >
                   {tCategories.has(category.slug)
                     ? tCategories(category.slug)
@@ -79,12 +80,12 @@ export async function HomeHero({
         </div>
 
         {featuredListing ? (
-          <article className="surface-flat hover-lift overflow-hidden rounded-2xl">
+          <article className="surface-flat group overflow-hidden rounded-2xl border-brand/20 shadow-lg shadow-brand/5">
             <LocalizedLink
               href={`/listings/${featuredListing.slug}`}
               className="focus-visible:ring-ring block outline-none focus-visible:ring-2"
             >
-              <div className="bg-muted relative aspect-4/3 overflow-hidden rounded-t-xl">
+              <div className="bg-muted relative aspect-4/3 overflow-hidden">
                 {featuredListing.imageUrl ? (
                   <Image
                     src={featuredListing.imageUrl}
@@ -92,33 +93,37 @@ export async function HomeHero({
                     fill
                     unoptimized={!isOptimizableImageUrl(featuredListing.imageUrl)}
                     sizes="(max-width: 1024px) 100vw, 40vw"
-                    className="object-cover"
+                    className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
                   />
                 ) : (
-                  <div className="text-muted-foreground grid h-full place-items-center text-4xl font-semibold">
+                  <div className="text-foreground/30 grid h-full place-items-center text-4xl font-semibold">
                     {featuredListing.brand?.charAt(0) ?? featuredListing.title.charAt(0)}
                   </div>
                 )}
+                <span className="bg-brand text-brand-foreground caption-3 absolute start-3 top-3 rounded-md px-2 py-1 font-semibold uppercase tracking-wide">
+                  {t("featuredListings")}
+                </span>
               </div>
               <div className="p-4 sm:p-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="caption-3 bg-emerald-600/10 text-emerald-700 dark:text-emerald-400 rounded-md px-2 py-1 font-semibold uppercase tracking-wide">
-                    {t("featuredListings")}
-                  </span>
-                  {featuredListing.isInspected ? (
-                    <span className="caption-3 text-muted-foreground">{t("featuredDescription")}</span>
-                  ) : null}
-                </div>
-                <h2 className="title-2 mt-3 line-clamp-2">{featuredListing.title}</h2>
-                <div className="mt-3 flex items-end justify-between gap-3">
-                  <p className="body-1 font-semibold">
-                    {formatPrice(featuredListing.price, {
-                      currency: featuredListing.currency,
-                      locale,
-                    })}
-                  </p>
+                <h2 className="title-2 line-clamp-2">{featuredListing.title}</h2>
+                <div className="mt-4 flex items-end justify-between gap-3">
+                  <div>
+                    <p className="caption-4 text-muted-foreground">{t("featuredDescription")}</p>
+                    <p className="text-brand mt-1 text-xl font-semibold">
+                      {formatPrice(featuredListing.price, {
+                        currency: featuredListing.currency,
+                        locale,
+                      })}
+                    </p>
+                  </div>
                   <p className="caption-2 text-muted-foreground">{featuredListing.city}</p>
                 </div>
+                {featuredListing.isInspected ? (
+                  <p className="caption-4 text-muted-foreground mt-3 flex items-center gap-1.5">
+                    <ShieldCheck className="text-brand size-4" />
+                    {t("trustInspected")}
+                  </p>
+                ) : null}
               </div>
             </LocalizedLink>
           </article>
