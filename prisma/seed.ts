@@ -10,6 +10,8 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../lib/generated/prisma/client";
 
+import { buildGeneratedListings, IMAGES_PER_LISTING, listingImages } from "./seed-listings";
+
 // Prisma 7 no longer auto-loads .env; load it for standalone `pnpm db:seed` runs.
 try {
   process.loadEnvFile();
@@ -269,19 +271,26 @@ async function main() {
     for (const [rootIndex, root] of CATEGORIES.entries()) {
       const parent = await prisma.category.upsert({
         where: { slug: root.slug },
-        update: { name: root.name, icon: root.icon, position: rootIndex },
-        create: { name: root.name, slug: root.slug, icon: root.icon, position: rootIndex },
+        update: { name: root.name, icon: root.icon, position: rootIndex, region: null },
+        create: {
+          name: root.name,
+          slug: root.slug,
+          icon: root.icon,
+          position: rootIndex,
+          region: null,
+        },
       });
 
       for (const [childIndex, child] of (root.children ?? []).entries()) {
         await prisma.category.upsert({
           where: { slug: child.slug },
-          update: { name: child.name, parentId: parent.id, position: childIndex },
+          update: { name: child.name, parentId: parent.id, position: childIndex, region: null },
           create: {
             name: child.name,
             slug: child.slug,
             parentId: parent.id,
             position: childIndex,
+            region: null,
           },
         });
       }
@@ -322,7 +331,21 @@ async function main() {
       ]),
     );
 
-    for (const item of SAMPLE_LISTINGS) {
+    const seedListings = [
+      ...SAMPLE_LISTINGS.map((item, index) => ({
+        ...item,
+        region: "PAKISTAN" as const,
+        currency: "PKR" as const,
+        isFeatured: item.isFeatured ?? false,
+        negotiable: item.negotiable ?? false,
+        views: item.views ?? 0,
+        images: listingImages(item.categorySlug, index),
+      })),
+      ...buildGeneratedListings("PAKISTAN", 100 - SAMPLE_LISTINGS.length),
+      ...buildGeneratedListings("BAHRAIN", 100),
+    ];
+
+    for (const item of seedListings) {
       const categoryId = categoryBySlug.get(item.categorySlug);
       if (!categoryId) continue; // category not seeded — skip defensively
       const brandId = brandBySlug.get(item.brandSlug) ?? null;
@@ -333,12 +356,14 @@ async function main() {
         title: item.title,
         description,
         price: item.price,
+        currency: item.currency,
         condition: item.condition,
         status: "ACTIVE" as const,
+        region: item.region,
         city: item.city,
-        negotiable: item.negotiable ?? false,
-        isFeatured: item.isFeatured ?? false,
-        views: item.views ?? 0,
+        negotiable: item.negotiable,
+        isFeatured: item.isFeatured,
+        views: item.views,
         attributes: attributes as object,
         sellerId: demoSeller.id,
         categoryId,
@@ -346,14 +371,16 @@ async function main() {
         createdAt,
       };
 
-      await prisma.listing.upsert({
+      const listing = await prisma.listing.upsert({
         where: { slug: item.slug },
         update: {
           title: data.title,
           description: data.description,
           price: data.price,
+          currency: data.currency,
           condition: data.condition,
           status: data.status,
+          region: data.region,
           city: data.city,
           negotiable: data.negotiable,
           isFeatured: data.isFeatured,
@@ -363,6 +390,25 @@ async function main() {
         },
         create: { slug: item.slug, ...data },
       });
+
+      for (const [position, url] of item.images.entries()) {
+        const imageId = `${listing.id}-img-${position + 1}`;
+        await prisma.listingImage.upsert({
+          where: { id: imageId },
+          update: {
+            url,
+            position,
+            isPrimary: position === 0,
+          },
+          create: {
+            id: imageId,
+            listingId: listing.id,
+            url,
+            position,
+            isPrimary: position === 0,
+          },
+        });
+      }
     }
 
     // Populate the full-text search vector for any rows that don't have one yet
@@ -471,15 +517,21 @@ async function main() {
       });
     }
 
-    const [categoryCount, brandCount, planCount, listingCount] = await Promise.all([
-      prisma.category.count(),
-      prisma.brand.count(),
-      prisma.inspectionPlan.count(),
-      prisma.listing.count(),
-    ]);
+    const [categoryCount, brandCount, planCount, listingCount, imageCount, listingsByRegion] =
+      await Promise.all([
+        prisma.category.count(),
+        prisma.brand.count(),
+        prisma.inspectionPlan.count(),
+        prisma.listing.count({ where: { deletedAt: null } }),
+        prisma.listingImage.count({ where: { listing: { deletedAt: null } } }),
+        prisma.listing.groupBy({ by: ["region"], where: { deletedAt: null }, _count: true }),
+      ]);
     const reportCount = await prisma.inspectionReport.count({ where: { isPublished: true } });
+    const regionSummary = listingsByRegion
+      .map((entry) => `${entry._count} ${entry.region.toLowerCase()}`)
+      .join(", ");
     console.info(
-      `✓ Seed complete — ${categoryCount} categories, ${brandCount} brands, ${planCount} inspection plans, ${listingCount} listings, ${reportCount} published reports.`,
+      `✓ Seed complete — ${categoryCount} categories, ${brandCount} brands, ${planCount} inspection plans, ${listingCount} listings (${regionSummary}), ${imageCount} image links (${IMAGES_PER_LISTING}/listing), ${reportCount} published reports.`,
     );
   } finally {
     await prisma.$disconnect();

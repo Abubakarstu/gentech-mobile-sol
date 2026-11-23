@@ -4,7 +4,7 @@ Last Updated: 2026-11-23
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (321/321 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Baseline Technical Quality:** Verified (324/324 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
 
@@ -14,6 +14,13 @@ Last Updated: 2026-11-23
 - **Validation:** `lib/validation/image-url.ts` enforces https, ≤2048 characters, no credentials, and rejects localhost/private/loopback/numeric hosts; `createListingSchema` also rejects duplicate URLs. External hosts bypass the Next.js optimizer (`unoptimized`) and CSP `img-src` now permits https images, so seller links render without per-host config.
 - **UX:** the URL textarea accepts newline/whitespace/comma separated links, validates the whole batch atomically, previews broken links, and lets any photo become the cover. Multi-file picks beyond the remaining allowance report how many were accepted.
 - **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 321/321 (new `tests/listings/listing-image-sources.test.ts` and `tests/listings/image-uploader.test.tsx`); `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` passed. No migrations or database changes were made.
+
+### Seeded 200 image-backed listings (2026-11-23)
+
+- **Change:** `prisma/seed-listings.ts` deterministically generates 88 additional Pakistan listings and 100 Bahrain listings. Combined with the 12 curated Pakistan listings, the active catalog is exactly **100 PK + 100 BH = 200 listings**. `prisma/seed.ts` upserts each listing with its region, currency (`PKR` / `BHD`), city, category, brand and three stable external Unsplash image links.
+- **Region fix:** seeded categories now use `region: null` so the shared phone/accessory tree is visible in both BH and PK catalog filters; previously they defaulted to Pakistan-only.
+- **Idempotency:** listing slugs and `listing_image` ids are deterministic, so re-running `pnpm db:seed` updates the same 200 rows and 600 image links instead of creating duplicates. Soft-deleted legacy rows are untouched and excluded from the seed summary.
+- **Verification:** `pnpm db:seed` → `200 listings (100 bahrain, 100 pakistan), 600 image links (3/listing)`; active DB query → `200` total, `100` per region, `200` listings with images; live `/bh/en` and `/pk/en` HTML contain generated slugs and `images.unsplash.com` URLs. `pnpm typecheck` 0 errors; `pnpm test` 324/324 (new `tests/seed/seed-listings.test.ts`); `pnpm lint` 0 errors / 46 warnings; `next build` passed. No migrations or resets were run.
 
 ### Admin credential seed (2026-11-23)
 
