@@ -10,7 +10,7 @@ export async function SiteFooter() {
   const { country, locale } = await getRequestCountryLocale();
 
   return (
-    <footer className="border-t-4 border-brand/70 bg-card">
+    <footer className="border-t-4 border-brand/70 bg-card hidden md:block">
       <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex max-w-sm gap-3">
           <span className="bg-brand text-brand-foreground grid size-10 shrink-0 place-items-center rounded-lg text-lg font-semibold">
