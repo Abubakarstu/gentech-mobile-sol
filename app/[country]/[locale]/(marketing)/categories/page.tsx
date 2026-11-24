@@ -10,6 +10,7 @@ import { ROUTES } from "@/lib/constants";
 import { localizedSeoMetadata } from "@/lib/seo/metadata";
 import { getCategoriesWithCounts } from "@/features/marketplace/services/category.service";
 import { CategoryGrid } from "@/features/marketplace/components/category-grid";
+import { MobileCategoryGrid } from "@/features/marketplace/components/mobile-category-grid";
 
 type PageProps = {
   params: Promise<{ country: string; locale: string }>;
@@ -48,7 +49,12 @@ export default async function CategoriesPage({ params }: PageProps) {
         </h1>
         <p className="text-muted-foreground mt-1">{t("subtitle")}</p>
       </header>
-      <CategoryGrid categories={categories} />
+      <div className="md:hidden">
+        <MobileCategoryGrid categories={categories} />
+      </div>
+      <div className="hidden md:block">
+        <CategoryGrid categories={categories} />
+      </div>
     </div>
   );
 }

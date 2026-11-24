@@ -20,6 +20,7 @@
     "confirm": "تصدیق کریں",
     "yes": "ہاں",
     "no": "نہیں",
+    "all": "تمام",
     "seeAll": "سب دیکھیں"
   },
   "navigation": {
@@ -160,6 +161,7 @@
     "clearFilters": "فلٹرز صاف کریں"
   },
   "filters": {
+    "filters": "فلٹرز",
     "priceRange": "قیمت کی حد",
     "minPrice": "کم سے کم قیمت",
     "maxPrice": "زیادہ سے زیادہ قیمت",
@@ -189,7 +191,9 @@
     "screenSize": "اسکرین سائز",
     "connectivity": "کنیکٹیویٹی",
     "accessoryType": "لوازمات کی قسم",
-    "compatibility": "مطابقت"
+    "compatibility": "مطابقت",
+    "compactHint": "تمام فلٹرز دیکھنے کے لیے اوپر اسکرول کریں",
+    "scrollTop": "اوپر جائیں"
   },
   "filterValues": {
     "apple_m1": "Apple M1",

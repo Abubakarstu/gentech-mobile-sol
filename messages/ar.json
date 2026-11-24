@@ -20,6 +20,7 @@
     "confirm": "تأكيد",
     "yes": "نعم",
     "no": "لا",
+    "all": "الكل",
     "seeAll": "عرض الكل"
   },
   "navigation": {
@@ -160,6 +161,7 @@
     "clearFilters": "مسح الفلاتر"
   },
   "filters": {
+    "filters": "الفلاتر",
     "priceRange": "نطاق السعر",
     "minPrice": "الحد الأدنى للسعر",
     "maxPrice": "الحد الأقصى للسعر",
@@ -189,7 +191,9 @@
     "screenSize": "حجم الشاشة",
     "connectivity": "الاتصال",
     "accessoryType": "نوع الملحق",
-    "compatibility": "التوافق"
+    "compatibility": "التوافق",
+    "compactHint": "مرر للأعلى لعرض كل الفلاتر",
+    "scrollTop": "العودة للأعلى"
   },
   "filterValues": {
     "apple_m1": "Apple M1",

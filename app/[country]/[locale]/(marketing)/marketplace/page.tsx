@@ -17,13 +17,18 @@ import { parseListingFilters } from "@/features/listings/schemas/filters";
 import { getListingFeed, getListingFilterOptions } from "@/features/listings/services/listing.service";
 import { getCurrentUser } from "@/lib/session";
 import { ListingsGrid } from "@/features/marketplace/components/listings-grid";
-import { MarketplaceFilters } from "@/features/listings/components/marketplace-filters";
+import { AdaptiveFilterSidebar } from "@/features/listings/components/adaptive-filter-sidebar";
 import { FilterDrawer } from "@/features/listings/components/filter-drawer";
+import { MobileCategoryChips } from "@/features/listings/components/mobile-category-chips";
+import {
+  countActiveFilters,
+  getActiveFilterGroups,
+  hasActiveFilters,
+} from "@/features/listings/lib/filter-groups";
 import { SortSelect } from "@/features/listings/components/sort-select";
 import { ActiveFilters } from "@/features/listings/components/active-filters";
 import { ListingsPagination } from "@/features/listings/components/listings-pagination";
 import { SaveSearchButton } from "@/features/saved-searches/components/save-search-button";
-import type { ListingFilters } from "@/types/marketplace";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -35,35 +40,6 @@ import {
 import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
 import { CompareControls } from "@/features/compare/components/compare-controls";
 import { CompareSelectionProvider } from "@/features/compare/components/compare-selection-provider";
-
-/** True when the user has narrowed the feed in some way worth saving. */
-function hasActiveFilters(filters: ListingFilters): boolean {
-  return Boolean(
-    filters.q ||
-      filters.category ||
-      filters.brand ||
-      filters.condition ||
-      filters.city ||
-      filters.minPrice !== undefined ||
-      filters.maxPrice !== undefined ||
-      filters.storage ||
-      filters.ram ||
-      filters.batteryHealthMin !== undefined ||
-      filters.ptaStatus ||
-      filters.cpidStatus ||
-      filters.warranty ||
-      filters.processor ||
-      filters.operatingSystem ||
-      filters.screenSize ||
-      filters.connectivity ||
-      filters.accessoryType ||
-      filters.compatibility ||
-      filters.isInspected ||
-      filters.isVerifiedSeller ||
-      filters.isDealer ||
-      filters.color,
-  );
-}
 
 type PageProps = {
   params: Promise<{ country: string; locale: string }>;
@@ -109,6 +85,8 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
   ]);
 
   const canSaveSearch = hasActiveFilters(filters);
+  const activeCount = countActiveFilters(filters);
+  const activeGroups = getActiveFilterGroups(filters);
   const isAuthenticated = Boolean(user);
   const favoriteIds =
     isAuthenticated && user
@@ -153,9 +131,14 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
             filters={filters}
             locations={locations}
             filterOptions={filterOptions}
+            activeCount={activeCount}
           />
           <SortSelect value={filters.sort} />
         </div>
+      </div>
+
+      <div className="md:hidden">
+        <MobileCategoryChips categories={categories} active={filters.category} />
       </div>
 
       {feed.source === "demo" ? (
@@ -186,17 +169,15 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
         </div>
 
         <div className="flex gap-6">
-          <aside className="hidden w-60 shrink-0 lg:block">
-            <div className="bg-card sticky top-28 rounded-xl border p-4">
-              <MarketplaceFilters
-                categories={categories}
-                brands={brands}
-                filters={filters}
-                locations={locations}
-                filterOptions={filterOptions}
-              />
-            </div>
-          </aside>
+          <AdaptiveFilterSidebar
+            categories={categories}
+            brands={brands}
+            filters={filters}
+            locations={locations}
+            filterOptions={filterOptions}
+            activeGroups={activeGroups}
+            activeCount={activeCount}
+          />
 
           <div className="min-w-0 flex-1">
             <ListingsGrid

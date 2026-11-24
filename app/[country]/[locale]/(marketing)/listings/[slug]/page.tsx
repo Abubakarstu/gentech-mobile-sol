@@ -25,6 +25,7 @@ import { PublishedReportPanel } from "@/features/inspections/components/publishe
 import { ListingGallery } from "@/features/listings/components/listing-gallery";
 import { ListingSpecs } from "@/features/listings/components/listing-specs";
 import { SellerCard } from "@/features/listings/components/seller-card";
+import { MobileListingActions } from "@/features/listings/components/mobile-listing-actions";
 import { LocationMap } from "@/features/listings/components/location-map";
 import { ShareButton } from "@/features/listings/components/share-button";
 import { FavoriteButton } from "@/features/marketplace/components/favorite-button";
@@ -153,6 +154,15 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
         title={detail.title}
         price={detail.price}
         category={detail.categoryName ?? detail.categorySlug}
+      />
+
+      <MobileListingActions
+        price={detail.price}
+        currency={detail.currency}
+        locale={locale}
+        listingId={detail.id}
+        listingTitle={detail.title}
+        isAuthenticated={Boolean(user)}
       />
 
       <nav className="text-muted-foreground mb-4 flex flex-wrap items-center gap-1.5 text-sm">
@@ -341,6 +351,8 @@ export default async function LocalizedListingDetailPage({ params }: PageProps) 
           />
         </section>
       ) : null}
+
+      <div aria-hidden="true" className="h-20 md:hidden" />
 
       <JsonLd data={jsonLd} />
     </div>

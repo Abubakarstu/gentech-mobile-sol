@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { SlidersHorizontal, X } from "lucide-react";
 
 import { useLocalizedRouteInfo } from "@/lib/localized-routing";
+import { useScrollState } from "@/hooks/use-scroll-state";
 
 import type {
   BrandItem,
@@ -18,17 +19,23 @@ import { Button } from "@/components/ui/button";
 import { MarketplaceFilters } from "./marketplace-filters";
 
 /** Mobile entry point to the filters — opens the sidebar in a slide-over. */
-export function FilterDrawer(props: {
+export function FilterDrawer({
+  activeCount = 0,
+  ...filterProps
+}: {
   categories: CategoryItem[];
   brands: BrandItem[];
   filters: ListingFilters;
   locations: LocationTree;
   filterOptions: ListingFilterOptions;
+  activeCount?: number;
 }) {
   const [open, setOpen] = React.useState(false);
   const tCommon = useTranslations("common");
   const { locale } = useLocalizedRouteInfo();
   const isRtl = locale === "ar" || locale === "ur";
+  const { direction, hasScrolledPast } = useScrollState(180);
+  const showFloating = hasScrolledPast && direction !== "down";
 
   React.useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -52,6 +59,29 @@ export function FilterDrawer(props: {
         <SlidersHorizontal className="size-4" />
         {tCommon("filter")}
       </Button>
+
+      <AnimatePresence>
+        {showFloating && !open ? (
+          <motion.button
+            type="button"
+            data-mobile-app-fab
+            onClick={() => setOpen(true)}
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="bg-foreground text-background fixed bottom-20 z-30 inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium shadow-lg lg:hidden"
+          >
+            <SlidersHorizontal aria-hidden="true" className="size-4" />
+            {tCommon("filter")}
+            {activeCount > 0 ? (
+              <span className="bg-brand text-brand-foreground min-w-5 rounded-full px-1.5 py-0.5 text-center text-[11px] font-semibold tabular-nums">
+                {activeCount}
+              </span>
+            ) : null}
+          </motion.button>
+        ) : null}
+      </AnimatePresence>
 
       <AnimatePresence>
         {open ? (
@@ -91,7 +121,7 @@ export function FilterDrawer(props: {
                 </Button>
               </div>
               <div className="flex-1 overflow-y-auto p-4">
-                <MarketplaceFilters {...props} onApply={() => setOpen(false)} />
+                <MarketplaceFilters {...filterProps} onApply={() => setOpen(false)} />
               </div>
             </motion.aside>
           </motion.div>

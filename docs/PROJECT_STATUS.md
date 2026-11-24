@@ -1,12 +1,27 @@
 # GenTech Marketplace — Project Status Tracker
 
-Last Updated: 2026-11-23
+Last Updated: 2026-11-24
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (340/340 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Baseline Technical Quality:** Verified (352/352 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
+
+### Mobile app shell (2026-11-24)
+
+- **Change:** Phone viewports now render an app-style shell inspired by mainstream marketplace apps (Alibaba/Lazada patterns) while the desktop experience is unchanged. `SiteHeader` keeps the original desktop rail untouched at `md+`; below `md` it renders a full-width sticky app bar with hamburger, logo mark, search and notifications. `MobileAppNav` adds a five-tab bottom bar (Home, Categories, Sell, Messages, Account) with an elevated sell action, `aria-current` tracking, RTL-aware layout and safe-area padding. `app/layout.tsx` now uses `viewportFit: "cover"`.
+- **Screens:** The localized homepage renders `MobileHomeFeed` (promo banner, 4-up category tiles, compact trust row, horizontal deal rail and recent grid) below `md`; the desktop sections remain behind `hidden md:block`. Categories uses `MobileCategoryGrid`, marketplace adds a scrollable `MobileCategoryChips` rail, and listing detail adds a fixed price + chat strip above the bottom nav via `MobileListingActions`.
+- **Collision handling:** Mobile-only CSS reserves bottom space on `#main-content`, lifts the compare bar and filter FAB above the tab bar, and adds a detail-page spacer. The floating filter button still follows scroll direction and active-filter count.
+- **Verification:** DOM/computed-style checks at 390px confirmed 4-column categories, 2-column listings, visible bottom bar, hidden desktop shell, RTL on `/bh/ar`, and correct detail action-bar offset. Production smoke checks returned 200 for `/pk/en`, `/pk/en/marketplace`, `/bh/ar/marketplace` and `/pk/ur/marketplace` with no missing-message errors after adding `filters.filters` to all locale catalogs; the detail price strip is now hidden from the tablet breakpoint (the mobile tab bar is `md:hidden`). `pnpm typecheck` 0 errors; `pnpm test` 352/352 (new `tests/marketplace/mobile-app-navigation.test.ts`); `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` exit 0.
+
+### Scroll-adaptive marketplace filters (2026-11-24)
+
+- **Change:** The marketplace filter rail is now scroll-aware. `hooks/use-scroll-state.ts` tracks scroll position/direction with a passive, rAF-throttled listener and an 18px jitter guard. On desktop, `AdaptiveFilterSidebar` compacts the sticky rail while the buyer scrolls down and restores the full rail on scroll up; the filter count badge and a "Back to top" action stay visible in compact mode.
+- **Smart folding:** `features/listings/lib/filter-groups.ts` defines stable group ids, primary groups, active-filter counting and active-group mapping. While compacted, only primary dimensions (`category`, `brand`, `condition`, `price`, `city`) and groups containing active values stay expanded; manual chevron toggles override the automatic decision and are scoped to the current category.
+- **Mobile:** `FilterDrawer` now exposes a floating filter button that appears on upward scroll after 180px and hides on downward scroll, clearing the fixed compare bar at `bottom-20`. URL remains the single source of truth — no new query params or filter store were introduced.
+- **Accessibility/i18n:** Collapsible headers use `<button aria-expanded>` with logical properties and RTL-aware layout; reduced-motion users get instant transitions. Added EN/AR/UR strings for the compact hint and back-to-top action.
+- **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 348/348 (new `tests/marketplace/adaptive-filter-sidebar.test.ts` and `tests/marketplace/scroll-state.test.tsx`); `pnpm lint` 0 errors / 46 pre-existing warnings; `next build` exit 0. No migrations or database changes were made.
 
 ### Laptop inspections (2026-11-23)
 

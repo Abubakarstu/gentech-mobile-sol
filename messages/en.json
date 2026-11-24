@@ -20,6 +20,7 @@
     "confirm": "Confirm",
     "yes": "Yes",
     "no": "No",
+    "all": "All",
     "seeAll": "See all"
   },
   "navigation": {
@@ -160,6 +161,7 @@
     "clearFilters": "Clear filters"
   },
   "filters": {
+    "filters": "Filters",
     "priceRange": "Price Range",
     "minPrice": "Min Price",
     "maxPrice": "Max Price",
@@ -189,7 +191,9 @@
     "screenSize": "Screen size",
     "connectivity": "Connectivity",
     "accessoryType": "Accessory type",
-    "compatibility": "Compatibility"
+    "compatibility": "Compatibility",
+    "compactHint": "Scroll up to see all filters",
+    "scrollTop": "Back to top"
   },
   "filterValues": {
     "apple_m1": "Apple M1",
