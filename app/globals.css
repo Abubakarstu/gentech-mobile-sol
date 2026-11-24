@@ -162,6 +162,15 @@
   [data-mobile-app-fab] {
     bottom: calc(8.5rem + env(safe-area-inset-bottom));
   }
+
+  /* Compare mode adds a live search row above the bottom tab bar. */
+  body[data-compare-active="true"] #main-content {
+    padding-bottom: calc(10.5rem + env(safe-area-inset-bottom));
+  }
+
+  body[data-compare-active="true"] [data-mobile-app-fab] {
+    bottom: calc(12rem + env(safe-area-inset-bottom));
+  }
 }
 
 @keyframes workspace-enter {
