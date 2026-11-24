@@ -18,6 +18,7 @@ import { CountryLocaleSelector } from "@/components/country-locale-selector";
 import { UserMenu } from "@/components/layout/user-menu";
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { MobileAppNav } from "@/components/layout/mobile-app-nav";
+import { MobileProfileChip } from "@/components/layout/mobile-profile-chip";
 import { NotificationBell } from "@/features/notifications/components/notification-bell";
 import { SearchBar } from "@/features/marketplace/components/search-bar";
 import { getDemoCategories } from "@/features/marketplace/data/fixtures";
@@ -61,10 +62,17 @@ export async function SiteHeader() {
           </div>
 
           {user ? (
-            <NotificationBell
-              initialCount={unreadNotifications}
-              initialItems={recentNotifications}
-            />
+            <>
+              <NotificationBell
+                initialCount={unreadNotifications}
+                initialItems={recentNotifications}
+              />
+              <MobileProfileChip
+                name={user.name}
+                image={user.image}
+                label={t("account")}
+              />
+            </>
           ) : (
             <LocalizedLink
               href={ROUTES.signIn}

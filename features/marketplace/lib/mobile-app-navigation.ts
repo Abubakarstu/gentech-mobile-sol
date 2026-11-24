@@ -18,6 +18,8 @@ export function mobileNavKeyForPath(pathname: string): MobileAppNavKey {
   if (
     route.startsWith("/dashboard") ||
     route.startsWith("/account") ||
+    route.startsWith("/admin") ||
+    route.startsWith("/inspector") ||
     route.startsWith("/sign-in")
   ) {
     return "account";

@@ -75,6 +75,7 @@ export const ROUTES = {
   favorites: "/dashboard/favorites",
   savedSearches: "/dashboard/saved-searches",
   messages: "/dashboard/messages",
+  orders: "/dashboard/orders",
   notifications: "/dashboard/notifications",
   inspections: "/dashboard/inspections",
   account: "/account",

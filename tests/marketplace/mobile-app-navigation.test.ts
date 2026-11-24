@@ -19,6 +19,8 @@ describe("mobileNavKeyForPath", () => {
   it("maps account areas to the account tab", () => {
     expect(mobileNavKeyForPath("/pk/ur/dashboard/favorites")).toBe("account");
     expect(mobileNavKeyForPath("/account/profile")).toBe("account");
+    expect(mobileNavKeyForPath("/admin/users")).toBe("account");
+    expect(mobileNavKeyForPath("/inspector/queue")).toBe("account");
     expect(mobileNavKeyForPath("/sign-in")).toBe("account");
   });
 

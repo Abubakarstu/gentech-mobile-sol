@@ -1,7 +1,16 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ShieldCheck, User as UserIcon } from "lucide-react";
+import {
+  Bookmark,
+  Heart,
+  MessageSquare,
+  Package,
+  Plus,
+  ShieldCheck,
+  ShoppingBag,
+  User as UserIcon,
+} from "lucide-react";
 
 import {
   getCountryFromParam,
@@ -11,6 +20,8 @@ import { ROUTES, USER_ROLES, type UserRole } from "@/lib/constants";
 import { withCountryLocalePrefix } from "@/lib/localized-path";
 import { getCurrentSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
+import { MobileProfileCard, profileInitials } from "@/components/layout/mobile-profile-card";
+import { MobileQuickActions } from "@/components/layout/mobile-quick-actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,22 +38,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   return { title: t("myProfile"), robots: { index: false, follow: false } };
 }
 
-function initials(name: string) {
-  return (
-    name
-      .trim()
-      .split(/\s+/)
-      .slice(0, 2)
-      .map((part) => part.charAt(0).toUpperCase())
-      .join("") || "U"
-  );
-}
-
 export default async function AccountPage({ params }: PageProps) {
   const { country, locale: localeParam } = await params;
   const countryCode = getCountryFromParam(country);
   const locale = getLocaleFromParam(localeParam, countryCode);
   const t = await getTranslations({ locale, namespace: "accountPage" });
+  const tNav = await getTranslations({ locale, namespace: "navigation" });
 
   const session = await getCurrentSession();
   if (!session) {
@@ -53,38 +54,67 @@ export default async function AccountPage({ params }: PageProps) {
   const role = (user.role as UserRole | undefined) ?? USER_ROLES.USER;
   const profile = await prisma.profile.findUnique({ where: { userId: user.id } }).catch(() => null);
 
+  const localHref = (href: string) => withCountryLocalePrefix(href, countryCode, locale);
+  const mobileActions = [
+    { href: localHref(ROUTES.myListings), label: tNav("myListings"), icon: Package, tone: "brand" as const },
+    { href: localHref(ROUTES.orders), label: tNav("orders"), icon: ShoppingBag, tone: "sky" as const },
+    { href: localHref(ROUTES.favorites), label: tNav("favorites"), icon: Heart, tone: "rose" as const },
+    { href: localHref(ROUTES.messages), label: tNav("messages"), icon: MessageSquare, tone: "violet" as const },
+    { href: localHref(ROUTES.savedSearches), label: tNav("savedSearches"), icon: Bookmark, tone: "amber" as const },
+    { href: localHref(ROUTES.inspections), label: tNav("inspections"), icon: ShieldCheck, tone: "emerald" as const },
+    { href: localHref(ROUTES.sell), label: tNav("sell"), icon: Plus, tone: "brand" as const },
+    { href: localHref(ROUTES.notifications), label: tNav("notifications"), icon: ShieldCheck, tone: "sky" as const },
+  ];
+
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
-        <p className="text-muted-foreground text-sm">{t("description")}</p>
-      </header>
+      <div className="space-y-4 md:hidden">
+        <MobileProfileCard
+          name={user.name}
+          email={user.email}
+          image={user.image}
+          role={role}
+          verified={user.emailVerified}
+          verifiedLabel={t("emailVerified")}
+          unverifiedLabel={t("emailNotVerified")}
+          title={user.name}
+          description={user.email}
+        />
+        <MobileQuickActions actions={mobileActions} label={tNav("account")} />
+      </div>
 
-      <Card>
-        <CardContent className="flex flex-wrap items-center gap-4 pt-6">
-          <Avatar className="size-16">
-            {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
-            <AvatarFallback className="text-lg">{initials(user.name)}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 space-y-1">
-            <p className="text-lg font-semibold leading-none">{user.name}</p>
-            <p className="text-muted-foreground text-sm" dir="ltr">{user.email}</p>
-            <div className="flex flex-wrap gap-1.5 pt-1">
-              <Badge variant={role === USER_ROLES.ADMIN ? "default" : "secondary"}>
-                {role === USER_ROLES.ADMIN ? (
-                  <ShieldCheck className="size-3" />
-                ) : (
-                  <UserIcon className="size-3" />
-                )}
-                {role}
-              </Badge>
-              <Badge variant="outline" className="text-green-600 dark:text-green-400">
-                {user.emailVerified ? t("emailVerified") : t("emailNotVerified")}
-              </Badge>
+      <div className="hidden space-y-6 md:block">
+        <header>
+          <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
+          <p className="text-muted-foreground text-sm">{t("description")}</p>
+        </header>
+
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-4 pt-6">
+            <Avatar className="size-16">
+              {user.image ? <AvatarImage src={user.image} alt={user.name} /> : null}
+              <AvatarFallback className="text-lg">{profileInitials(user.name)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 space-y-1">
+              <p className="text-lg font-semibold leading-none">{user.name}</p>
+              <p className="text-muted-foreground text-sm" dir="ltr">{user.email}</p>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                <Badge variant={role === USER_ROLES.ADMIN ? "default" : "secondary"}>
+                  {role === USER_ROLES.ADMIN ? (
+                    <ShieldCheck className="size-3" />
+                  ) : (
+                    <UserIcon className="size-3" />
+                  )}
+                  {role}
+                </Badge>
+                <Badge variant="outline" className="text-green-600 dark:text-green-400">
+                  {user.emailVerified ? t("emailVerified") : t("emailNotVerified")}
+                </Badge>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card>
         <CardHeader>

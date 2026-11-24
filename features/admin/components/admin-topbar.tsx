@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { ArrowLeft } from "lucide-react";
 
 import { ADMIN_NAV_GROUPS } from "@/features/admin/components/admin-nav";
 
@@ -15,6 +17,8 @@ function titleCase(value: string) {
 
 export function AdminTopbar({ name }: { name: string }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const tCommon = useTranslations("common");
   const navItems = ADMIN_NAV_GROUPS.flatMap((group) =>
     group.links.map((item) => ({ ...item, group: group.label })),
   );
@@ -31,7 +35,15 @@ export function AdminTopbar({ name }: { name: string }) {
 
   return (
     <header className="flex min-h-16 items-center justify-between gap-3 border-b border-white/10 bg-[#181818] px-4 sm:px-7 md:min-h-[72px]">
-      <div className="min-w-0">
+      <div className="flex min-w-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          aria-label={tCommon("back")}
+          className="text-slate-300 grid size-8 shrink-0 place-items-center rounded-lg hover:bg-white/10 md:hidden"
+        >
+          <ArrowLeft aria-hidden="true" className="size-5 rtl:rotate-180" />
+        </button>
         <nav
           aria-label="Breadcrumb"
           className="flex items-center gap-1.5 text-xs font-medium text-slate-500"
@@ -47,6 +59,9 @@ export function AdminTopbar({ name }: { name: string }) {
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-2.5 sm:gap-3">
+        <span className="max-w-24 truncate text-xs font-semibold text-slate-200 sm:hidden">
+          {name}
+        </span>
         <span className="hidden items-center gap-2 rounded-full border border-emerald-400/15 bg-emerald-400/[0.06] px-3 py-1.5 text-xs font-medium text-emerald-200 sm:inline-flex">
           <span className="size-1.5 rounded-full bg-emerald-400" />
           Admin workspace

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Suspense } from "react";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Providers } from "@/components/providers";
@@ -64,6 +66,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const { locale } = await getRequestCountryLocale();
+  const messages = await getMessages({ locale });
 
   return (
     <html
@@ -82,10 +85,12 @@ export default async function RootLayout({
         >
           Skip to content
         </a>
-        <Providers>
-          {children}
-          <Toaster richColors position="top-center" />
-        </Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>
+            {children}
+            <Toaster richColors position="top-center" />
+          </Providers>
+        </NextIntlClientProvider>
         <Suspense fallback={null}>
           <PageViewTracker />
         </Suspense>

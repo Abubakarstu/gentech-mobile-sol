@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 
+import { MobileAppNav } from "@/components/layout/mobile-app-nav";
 import { AdminNav } from "@/features/admin/components/admin-nav";
 import { AdminTopbar } from "@/features/admin/components/admin-topbar";
 import { requireAdmin } from "@/features/admin/lib/require-admin";
@@ -22,6 +23,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <AdminTopbar name={admin.name} />
         <main id="main-content" className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-7 sm:py-7">{children}</main>
       </div>
+      <MobileAppNav isAuthenticated />
     </div>
   );
 }

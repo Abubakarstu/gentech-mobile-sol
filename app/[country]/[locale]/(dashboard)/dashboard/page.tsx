@@ -2,7 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { ArrowRight, Bookmark, MessageSquare, Package, Plus, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  Bookmark,
+  Heart,
+  LayoutGrid,
+  MessageSquare,
+  Package,
+  Plus,
+  ShieldCheck,
+  ShoppingBag,
+} from "lucide-react";
 
 import {
   getCountryFromParam,
@@ -15,6 +25,8 @@ import { getUnreadCount } from "@/features/messaging/services/conversation.servi
 import { getStats } from "@/features/seller/services/seller.service";
 import { getMyInspectionCount } from "@/features/inspections/services/inspection.service";
 import { SellerStatsCards } from "@/features/seller/components/seller-stats";
+import { MobileProfileCard } from "@/components/layout/mobile-profile-card";
+import { MobileQuickActions } from "@/components/layout/mobile-quick-actions";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { buttonVariants } from "@/components/ui/button";
@@ -133,9 +145,12 @@ export default async function DashboardPage({ params }: PageProps) {
     sell: withCountryLocalePrefix(ROUTES.sell, countryCode, locale),
     marketplace: withCountryLocalePrefix(ROUTES.marketplace, countryCode, locale),
     listings: withCountryLocalePrefix(ROUTES.myListings, countryCode, locale),
+    orders: withCountryLocalePrefix(ROUTES.orders, countryCode, locale),
+    favorites: withCountryLocalePrefix(ROUTES.favorites, countryCode, locale),
     messages: withCountryLocalePrefix(ROUTES.messages, countryCode, locale),
     savedSearches: withCountryLocalePrefix(ROUTES.savedSearches, countryCode, locale),
     inspections: withCountryLocalePrefix(ROUTES.inspections, countryCode, locale),
+    account: withCountryLocalePrefix(ROUTES.account, countryCode, locale),
   };
 
   const session = await getCurrentSession();
@@ -181,18 +196,84 @@ export default async function DashboardPage({ params }: PageProps) {
     },
   ];
 
+  const mobileActions = [
+    {
+      href: links.listings,
+      label: tNav("myListings"),
+      icon: Package,
+      badge: sellerStats.totalListings > 0 ? sellerStats.totalListings : undefined,
+      tone: "brand" as const,
+    },
+    {
+      href: links.orders,
+      label: tNav("orders"),
+      icon: ShoppingBag,
+      tone: "sky" as const,
+    },
+    {
+      href: links.favorites,
+      label: tNav("favorites"),
+      icon: Heart,
+      tone: "rose" as const,
+    },
+    {
+      href: links.messages,
+      label: tNav("messages"),
+      icon: MessageSquare,
+      badge: unread > 0 ? unread : undefined,
+      tone: "violet" as const,
+    },
+    {
+      href: links.savedSearches,
+      label: tNav("savedSearches"),
+      icon: Bookmark,
+      tone: "amber" as const,
+    },
+    {
+      href: links.inspections,
+      label: tNav("inspections"),
+      icon: ShieldCheck,
+      badge: inspectionCount > 0 ? inspectionCount : undefined,
+      tone: "emerald" as const,
+    },
+    { href: links.sell, label: tNav("sell"), icon: Plus, tone: "brand" as const },
+    {
+      href: links.marketplace,
+      label: tNav("marketplace"),
+      icon: LayoutGrid,
+      tone: "sky" as const,
+    },
+  ];
+
   return (
     <div className="space-y-8">
-      <DashboardHero
-        name={user.name}
-        email={user.email}
-        role={role}
-        emailVerified={user.emailVerified}
-        copy={copy}
-        links={links}
-      />
+      <div className="space-y-4 md:hidden">
+        <MobileProfileCard
+          name={user.name}
+          email={user.email}
+          image={user.image}
+          role={role}
+          verified={user.emailVerified}
+          verifiedLabel={copy.verified}
+          unverifiedLabel={copy.unverified}
+          profileHref={links.account}
+          title={copy.greeting?.replace("{name}", user.name.split(" ")[0] ?? user.name)}
+        />
+        <MobileQuickActions actions={mobileActions} label={tNav("dashboard")} />
+      </div>
 
-      <div className="workspace-stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="hidden md:block">
+        <DashboardHero
+          name={user.name}
+          email={user.email}
+          role={role}
+          emailVerified={user.emailVerified}
+          copy={copy}
+          links={links}
+        />
+      </div>
+
+      <div className="workspace-stagger hidden gap-4 sm:grid-cols-2 lg:grid-cols-4 md:grid">
         {stats.map(({ icon: Icon, label, value, hint, href }) => (
           <Link
             key={label}

@@ -4,15 +4,22 @@ import {
   ArrowRight,
   ArrowUpRight,
   BadgeCheck,
+  BarChart3,
   CircleAlert,
   ClipboardCheck,
+  CreditCard,
+  FolderTree,
+  LayoutDashboard,
   Package,
   ShieldAlert,
+  ShoppingCart,
   Smartphone,
   Store,
   Users,
 } from "lucide-react";
 
+import { MobileProfileCard } from "@/components/layout/mobile-profile-card";
+import { MobileQuickActions } from "@/components/layout/mobile-quick-actions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getRegionAnalyticsData, getStats } from "@/features/admin/services/admin.service";
 import { getCurrentUser } from "@/lib/session";
@@ -116,9 +123,38 @@ export default async function AdminOverviewPage() {
       ]
     : [];
 
+  const mobileActions = [
+    { href: ROUTES.admin, label: "Overview", icon: LayoutDashboard, tone: "brand" as const },
+    { href: ROUTES.adminListings, label: "Listings", icon: Package, tone: "brand" as const },
+    { href: "/admin/orders", label: "Orders", icon: ShoppingCart, tone: "sky" as const },
+    { href: ROUTES.adminUsers, label: "Customers", icon: Users, tone: "violet" as const },
+    { href: ROUTES.adminReports, label: "Reports", icon: BadgeCheck, tone: "rose" as const },
+    { href: ROUTES.adminCategories, label: "Catalog", icon: FolderTree, tone: "amber" as const },
+    { href: "/admin/finance", label: "Finance", icon: CreditCard, tone: "emerald" as const },
+    { href: "/admin/analytics", label: "Analytics", icon: BarChart3, tone: "sky" as const },
+  ];
+
   return (
     <div className="space-y-7">
-      <section className="rounded-2xl border border-white/10 bg-[#1F1F1F] px-5 py-6 sm:px-7 sm:py-7">
+      <div className="space-y-4 md:hidden">
+        <MobileProfileCard
+          dark
+          name={user?.name ?? "Admin"}
+          email={user?.email ?? "Administrator"}
+          image={user?.image}
+          role="ADMIN"
+          badgeLabel="Administrator"
+          title={`Welcome back, ${user?.name?.split(" ")[0] ?? "Admin"}`}
+          description={user?.email ?? "Marketplace operations"}
+        />
+        <MobileQuickActions
+          dark
+          actions={mobileActions}
+          label="Admin shortcuts"
+        />
+      </div>
+
+      <section className="hidden rounded-2xl border border-white/10 bg-[#1F1F1F] px-5 py-6 sm:px-7 sm:py-7 md:block">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <p className="caption-3 uppercase tracking-wide text-emerald-300">
