@@ -1,4 +1,4 @@
-import type { ListingFilters } from "@/types/marketplace";
+import type { BrandItem, ListingCardData, ListingFilters } from "@/types/marketplace";
 
 /** Attribute filter keys whose relevance depends on the selected category. */
 export const CATEGORY_FILTER_KEYS = [
@@ -148,6 +148,27 @@ export function getCategoryFilterProfile(category?: string): CategoryFilterProfi
 /** Category slugs that a filter selection should match, including child categories. */
 export function categorySlugsForFilter(category?: string): readonly string[] {
   return getCategoryFilterProfile(category).slugs;
+}
+
+/** Brands that actually have listings in the selected category, in catalog order. */
+export function filterBrandsForCategory(
+  brands: BrandItem[],
+  listings: readonly Pick<ListingCardData, "brandSlug" | "categorySlug">[],
+  category?: string,
+): BrandItem[] {
+  const slugs = categorySlugsForFilter(category);
+  if (slugs.length === 0) return brands;
+
+  const available = new Set(
+    listings
+      .filter(
+        (listing) =>
+          listing.brandSlug && listing.categorySlug && slugs.includes(listing.categorySlug),
+      )
+      .map((listing) => listing.brandSlug!),
+  );
+
+  return brands.filter((brand) => available.has(brand.slug));
 }
 
 /**

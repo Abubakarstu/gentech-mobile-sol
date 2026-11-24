@@ -69,7 +69,7 @@ export default async function MarketplacePage({
     getCurrentUser(),
     getActiveLocationTree(),
     getMarketplaceCategories(),
-    getMarketplaceBrands(),
+    getMarketplaceBrands(undefined, filters.category),
     getListingFilterOptions(undefined, filters.category),
   ]);
   const canSaveSearch = hasActiveFilters(filters);

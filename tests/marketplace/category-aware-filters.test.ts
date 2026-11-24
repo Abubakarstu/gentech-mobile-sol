@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 
+import { DEMO_BRANDS, getDemoListings } from "@/features/marketplace/data/fixtures";
 import { searchDemoListings } from "@/features/listings/data/demo-source";
 import { parseListingFilters } from "@/features/listings/schemas/filters";
 import {
+  filterBrandsForCategory,
   getCategoryFilterProfile,
   specOptionKey,
 } from "@/lib/catalog/category-filters";
+import { Region } from "@/lib/generated/prisma/enums";
 
 describe("category-aware marketplace filters", () => {
   it("exposes category-specific filter groups", () => {
@@ -55,6 +58,22 @@ describe("category-aware marketplace filters", () => {
     expect(accessory.total).toBeGreaterThan(0);
     expect(root.total).toBeGreaterThan(0);
     expect(root.items.every((item) => ["laptops", "tablets"].includes(item.categorySlug ?? ""))).toBe(true);
+  });
+
+  it("adapts brand options to the selected category", () => {
+    const listings = getDemoListings(Region.PAKISTAN);
+    const mobileBrands = filterBrandsForCategory(DEMO_BRANDS, listings, "mobile-phones").map(
+      (brand) => brand.slug,
+    );
+    const laptopBrands = filterBrandsForCategory(DEMO_BRANDS, listings, "laptops").map(
+      (brand) => brand.slug,
+    );
+
+    expect(mobileBrands).toEqual(expect.arrayContaining(["apple", "samsung", "xiaomi", "oppo"]));
+    expect(mobileBrands).not.toContain("dell");
+    expect(laptopBrands).toEqual(expect.arrayContaining(["apple", "dell"]));
+    expect(laptopBrands).not.toContain("oppo");
+    expect(filterBrandsForCategory(DEMO_BRANDS, listings, "all")).toEqual(DEMO_BRANDS);
   });
 
   it("maps curated option values to stable translation keys", () => {

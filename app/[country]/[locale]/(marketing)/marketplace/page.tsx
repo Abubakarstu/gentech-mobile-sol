@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 
 import {
@@ -10,6 +11,7 @@ import { getCountryName } from "@/lib/countries";
 import { APP_URL } from "@/lib/app-url";
 import { ROUTES } from "@/lib/constants";
 import { localizedPath, isNonCanonicalQueryVariant, localizedSeoMetadata } from "@/lib/seo/metadata";
+import { withCountryLocalePrefix } from "@/lib/localized-path";
 import { buildItemListStructuredData } from "@/lib/seo/structured-data";
 import { JsonLd } from "@/components/seo/json-ld";
 import { LocalizedLink } from "@/components/localized-link";
@@ -73,16 +75,35 @@ export default async function MarketplacePage({ params, searchParams }: PageProp
   const locale = getLocaleFromParam(localeParam, countryCode);
   const region = getRegionForCountry(countryCode);
   const t = await getTranslations({ locale, namespace: "marketplace" });
-  const filters = parseListingFilters(await searchParams);
+  const rawParams = await searchParams;
+  const filters = parseListingFilters(rawParams);
 
   const [feed, user, locations, categories, brands, filterOptions] = await Promise.all([
     getListingFeed(filters, region),
     getCurrentUser(),
     getActiveLocationTree(countryCode),
     getMarketplaceCategories(region),
-    getMarketplaceBrands(),
+    getMarketplaceBrands(region, filters.category),
     getListingFilterOptions(region, filters.category),
   ]);
+
+  // A brand kept while switching categories may no longer have listings there.
+  if (filters.brand && !brands.some((brand) => brand.slug === filters.brand)) {
+    const params = new URLSearchParams();
+    for (const [key, value] of Object.entries(rawParams)) {
+      if (value !== undefined) params.set(key, Array.isArray(value) ? (value[0] ?? "") : value);
+    }
+    params.delete("brand");
+    params.delete("page");
+    const query = params.toString();
+    redirect(
+      withCountryLocalePrefix(
+        `${ROUTES.marketplace}${query ? `?${query}` : ""}`,
+        countryCode,
+        locale,
+      ),
+    );
+  }
 
   const canSaveSearch = hasActiveFilters(filters);
   const activeCount = countActiveFilters(filters);

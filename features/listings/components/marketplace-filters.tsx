@@ -322,27 +322,29 @@ export function MarketplaceFilters({
           </ul>
         </FilterGroup>
 
-        <FilterGroup id="brand" title={t("brand")}>
-          <div className="flex flex-wrap gap-1.5">
-            {brands.map((brand) => {
-              const active = filters.brand === brand.slug;
-              return (
-                <Link
-                  key={brand.id}
-                  href={buildHref({ brand: active ? null : brand.slug })}
-                  className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
-                    active
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "hover:bg-accent",
-                  )}
-                >
-                  {brand.name}
-                </Link>
-              );
-            })}
-          </div>
-        </FilterGroup>
+        {brands.length > 0 ? (
+          <FilterGroup id="brand" title={t("brand")}>
+            <div className="flex flex-wrap gap-1.5">
+              {brands.map((brand) => {
+                const active = filters.brand === brand.slug;
+                return (
+                  <Link
+                    key={brand.id}
+                    href={buildHref({ brand: active ? null : brand.slug })}
+                    className={cn(
+                      "rounded-full border px-2.5 py-1 text-xs transition-colors",
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "hover:bg-accent",
+                    )}
+                  >
+                    {brand.name}
+                  </Link>
+                );
+              })}
+            </div>
+          </FilterGroup>
+        ) : null}
 
         <FilterGroup id="condition" title={t("condition")}>
           <ul className="space-y-0.5">
