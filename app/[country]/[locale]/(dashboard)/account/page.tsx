@@ -54,6 +54,27 @@ export default async function AccountPage({ params }: PageProps) {
   const role = (user.role as UserRole | undefined) ?? USER_ROLES.USER;
   const profile = await prisma.profile.findUnique({ where: { userId: user.id } }).catch(() => null);
 
+  const labels = {
+    fullName: t("fullName"),
+    phoneNumber: t("phoneNumber"),
+    phoneHint: t("phoneHint"),
+    city: t("city"),
+    cityPlaceholder: t("cityPlaceholder", { city: t("cityExample") }),
+    bio: t("bio"),
+    bioHint: t("bioHint"),
+    personalInfo: t("personalInfo"),
+    aboutYou: t("aboutYou"),
+    accountActions: t("accountActions"),
+    editDescription: t("editDescription"),
+    saveChanges: t("saveChanges"),
+    saving: t("saving"),
+    signOut: t("signOut"),
+    signingOut: t("signingOut"),
+    saved: t("saved"),
+    saveFailed: t("saveFailed"),
+    signOutFailed: t("signOutFailed"),
+  };
+
   const localHref = (href: string) => withCountryLocalePrefix(href, countryCode, locale);
   const mobileActions = [
     { href: localHref(ROUTES.myListings), label: tNav("myListings"), icon: Package, tone: "brand" as const },
@@ -116,7 +137,22 @@ export default async function AccountPage({ params }: PageProps) {
         </Card>
       </div>
 
-      <Card>
+      <div className="space-y-3 md:hidden">
+        <div className="px-1">
+          <h2 className="text-base font-semibold">{t("editProfile")}</h2>
+          <p className="text-muted-foreground text-xs">{t("editDescription")}</p>
+        </div>
+        <AccountForm
+          variant="mobile"
+          name={user.name}
+          bio={profile?.bio ?? ""}
+          phone={profile?.phone ?? ""}
+          city={profile?.city ?? ""}
+          labels={labels}
+        />
+      </div>
+
+      <Card className="hidden md:block">
         <CardHeader>
           <CardTitle>{t("editProfile")}</CardTitle>
           <CardDescription>{t("editDescription")}</CardDescription>
@@ -124,10 +160,12 @@ export default async function AccountPage({ params }: PageProps) {
         <Separator />
         <CardContent className="pt-6">
           <AccountForm
+            variant="desktop"
             name={user.name}
             bio={profile?.bio ?? ""}
             phone={profile?.phone ?? ""}
             city={profile?.city ?? ""}
+            labels={labels}
           />
         </CardContent>
       </Card>
