@@ -5,6 +5,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { MobileSplashScreen } from "@/components/layout/mobile-splash-screen";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { AnalyticsScripts } from "@/features/analytics/components/analytics-scripts";
@@ -86,6 +87,7 @@ export default async function RootLayout({
           Skip to content
         </a>
         <NextIntlClientProvider locale={locale} messages={messages}>
+          <MobileSplashScreen />
           <Providers>
             {children}
             <Toaster richColors position="top-center" />

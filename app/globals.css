@@ -169,6 +169,27 @@
     padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
   }
 
+  [data-mobile-splash] {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    animation: mobile-splash-exit 900ms ease-in forwards;
+  }
+
+  .mobile-splash-glow {
+    position: absolute;
+    width: 18rem;
+    height: 18rem;
+    border-radius: 9999px;
+  }
+
+  .mobile-splash-ring {
+    animation: mobile-splash-pulse 1.4s ease-out infinite;
+  }
+
+  .mobile-splash-progress {
+    animation: mobile-splash-progress 800ms ease-out forwards;
+  }
+
   /* Compare mode adds a live search row above the bottom tab bar. */
   body[data-compare-active="true"] #main-content {
     padding-bottom: calc(10.5rem + env(safe-area-inset-bottom));
@@ -176,6 +197,49 @@
 
   body[data-compare-active="true"] [data-mobile-app-fab] {
     bottom: calc(12rem + env(safe-area-inset-bottom));
+  }
+}
+
+@keyframes mobile-splash-exit {
+  0%,
+  70% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+@keyframes mobile-splash-pulse {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+
+@keyframes mobile-splash-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-mobile-splash] {
+    animation-duration: 150ms;
+  }
+
+  .mobile-splash-ring,
+  .mobile-splash-progress {
+    animation: none;
   }
 }
 
