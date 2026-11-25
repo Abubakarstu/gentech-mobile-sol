@@ -4,7 +4,7 @@
 
 **Scope:** Integrated run of the repository's QA, business R&D, project management, architecture, security, DevOps, board, investor, and orchestrator skills against `Abubakarstu/gentech` at commit `25f74a9` on `feat/sf3d-webgpu-generation`.
 
-**Executive summary:** The repository contains a broad, labeled backlog: 90 issues (75 open, 15 closed) and 7 archived PRs. The highest-risk open work is the payment verification boundary (#47, #72), unauthenticated FCM relay (#48), health-check placeholder (#37), and the SF3D legal gate (#13). This run installed and registered the orchestrator, reconciled the R&D issue index, added an integrated governance report, and filed five previously unfiled task/feature issues (#98–#102) after dedupe. No board resolution, investor ask, finance figure, provider credential, or legal conclusion was supplied, so no governance issue was published.
+**Executive summary:** The repository contains a broad, labeled backlog: 90 issues (74 open, 16 closed) and 7 archived PRs. The highest-risk remaining open work is the broader payment-integrity boundary (#72; the unsigned-callback subset #47 is closed), unauthenticated FCM relay (#48), health-check placeholder (#37), and the SF3D legal gate (#13). This run installed and registered the orchestrator, reconciled the R&D issue index, added an integrated governance report, and filed five previously unfiled task/feature issues (#98–#102) after dedupe. No board resolution, investor ask, finance figure, provider credential, or legal conclusion was supplied, so no governance issue was published.
 
 ## Work completed
 
@@ -20,13 +20,13 @@
 - Reconciled GitHub issue references in `MARKETPLACE_RND_REPORT.md`: PR numbers were no longer treated as issues, and PKR/tax/shipping/privacy references now point to #79, #92, #95, and #91.
 - Indexed the full issue range in `docs/PROGRESS_CHECKLIST.md`: #47–#49 (QA), #50–#71 (Access report audit), #72–#97 (R&D backlog), #98–#102 (task/feature follow-ups).
 - Added repository labels `task` and `feature` and filed #98–#102 from the five recommendations previously left unfiled.
-- Confirmed issue hygiene: #47 is a narrower subset of the broader verification-boundary work in #72; both remain traceable and no third duplicate was created.
+- Confirmed issue hygiene: #47 is the narrower unsigned-callback subset of #72; the callback subset was fixed and #47 closed, while #72 remains open for the wider boundary.
 - Merged PR #12 into `usamawta-tech/gentech:main`; the original main tree is identical to the current branch tree.
 - Recreated the canonical issue set in `usamawta-tech/gentech` as #13–#102 because GitHub does not permit cross-owner issue transfer; old fork issues are closed as duplicates and mapped in `docs/ISSUE_MIGRATION.md`.
 
 ## Prioritized operating queue
 
-1. **P0 security/payment integrity:** #72 and #47 — signed, amount-checked callbacks; separate read-only return handlers; replay protection.
+1. **P0 security/payment integrity:** #47 closed via PR #104 (signed, amount-checked callbacks; read-only return; replay protection); #72 remains open for the rest of the verification boundary.
 2. **P1 security/operations:** #48 unauthenticated FCM relay; #37 false-healthy endpoint; #75 payment ownership; #88 failure-safe audit writes.
 3. **P1 checkout and multi-region correctness:** #73 authoritative totals, #79 PKR 2-decimal precision, #81 validated delivery address, #80 seller/region enforcement, #82 provider/config alignment, #98 seller verification wiring, #100 promotion creation route.
 4. **P1 data and order integrity:** #74 atomic availability, #76 retry safety, #77 order roles and paid-state gate, #78 partial refunds.
@@ -36,8 +36,8 @@
 ## Verification
 
 - Commands/tests run: `git diff --check`, `pnpm typecheck`, `pnpm lint`, `pnpm test`, and `pnpm build`.
-- Results: `pnpm typecheck` 0 errors; `pnpm test` 446/446 across 69 files; `pnpm lint` 0 errors and 46 pre-existing warnings; `pnpm build` generated 259 pages; `git diff --check` reported no whitespace errors (only LF→CRLF working-copy notices).
-- GitHub evidence: canonical repo `usamawta-tech/gentech` returned 90 issues (75 open, 15 closed); fork PR #12 was merged into upstream main; 48 labels exist in the canonical repo; 0 milestones exist.
+- Results: `pnpm typecheck` 0 errors; `pnpm test` 458/458 across 70 files; `pnpm lint` 0 errors and 46 pre-existing warnings; `pnpm build` generated 259 pages; `git diff --check` reported no whitespace errors (only LF→CRLF working-copy notices).
+- GitHub evidence: canonical repo `usamawta-tech/gentech` returned 90 issues (74 open, 16 closed) after PR #104 closed #47; fork PR #12 was merged into upstream main; 48 labels exist in the canonical repo; 0 milestones exist.
 - Not run and why: browser/runtime checks remain blocked by disconnected browser tooling, no local database, and no FCM credentials. Live provider and WebGPU inference checks need credentials, legal clearance, and a WebGPU-capable browser.
 
 ## GitHub tracking
