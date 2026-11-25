@@ -10,6 +10,38 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
 
+### One-by-one project progress (2026-11-25)
+
+- [x] Advanced product viewing and optional 3D committed as `538e11c`.
+- [x] Browser-side SF3D generation committed as `ca651cd` and pushed to `main`.
+- [x] New branch `feat/sf3d-webgpu-generation` created, committed, and pushed.
+- [x] Consolidated progress checklist added as `docs/PROGRESS_CHECKLIST.md`.
+- [x] GitHub Issues enabled and issue #8 opened for the SF3D legal gate.
+- [x] Seller "Generate 3D" flow added to create-listing and post-publication management.
+- [x] WebGPU capability check and explicit seller licence acceptance gate added.
+- [x] SF3D producer vendored under `public/sf3d/`; weights remain external to source.
+- [x] Browser-only inference added; no image, prompt, or tensor reaches GenTech or an AI API.
+- [x] Finished GLB uploaded through the existing authenticated Cloudinary raw path under `models/${user.id}`.
+- [x] `ListingModel` provenance/status fields added by migration `20261125130000_add_listing_model_generation_provenance`.
+- [x] Buyer-facing "AI-generated 3D model" label and approximation notice added in EN/AR/UR.
+- [x] Root GLB URL-resolver bug fixed; unauthorized GLTF asset references remain blocked.
+- [x] Localhost buyer 3D flow verified with a temporary GLB fixture: `photos,3d` modes, live canvas, no fallback, rotation/reset/fullscreen controls.
+- [x] Temporary fixture, helper scripts, and local DB row removed; `ListingModel` count back to `0`.
+- [x] Verification baseline: `pnpm typecheck` 0 errors; `pnpm test` 446/446; `pnpm lint` 0 errors / 46 pre-existing warnings; `pnpm build` passed.
+- [x] M1-F01–M1-F06 core catalog, approval workflow, taxonomy, and admin analytics verified.
+- [x] M2-F01–M2-F03 dealer registration, verification queue, branches, and inventory verified.
+- [x] M3-F01 promotion package management verified; M3-F02 payment code verified but live/promotion payments remain paused.
+- [x] M4-F01–M4-F03 filters, messaging, favorites, and saved-search alerts verified.
+- [x] M5-F01, M5-F03, and M5-F04 valuation, spec comparison, and inspection reports verified.
+- [ ] M5-F02 real PTA DIRBS/CPID adapter pending provider credentials; simulator and provider abstraction remain verified.
+- [ ] Close GitHub issue #8: obtain legal clearance for the SF3D runtime, inference kit, and weights; record the outcome in ADR-019 and `docs/SF3D_WEBGPU.md`.
+- [ ] If cleared, configure `NEXT_PUBLIC_SF3D_ENABLED` plus pinned weights URL/bytes/ETAG in deployment.
+- [ ] Run `npx prisma migrate deploy` in each target environment before enabling generation.
+- [ ] Verify the seller Generate 3D flow in a WebGPU-capable browser with the pinned weights.
+- [ ] If not cleared, disable or remove the generation path while keeping manual GLB/GLTF upload intact.
+- [ ] Verify real payment providers (BenefitPay, JazzCash, Easypaisa) with merchant credentials and sandbox tests.
+- [ ] Recheck `/bh/ar` after the next Vercel deployment; the earlier 404 preceded the Prisma build-generation fix.
+
 ### Mobile app shell (2026-11-24)
 
 - **Change:** Phone viewports now render an app-style shell inspired by mainstream marketplace apps (Alibaba/Lazada patterns) while the desktop experience is unchanged. `SiteHeader` keeps the original desktop rail untouched at `md+`; below `md` it renders a full-width sticky app bar with hamburger, logo mark, search and notifications. `MobileAppNav` adds a five-tab bottom bar (Home, Categories, Sell, Messages, Account) with an elevated sell action, `aria-current` tracking, RTL-aware layout and safe-area padding. `app/layout.tsx` now uses `viewportFit: "cover"`.
