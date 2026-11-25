@@ -311,8 +311,15 @@ export function ProductViewer({
           <p className="text-xs text-white/60">
             {isPhotoMode
               ? `${t(tier.labelKey)} · ${t("frame", { current: frame + 1, total: count })}`
-              : t("mode3d")}
+              : model?.sourceType === "GENERATED"
+                ? t("modelGeneratedLabel")
+                : t("mode3d")}
           </p>
+          {!isPhotoMode && model?.sourceType === "GENERATED" ? (
+            <p className="mt-0.5 text-[11px] text-white/50" data-product-viewer-generated>
+              {t("modelGeneratedNotice")}
+            </p>
+          ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-1">
           {isPhotoMode && tier.autoRotate && count > 1 ? (

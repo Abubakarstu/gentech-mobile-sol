@@ -8,6 +8,7 @@ shadcn/ui (Base UI) · Framer Motion · Prisma 7 + Neon PostgreSQL · Better Aut
 Cloudinary · Google Maps · FCM (later phases).
 
 See [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) for the layering and conventions.
+Browser-side image-to-3D generation is documented in [`docs/SF3D_WEBGPU.md`](./docs/SF3D_WEBGPU.md); it is disabled unless explicitly configured and legally cleared.
 
 ---
 
@@ -57,6 +58,7 @@ Optional (features degrade gracefully until set):
 - `FACEBOOK_CLIENT_ID` / `FACEBOOK_CLIENT_SECRET` — Facebook sign-in
 - `RESEND_API_KEY` / `EMAIL_FROM` — password-reset emails
   (without these, reset links are printed to the server console)
+- `NEXT_PUBLIC_SF3D_ENABLED` / `NEXT_PUBLIC_SF3D_WEIGHTS_URL` — optional browser-only 3D generation; see [`docs/SF3D_WEBGPU.md`](./docs/SF3D_WEBGPU.md) before enabling
 
 OAuth redirect URIs (add in each provider's console):
 

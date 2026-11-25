@@ -93,7 +93,7 @@
 ## ADR-016: Photo-Sequence Product Viewer, Honest Tiers, No Default AI Synthesis
 
 - **Date:** 2026-11-25
-- **Status:** Amended by ADR-017 and ADR-018
+- **Status:** Amended by ADR-017, ADR-018 and ADR-019
 - **Decision:** The interactive viewer is built only from the seller's ordinary JPG/JPEG/PNG/WebP photographs in upload order. No 360 image format or video is accepted; a genuinely uploaded 3D model is optional and governed by ADR-018. Tiers are honest: 1 photo is a zoomable photo, 2–3 switch between photos, 4–11 are multi-angle with an explicit limited-angle label, 12–23 provide interactive rotation, and 24–36 provide the recommended 360° experience. Sellers may upload up to 36 photos, reorder them with arrow controls, and remove any photo; the existing Cloudinary signature and seller ownership rules are unchanged. AI-generated intermediate views remain optional and are **not enabled**: no provider, cost approval, or async worker exists yet. If enabled later, derived frames must be stored separately from `listing_image`, marked `isGenerated`, never overwrite seller photos, be produced asynchronously with per-listing cost caps and seller ownership checks, and must never be described as genuine product photographs or used to infer product attributes.
 
 ## ADR-017: Zero-Cost Browser Blending Instead of Free AI Synthesis
@@ -107,7 +107,15 @@
 ## ADR-018: Genuine Seller-Supplied 3D Models Are Opt-In
 
 - **Date:** 2026-11-25
-- **Status:** Approved
+- **Status:** Amended by ADR-019
 - **Context:** Buyers benefit from inspecting a real 3D product, but no free service can honestly reconstruct a trustworthy model from ordinary photos. The marketplace must not imply AI-generated or inferred geometry, and no paid API or hosted model pipeline is acceptable.
 - **Decision:** Sellers may optionally upload one genuine GLB or GLTF file plus its referenced `.bin`/image assets. Models are stored as Cloudinary `resource_type: "raw"` assets in an authenticated, user-scoped folder (`models/{userId}`); every create/replace/remove path validates that public IDs start with that prefix. The detail viewer dynamically imports free/open-source Three.js, React Three Fiber and drei only when a model exists, and shows a 3D tab only for those listings. Photographs remain the default and are never converted, synthesized, or described as 3D. Model replacement/removal is owner-scoped in the repository, with old raw assets deleted only after the database transaction commits.
 - **Consequences:** One additive `ListingModel` table and nullable relation; no change to `listing_image`, no paid dependency, and no 3D bundle for listings without a model. GLTF external references are resolved only to the seller's already-validated Cloudinary URLs, so a malicious document cannot trigger arbitrary fetches. Sellers can preview, replace and remove the model post-publication without making it required.
+
+## ADR-019: Gated Browser-Side SF3D Generation With Explicit Provenance
+
+- **Date:** 2026-11-25
+- **Status:** Approved — deployment gated on legal clearance
+- **Context:** Sellers asked for image-to-3D generation without a paid API, Python backend, hosted GPU, or private credentials. `sf3d-webgpu` can run entirely in the browser with WebGPU, but its model weights are about 2.1 GB and cannot be uploaded to Vercel Free/Hobby (100 MB source-file limit). The upstream repository has no root licence and bundles an `UNLICENSED` inference kit; the weights use the Stability AI Community License with a US $1M annual-revenue threshold for commercial use.
+- **Decision:** Sellers may optionally generate a GLB from one of their already-uploaded JPG/JPEG/PNG/WebP listing photos using a vendored SF3D producer served from `public/sf3d`, with weights streamed from a configurable, CORS-enabled URL. The feature is disabled unless `NEXT_PUBLIC_SF3D_ENABLED=true` and `NEXT_PUBLIC_SF3D_WEIGHTS_URL` are explicitly set. Inference never leaves the browser; only the finished GLB is uploaded through the existing owner-scoped Cloudinary raw path. Generated models re-use `ListingModel` and carry `sourceType=GENERATED`, `processingStatus`, source-image provenance, generator version, and a small run receipt. Buyers see an explicit "AI-generated 3D model" label and an approximation notice. Manual GLB/GLTF uploads remain `UPLOADED` and unchanged.
+- **Consequences:** No server-side GPU, no paid API, no duplicate storage, and no change to photo tiers (ADR-016) or transient blending (ADR-017). The addition is one additive Prisma migration and a dynamically loaded browser adapter. Production release remains blocked until (a) legal clearance for the unlicensed upstream runtime is documented, (b) Stability AI revenue-eligibility is confirmed, and (c) the weight mirror's size/ETag are pinned. WebGPU absence, unsupported browsers, weight-check failure, generation failure, and licence non-acceptance all fail closed to the existing manual upload path. Generated geometry is an approximation and must never be presented as a measured scan or used to infer product specifications.

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  createModelUrlResolver,
   fileExtension,
   isCloudinaryAssetUrl,
   isOwnedModelPublicId,
@@ -58,6 +59,17 @@ describe("3D model asset rules", () => {
       resolveModelAssetUrl("https://evil.example.com/asset.bin", assets, "https://res.cloudinary.com/demo/model.gltf"),
     ).toBe("");
     expect(isCloudinaryAssetUrl("http://res.cloudinary.com/demo/a.glb")).toBe(false);
+  });
+
+  it("keeps the main model URL while blocking unvalidated GLTF references", () => {
+    const url = "https://res.cloudinary.com/demo/raw/upload/v1/models/u1/phone.glb";
+    const resolver = createModelUrlResolver(url, []);
+    expect(resolver(url)).toBe(url);
+
+    const relative = createModelUrlResolver("/models/phone.glb", []);
+    expect(relative("/models/phone.glb")).toBe("/models/phone.glb");
+    expect(relative("/models/scene.bin")).toBe("");
+    expect(relative("https://evil.example.com/scene.bin")).toBe("");
   });
 
   it("binds uploaded model public IDs to the signed seller folder", () => {

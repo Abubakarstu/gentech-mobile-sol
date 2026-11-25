@@ -285,6 +285,8 @@
     "previousPhoto": "Previous photo",
     "nextPhoto": "Next photo",
     "model3dLabel": "3D model",
+    "modelGeneratedLabel": "AI-generated 3D model",
+    "modelGeneratedNotice": "Generated from a seller photo by SF3D. Approximation only — not a measured 3D scan.",
     "modelLoading": "Loading 3D model",
     "modelUnavailable": "This 3D model could not be displayed.",
     "modelPause": "Pause auto rotation",

@@ -359,8 +359,10 @@ model ListingImage {
 }
 
 /**
- * Optional, seller-supplied 3D asset. Ordinary photographs remain the source of
- * truth; this record never replaces or derives from `ListingImage` rows.
+ * Optional 3D asset for a listing. Ordinary photographs remain the source of
+ * truth. A model is either genuinely supplied by the seller or generated in the
+ * seller's browser from one of their uploaded photos, and its provenance is
+ * always stored with the asset.
  */
 model ListingModel {
   id        String @id @default(cuid())
@@ -370,6 +372,16 @@ model ListingModel {
   sizeBytes Int
   /// Supporting assets for GLTF: [{ uri, url, publicId }]
   assets    Json?
+
+  /// UPLOADED | GENERATED — never inferred from a buyer-facing URL.
+  sourceType        String @default("UPLOADED")
+  /// GENERATING | READY | FAILED — terminal state persisted with the asset.
+  processingStatus  String @default("READY")
+  sourceImageUrl    String?
+  sourceImagePublicId String?
+  generator         String?
+  generatorVersion  String?
+  generationReceipt Json?
 
   listingId String  @unique
   listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)

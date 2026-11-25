@@ -1,9 +1,14 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const { toast } = vi.hoisted(() => ({
-  toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
-}));
+type ToastSpy = ReturnType<typeof vi.fn>;
+type ToastMock = { success: ToastSpy; error: ToastSpy; info: ToastSpy };
+
+const { toast } = vi.hoisted(() => {
+  const scope = globalThis as typeof globalThis & { __gentechToastMock?: ToastMock };
+  scope.__gentechToastMock ??= { success: vi.fn(), error: vi.fn(), info: vi.fn() };
+  return { toast: scope.__gentechToastMock };
+});
 
 vi.mock("sonner", () => ({ toast }));
 
@@ -69,6 +74,8 @@ describe("optional 3D model uploader", () => {
       format: "GLB",
       sizeBytes: 3,
       assets: [],
+      sourceType: "UPLOADED",
+      processingStatus: "READY",
     });
   });
 

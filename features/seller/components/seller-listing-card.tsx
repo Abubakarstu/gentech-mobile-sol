@@ -216,7 +216,11 @@ export function SellerListingCard({ listing }: { listing: SellerListingRow }) {
 
       {modelManagerOpen ? (
         <div className="mt-3 space-y-3 border-t pt-3" data-listing-model-manager>
-          <ModelUploader value={draftModel} onChange={setDraftModel} />
+          <ModelUploader
+            value={draftModel}
+            onChange={setDraftModel}
+            sourceImages={listing.sourceImages ?? []}
+          />
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"

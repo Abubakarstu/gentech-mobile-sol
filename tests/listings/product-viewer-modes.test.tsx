@@ -94,6 +94,16 @@ describe("product viewer modes", () => {
     expect(required("[data-model-viewer-stub]").dataset.title).toBe("Test phone");
   });
 
+  it("labels a generated model as an AI approximation", async () => {
+    renderViewer(3, { ...model, sourceType: "GENERATED" });
+    fireEvent.click(screen.getByRole("button", { name: "mode3d" }));
+
+    await waitFor(() => expect(document.querySelector("[data-product-viewer-3d]")).not.toBeNull());
+    expect(screen.getByText("modelGeneratedLabel")).toBeTruthy();
+    expect(document.querySelector("[data-product-viewer-generated]")).not.toBeNull();
+    expect(screen.getByText("modelGeneratedNotice")).toBeTruthy();
+  });
+
   it("offers photo, rotation and 3D modes together when all are available", () => {
     renderViewer(36, model);
     expect(required("[data-product-viewer-modes]").dataset.productViewerModes).toBe(

@@ -9,7 +9,7 @@ import { Box3, type Material, type Mesh, type Object3D, type Texture, Vector3 } 
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 import { cn } from "@/lib/utils";
-import { resolveModelAssetUrl } from "@/lib/model-assets";
+import { createModelUrlResolver } from "@/lib/model-assets";
 import type { ListingModelAssetData, ListingModelData } from "@/types/marketplace";
 
 function disposeObject(root: Object3D) {
@@ -34,8 +34,8 @@ function disposeObject(root: Object3D) {
 
 function Model({ model }: { model: ListingModelData }) {
   const gltf = useLoader(GLTFLoader, model.url, (loader) => {
-    loader.manager.setURLModifier((requested: string) =>
-      resolveModelAssetUrl(requested, model.assets as ListingModelAssetData[], model.url),
+    loader.manager.setURLModifier(
+      createModelUrlResolver(model.url, model.assets as ListingModelAssetData[]),
     );
   });
 

@@ -129,13 +129,28 @@ export interface ListingModelAssetData {
   bytes: number;
 }
 
-/** Optional, genuine 3D model supplied by the seller. Never synthesized from photos. */
+export type ListingModelSourceType = "UPLOADED" | "GENERATED";
+export type ListingModelProcessingStatus = "GENERATING" | "READY" | "FAILED";
+
+/** Optional 3D model. Provenance is explicit: seller-supplied or browser-generated. */
 export interface ListingModelData {
   url: string;
   publicId: string;
   format: "GLB" | "GLTF";
   sizeBytes: number;
   assets: ListingModelAssetData[];
+  sourceType?: ListingModelSourceType;
+  processingStatus?: ListingModelProcessingStatus;
+  sourceImageUrl?: string;
+  sourceImagePublicId?: string;
+  generator?: string;
+  generatorVersion?: string;
+  generationReceipt?: {
+    runId?: string;
+    vertices?: number;
+    faces?: number;
+    durationMs?: number;
+  };
 }
 
 /** A formatted attribute row for the specs table. */

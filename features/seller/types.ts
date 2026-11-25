@@ -1,5 +1,6 @@
 import type { ListingCondition, ListingStatus } from "@/lib/constants";
 import type { ListingModelData } from "@/types/marketplace";
+import type { UploadedImage } from "@/features/listings/schemas/create-listing";
 
 /** Aggregate engagement metrics for a seller's whole inventory. */
 export interface SellerStats {
@@ -27,7 +28,9 @@ export interface SellerListingRow {
   imageUrl?: string;
   /** Up to four images for the management thumbnail carousel. */
   imageUrls?: string[];
-  /** Optional genuine 3D model supplied by the seller. */
+  /** The same images with provenance metadata, used as 3D generation sources. */
+  sourceImages?: UploadedImage[];
+  /** Optional seller-supplied or browser-generated 3D model. */
   model3d?: ListingModelData | null;
   /** ISO timestamp. */
   createdAt: string;

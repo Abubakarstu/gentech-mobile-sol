@@ -87,6 +87,39 @@ export function assetBaseName(uri: string): string {
 }
 
 /**
+ * Returns a loader URL modifier that preserves the main model URL while mapping
+ * .gltf references to validated Cloudinary assets. Without the root check the
+ * modifier would also blank the GLB/GLTF URL itself.
+ */
+export function createModelUrlResolver(
+  modelUrl: string,
+  assets: ReadonlyArray<{ uri: string; url: string }>,
+): (requested: string) => string {
+  const base =
+    typeof window === "undefined"
+      ? "http://localhost/"
+      : window.location.href;
+  let modelAbsoluteUrl: string;
+  try {
+    modelAbsoluteUrl = new URL(modelUrl, base).href;
+  } catch {
+    modelAbsoluteUrl = modelUrl;
+  }
+
+  return (requested: string) => {
+    if (requested === modelUrl || requested === modelAbsoluteUrl) return requested;
+    let absolute: string | null = null;
+    try {
+      absolute = new URL(requested, modelAbsoluteUrl).href;
+    } catch {
+      return "";
+    }
+    if (absolute === modelAbsoluteUrl) return requested;
+    return resolveModelAssetUrl(requested, assets, modelUrl);
+  };
+}
+
+/**
  * Maps a .gltf reference to the Cloudinary URL of its uploaded asset. Only
  * previously validated asset URLs can be returned, so a malicious .gltf cannot
  * make the browser fetch an arbitrary external origin.

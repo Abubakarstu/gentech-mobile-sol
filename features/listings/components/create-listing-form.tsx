@@ -115,9 +115,9 @@ export function CreateListingForm({
         <FieldError message={errors.images?.message} />
       </section>
 
-      {/* Optional genuine 3D model — never required and never synthesized from photos. */}
+      {/* Optional 3D model — genuine upload or labelled browser-generated approximation. */}
       <section className="space-y-2">
-        <ModelUploader value={model3d} onChange={setModel3d} />
+        <ModelUploader value={model3d} onChange={setModel3d} sourceImages={images} />
         {errors.model3d ? (
           <FieldError
             message={

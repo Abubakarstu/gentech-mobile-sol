@@ -285,6 +285,8 @@
     "previousPhoto": "پچھلی تصویر",
     "nextPhoto": "اگلی تصویر",
     "model3dLabel": "تھری ڈی ماڈل",
+    "modelGeneratedLabel": "AI سے تیار کردہ تھری ڈی ماڈل",
+    "modelGeneratedNotice": "بیچنے والے کی تصویر سے SF3D کے ذریعے تیار کیا گیا۔ صرف تخمینہ — ماپا ہوا تھری ڈی اسکین نہیں۔",
     "modelLoading": "تھری ڈی ماڈل لوڈ ہو رہا ہے",
     "modelUnavailable": "یہ تھری ڈی ماڈل دکھایا نہیں جا سکا۔",
     "modelPause": "خودکار گردش روکیں",

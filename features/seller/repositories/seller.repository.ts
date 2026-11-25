@@ -24,11 +24,24 @@ const rowSelect = {
   soldAt: true,
   images: {
     take: MOBILE_CAROUSEL_IMAGE_LIMIT,
-    select: { url: true },
+    select: { url: true, publicId: true, width: true, height: true },
     orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
   },
   model3d: {
-    select: { url: true, publicId: true, format: true, sizeBytes: true, assets: true },
+    select: {
+      url: true,
+      publicId: true,
+      format: true,
+      sizeBytes: true,
+      assets: true,
+      sourceType: true,
+      processingStatus: true,
+      sourceImageUrl: true,
+      sourceImagePublicId: true,
+      generator: true,
+      generatorVersion: true,
+      generationReceipt: true,
+    },
   },
   _count: { select: { favorites: true } },
 } satisfies Prisma.ListingSelect;
@@ -58,12 +71,34 @@ function toModelData(model: SellerListingRecord["model3d"]): ListingModelData | 
         ];
       })
     : [];
+  const receipt =
+    typeof model.generationReceipt === "object" && model.generationReceipt !== null
+      ? (model.generationReceipt as Record<string, unknown>)
+      : undefined;
+
   return {
     url: model.url,
     publicId: model.publicId,
     format: model.format === "GLTF" ? "GLTF" : "GLB",
     sizeBytes: model.sizeBytes,
     assets,
+    sourceType: model.sourceType === "GENERATED" ? "GENERATED" : "UPLOADED",
+    processingStatus:
+      model.processingStatus === "GENERATING" || model.processingStatus === "FAILED"
+        ? model.processingStatus
+        : "READY",
+    sourceImageUrl: model.sourceImageUrl ?? undefined,
+    sourceImagePublicId: model.sourceImagePublicId ?? undefined,
+    generator: model.generator ?? undefined,
+    generatorVersion: model.generatorVersion ?? undefined,
+    generationReceipt: receipt
+      ? {
+          runId: typeof receipt.runId === "string" ? receipt.runId : undefined,
+          vertices: typeof receipt.vertices === "number" ? receipt.vertices : undefined,
+          faces: typeof receipt.faces === "number" ? receipt.faces : undefined,
+          durationMs: typeof receipt.durationMs === "number" ? receipt.durationMs : undefined,
+        }
+      : undefined,
   };
 }
 
@@ -82,6 +117,12 @@ function toRow(row: SellerListingRecord): SellerListingRow {
     isFeatured: row.isFeatured,
     imageUrl: row.images[0]?.url,
     imageUrls: row.images.map((image) => image.url),
+    sourceImages: row.images.map((image) => ({
+      url: image.url,
+      publicId: image.publicId ?? undefined,
+      width: image.width ?? undefined,
+      height: image.height ?? undefined,
+    })),
     model3d: toModelData(row.model3d),
     createdAt: row.createdAt.toISOString(),
     soldAt: row.soldAt ? row.soldAt.toISOString() : undefined,
@@ -210,6 +251,13 @@ export async function replaceOwnedListingModel(
           format: model.format,
           sizeBytes: model.sizeBytes,
           assets: model.assets as unknown as Prisma.InputJsonValue,
+          sourceType: model.sourceType ?? "UPLOADED",
+          processingStatus: model.processingStatus ?? "READY",
+          sourceImageUrl: model.sourceImageUrl,
+          sourceImagePublicId: model.sourceImagePublicId,
+          generator: model.generator,
+          generatorVersion: model.generatorVersion,
+          generationReceipt: model.generationReceipt as unknown as Prisma.InputJsonValue,
         },
         update: {
           url: model.url,
@@ -217,6 +265,13 @@ export async function replaceOwnedListingModel(
           format: model.format,
           sizeBytes: model.sizeBytes,
           assets: model.assets as unknown as Prisma.InputJsonValue,
+          sourceType: model.sourceType ?? "UPLOADED",
+          processingStatus: model.processingStatus ?? "READY",
+          sourceImageUrl: model.sourceImageUrl,
+          sourceImagePublicId: model.sourceImagePublicId,
+          generator: model.generator,
+          generatorVersion: model.generatorVersion,
+          generationReceipt: model.generationReceipt as unknown as Prisma.InputJsonValue,
         },
       });
     } else {

@@ -449,7 +449,20 @@ const detailSelect = {
     select: { url: true, width: true, height: true },
   },
   model3d: {
-    select: { url: true, publicId: true, format: true, sizeBytes: true, assets: true },
+    select: {
+      url: true,
+      publicId: true,
+      format: true,
+      sizeBytes: true,
+      assets: true,
+      sourceType: true,
+      processingStatus: true,
+      sourceImageUrl: true,
+      sourceImagePublicId: true,
+      generator: true,
+      generatorVersion: true,
+      generationReceipt: true,
+    },
   },
   seller: {
     select: {
@@ -489,12 +502,34 @@ function toModelData(model: ListingDetailRow["model3d"]): ListingModelData | nul
         ];
       })
     : [];
+  const receipt =
+    typeof model.generationReceipt === "object" && model.generationReceipt !== null
+      ? (model.generationReceipt as Record<string, unknown>)
+      : undefined;
+
   return {
     url: model.url,
     publicId: model.publicId,
     format: model.format === "GLTF" ? "GLTF" : "GLB",
     sizeBytes: model.sizeBytes,
     assets,
+    sourceType: model.sourceType === "GENERATED" ? "GENERATED" : "UPLOADED",
+    processingStatus:
+      model.processingStatus === "GENERATING" || model.processingStatus === "FAILED"
+        ? model.processingStatus
+        : "READY",
+    sourceImageUrl: model.sourceImageUrl ?? undefined,
+    sourceImagePublicId: model.sourceImagePublicId ?? undefined,
+    generator: model.generator ?? undefined,
+    generatorVersion: model.generatorVersion ?? undefined,
+    generationReceipt: receipt
+      ? {
+          runId: typeof receipt.runId === "string" ? receipt.runId : undefined,
+          vertices: typeof receipt.vertices === "number" ? receipt.vertices : undefined,
+          faces: typeof receipt.faces === "number" ? receipt.faces : undefined,
+          durationMs: typeof receipt.durationMs === "number" ? receipt.durationMs : undefined,
+        }
+      : undefined,
   };
 }
 
@@ -783,6 +818,14 @@ export async function createListing(
                 format: input.model3d.format,
                 sizeBytes: input.model3d.sizeBytes,
                 assets: input.model3d.assets,
+                sourceType: input.model3d.sourceType ?? "UPLOADED",
+                processingStatus: input.model3d.processingStatus ?? "READY",
+                sourceImageUrl: input.model3d.sourceImageUrl,
+                sourceImagePublicId: input.model3d.sourceImagePublicId,
+                generator: input.model3d.generator,
+                generatorVersion: input.model3d.generatorVersion,
+                generationReceipt:
+                  input.model3d.generationReceipt as unknown as Prisma.InputJsonValue,
               },
             },
           }

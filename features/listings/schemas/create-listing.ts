@@ -40,6 +40,13 @@ export const uploadedModelAssetSchema = z.object({
   bytes: z.number().int().positive().max(MAX_ASSET_BYTES),
 });
 
+export const modelGenerationReceiptSchema = z.object({
+  runId: z.string().max(128).optional(),
+  vertices: z.number().int().nonnegative().optional(),
+  faces: z.number().int().nonnegative().optional(),
+  durationMs: z.number().nonnegative().optional(),
+});
+
 export const uploadedModelSchema = z
   .object({
     url: z
@@ -50,11 +57,38 @@ export const uploadedModelSchema = z
     format: z.enum(["GLB", "GLTF"]),
     sizeBytes: z.number().int().positive().max(MAX_MODEL_BYTES),
     assets: z.array(uploadedModelAssetSchema).max(MAX_MODEL_ASSETS),
+    sourceType: z.enum(["UPLOADED", "GENERATED"]).optional(),
+    processingStatus: z.enum(["GENERATING", "READY", "FAILED"]).optional(),
+    sourceImageUrl: z
+      .string()
+      .max(MAX_IMAGE_URL_LENGTH)
+      .refine(isValidImageUrl, "Generated models must cite a valid source image URL.")
+      .optional(),
+    sourceImagePublicId: z.string().max(255).optional(),
+    generator: z.string().max(64).optional(),
+    generatorVersion: z.string().max(64).optional(),
+    generationReceipt: modelGenerationReceiptSchema.optional(),
   })
   .refine((model) => {
     const total = model.sizeBytes + model.assets.reduce((sum, asset) => sum + asset.bytes, 0);
     return total <= MAX_MODEL_TOTAL_BYTES;
-  }, "The 3D model and its assets are too large.");
+  }, "The 3D model and its assets are too large.")
+  .refine((model) => !model.processingStatus || model.processingStatus === "READY", {
+    message: "Only completed 3D models can be saved.",
+    path: ["processingStatus"],
+  })
+  .refine(
+    (model) =>
+      model.sourceType !== "GENERATED" ||
+      (Boolean(model.sourceImageUrl) &&
+        Boolean(model.generator) &&
+        model.format === "GLB" &&
+        model.assets.length === 0),
+    {
+      message: "Generated models require a source photo and a standalone GLB.",
+      path: ["sourceType"],
+    },
+  );
 
 export type UploadedModelAsset = z.infer<typeof uploadedModelAssetSchema>;
 export type UploadedModel = z.infer<typeof uploadedModelSchema>;
