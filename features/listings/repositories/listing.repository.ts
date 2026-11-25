@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { categorySlugsForFilter } from "@/lib/catalog/category-filters";
+import { MOBILE_CAROUSEL_IMAGE_LIMIT } from "@/lib/mobile-carousel";
 import { Prisma } from "@/lib/generated/prisma/client";
 import type { Region } from "@/lib/generated/prisma/enums";
 import { uniqueSlug } from "@/utils/slug";
@@ -34,10 +35,9 @@ const cardSelect = {
   brand: { select: { name: true, slug: true } },
   category: { select: { slug: true } },
   images: {
-    where: { isPrimary: true },
-    take: 1,
+    take: MOBILE_CAROUSEL_IMAGE_LIMIT,
     select: { url: true },
-    orderBy: { position: "asc" },
+    orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
   },
   seller: { select: { emailVerified: true } },
   inspections: {
@@ -212,6 +212,7 @@ function toCardData(row: ListingCardRow): ListingCardData {
     views: row.views,
     createdAt: row.createdAt.toISOString(),
     imageUrl: row.images[0]?.url,
+    imageUrls: row.images.map((image) => image.url),
     // Phone-specific attributes
     storage: typeof attrs?.storage === "string" ? attrs.storage : undefined,
     ram: typeof attrs?.ram === "string" ? attrs.ram : undefined,
@@ -244,15 +245,31 @@ interface ListingCardRawRow {
   brandName: string | null;
   brandSlug: string | null;
   categorySlug: string | null;
-  imageUrl: string | null;
+  imageUrls: unknown;
   sellerEmailVerified: boolean;
   isInspected: boolean;
   dealerId: string | null;
   total: bigint | number;
 }
 
+function toSearchCardImageUrls(value: unknown): string[] {
+  let raw = value;
+  if (typeof raw === "string") {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      return [];
+    }
+  }
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((url): url is string => typeof url === "string" && url.length > 0)
+    .slice(0, MOBILE_CAROUSEL_IMAGE_LIMIT);
+}
+
 function toSearchCardData(row: ListingCardRawRow): ListingCardData {
   const attrs = row.attributes;
+  const imageUrls = toSearchCardImageUrls(row.imageUrls);
   return {
     id: row.id,
     title: row.title,
@@ -268,7 +285,8 @@ function toSearchCardData(row: ListingCardRawRow): ListingCardData {
     negotiable: row.negotiable,
     views: row.views,
     createdAt: row.createdAt.toISOString(),
-    imageUrl: row.imageUrl ?? undefined,
+    imageUrl: imageUrls[0],
+    imageUrls,
     storage: typeof attrs?.storage === "string" ? attrs.storage : undefined,
     ram: typeof attrs?.ram === "string" ? attrs.ram : undefined,
     color: typeof attrs?.color === "string" ? attrs.color : undefined,
@@ -312,12 +330,18 @@ async function searchListingRows(
       b."slug" AS "brandSlug",
       c."slug" AS "categorySlug",
       (
-        SELECT i."url"
-        FROM "listing_image" i
-        WHERE i."listingId" = l."id" AND i."isPrimary" = true
-        ORDER BY i."position" ASC
-        LIMIT 1
-      ) AS "imageUrl",
+        SELECT COALESCE(
+          jsonb_agg(i."url" ORDER BY i."isPrimary" DESC, i."position" ASC),
+          '[]'::jsonb
+        )
+        FROM (
+          SELECT "url", "isPrimary", "position"
+          FROM "listing_image"
+          WHERE "listingId" = l."id"
+          ORDER BY "isPrimary" DESC, "position" ASC
+          LIMIT ${MOBILE_CAROUSEL_IMAGE_LIMIT}
+        ) i
+      ) AS "imageUrls",
       s."emailVerified" AS "sellerEmailVerified",
       EXISTS (
         SELECT 1

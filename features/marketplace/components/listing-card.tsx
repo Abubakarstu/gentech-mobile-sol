@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { Check, GitCompareArrows, MapPin, Smartphone, ShieldCheck, CheckCircle2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { MOBILE_CAROUSEL_IMAGE_LIMIT } from "@/lib/mobile-carousel";
+import { useMobileCarousel } from "@/hooks/use-mobile-carousel";
 import { LocalizedLink } from "@/components/localized-link";
 import { useLocalizedRouteInfo } from "@/lib/localized-routing";
 import { LISTING_CONDITION_LABELS } from "@/lib/constants";
@@ -32,6 +34,13 @@ export function ListingCard({
   const { enabled, selected, selectionMode, max, toggle, selectOne } = useCompareSelection();
   const isSelected = selected.includes(listing.id);
   const isDisabled = !isSelected && selected.length >= max;
+
+  const carouselImages = listing.imageUrls?.length
+    ? listing.imageUrls.slice(0, MOBILE_CAROUSEL_IMAGE_LIMIT)
+    : listing.imageUrl
+      ? [listing.imageUrl]
+      : [];
+  const { active, scrollerRef, onScroll, goTo } = useMobileCarousel(carouselImages.length);
 
   const longPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressOrigin = React.useRef<{ x: number; y: number } | null>(null);
@@ -86,13 +95,26 @@ export function ListingCard({
   const body = (
     <>
       <div className="bg-muted relative aspect-4/3 w-full overflow-hidden">
-        {listing.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={listing.imageUrl}
-            alt={listing.title}
-            className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
-          />
+        {carouselImages.length > 0 ? (
+          <div
+            ref={scrollerRef}
+            onScroll={onScroll}
+            data-mobile-card-carousel={carouselImages.length}
+            className="scroll-smooth flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:snap-none md:overflow-hidden"
+          >
+            {carouselImages.map((url, index) => (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={`${url}-${index}`}
+                src={url}
+                alt={listing.title}
+                className={cn(
+                  "h-full w-full shrink-0 snap-center object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105",
+                  index > 0 && "md:hidden",
+                )}
+              />
+            ))}
+          </div>
         ) : (
           <div className="text-foreground/30 flex h-full flex-col items-center justify-center gap-2">
             <Smartphone className="size-10" />
@@ -101,6 +123,32 @@ export function ListingCard({
             ) : null}
           </div>
         )}
+
+        {carouselImages.length > 1 ? (
+          <>
+            <div className="absolute bottom-2 start-2 z-10 flex items-center gap-1.5 md:hidden">
+              {carouselImages.map((_, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => goTo(index)}
+                  aria-label={`View image ${index + 1}`}
+                  aria-current={index === active ? "true" : undefined}
+                  className={cn(
+                    "h-1.5 rounded-full bg-white/70 shadow transition-all",
+                    index === active ? "w-4 bg-white" : "w-1.5",
+                  )}
+                />
+              ))}
+            </div>
+            <span
+              data-mobile-card-counter
+              className="absolute bottom-2 end-2 z-10 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white md:hidden"
+            >
+              {active + 1}/{carouselImages.length}
+            </span>
+          </>
+        ) : null}
 
         <div
           className={cn(

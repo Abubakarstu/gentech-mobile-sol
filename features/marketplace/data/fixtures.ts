@@ -576,14 +576,32 @@ function withCategorySpecs(listing: ListingCardData): ListingCardData {
   return enriched;
 }
 
-const PAKISTAN_LISTINGS: ListingCardData[] = PAKISTAN_LISTING_BASE.map((listing) => ({
-  ...withCategorySpecs(listing),
+const DEMO_PHOTO_IDS = [
+  "1511707171634-5f897ff02aa9",
+  "1592750475338-74b7b21085ab",
+  "1603891128711-11b4b03bb138",
+  "1610945265064-0e34e5519bbf",
+  "1598327105666-5b89351aff97",
+  "1580910051074-3eb694886505",
+];
+
+/** Gives preview listings the same three-photo sliders as the seeded catalog. */
+function withDemoImages(listing: ListingCardData, index: number): ListingCardData {
+  const imageUrls = Array.from({ length: 3 }, (_, offset) => {
+    const photoId = DEMO_PHOTO_IDS[(index + offset) % DEMO_PHOTO_IDS.length]!;
+    return `https://images.unsplash.com/photo-${photoId}?auto=format&fit=crop&w=1200&q=75`;
+  });
+  return { ...listing, imageUrl: imageUrls[0], imageUrls };
+}
+
+const PAKISTAN_LISTINGS: ListingCardData[] = PAKISTAN_LISTING_BASE.map((listing, index) => ({
+  ...withDemoImages(withCategorySpecs(listing), index),
   currency: "PKR",
   region: Region.PAKISTAN,
 }));
 
-const BAHRAIN_LISTINGS: ListingCardData[] = BAHRAIN_LISTING_BASE.map((listing) => ({
-  ...withCategorySpecs(listing),
+const BAHRAIN_LISTINGS: ListingCardData[] = BAHRAIN_LISTING_BASE.map((listing, index) => ({
+  ...withDemoImages(withCategorySpecs(listing), index),
   currency: "BHD",
   region: Region.BAHRAIN,
 }));

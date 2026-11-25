@@ -35,8 +35,10 @@ export interface ListingCardData {
   views?: number;
   /** ISO timestamp. */
   createdAt: string;
-  /** Optional image URL; when absent the card renders a branded gradient tile. */
+  /** Primary image URL; when absent the card renders a branded gradient tile. */
   imageUrl?: string;
+  /** Up to four listing images in display order; powers the mobile card slider. */
+  imageUrls?: string[];
   /** Phone-specific attributes for marketplace cards */
   storage?: string;
   ram?: string;

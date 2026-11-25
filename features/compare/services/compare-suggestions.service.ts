@@ -44,6 +44,7 @@ export function toCompareCurrent(
     brandSlug: detail.brandSlug,
     categorySlug: detail.categorySlug,
     imageUrl: detail.images[0]?.url,
+    imageUrls: detail.images.map((image) => image.url),
     createdAt: detail.createdAt,
     model: attributeValue(attrs, "Model"),
     modelNumber: attributeValue(attrs, "Model Number"),

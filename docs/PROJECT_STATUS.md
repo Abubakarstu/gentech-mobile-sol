@@ -1,10 +1,10 @@
 # GenTech Marketplace — Project Status Tracker
 
-Last Updated: 2026-11-24
+Last Updated: 2026-11-25
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (366/366 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Baseline Technical Quality:** Verified (377/377 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
 
@@ -24,6 +24,13 @@ Last Updated: 2026-11-24
 - **Edit profile redesign:** Below `md`, the account form is now an app-style screen with grouped cards (personal information, about you, account actions), icon-led fields, tel/address autocomplete hints, a live bio counter, a safe-area sticky save bar above the bottom tabs, and a dedicated destructive sign-out row. EN/AR/UR labels were added to `accountPage`; the desktop card keeps its original composition.
 - **Mobile splash:** The root layout now mounts `MobileSplashScreen`, a brief branded launch overlay with pulsing logo, progress bar and localized loading label. It is strictly `md:hidden`, unmounts after 900ms (150ms with reduced motion), and has a CSS-only fade fallback so a no-JS mobile page is never left blocked.
 - **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 366/366 (new `tests/marketplace/mobile-workspace.test.ts`, `tests/marketplace/mobile-workspace-shell.test.tsx`, `tests/marketplace/mobile-account-form.test.tsx`, `tests/marketplace/mobile-splash-screen.test.tsx` and extended `tests/marketplace/mobile-app-navigation.test.ts`); `pnpm lint` 0 errors / 46 pre-existing warnings; `pnpm build` exit 0. Production smoke checks returned 200 for `/pk/en`, `/pk/en/marketplace?category=mobile-phones`, `/bh/ar`, `/pk/en/sign-in`, `/pk/en/dashboard` and `/admin`; the public shell still renders the mobile tab bar and hidden desktop footer, and the launch overlay is present with `md:hidden` on both `/pk/en` and `/admin`. No migrations or database changes were made.
+
+### Mobile image sliders (2026-11-25)
+
+- **Change:** Listing cards and listing detail now use Alibaba-style swipeable photo strips below `md`; desktop keeps its original single card image and detail thumbnail gallery. Each strip uses native horizontal scroll with CSS snap points, dot navigation and a slide counter, so touch swiping needs no gesture handler.
+- **Data:** `ListingCardData` gains `imageUrls`. The Prisma card projection and the ranked raw-SQL search both return up to four images ordered by primary/position; demo fixtures and demo details now carry three stable Unsplash links so the no-database preview also shows sliders. The mobile carousel hook mirrors scroll offset into a clamped slide index via pure geometry helpers (`lib/mobile-carousel.ts`).
+- **Interaction:** Card long-press compare still works — movement over 10px cancels the hold during a swipe, and dot buttons are excluded from long-press. Mobile controls are `md:hidden` and non-primary card photos are hidden at `md+`, leaving desktop rendering unchanged.
+- **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 377/377 (new `tests/marketplace/mobile-carousel-helpers.test.ts` and `tests/marketplace/mobile-image-carousel.test.tsx`); `pnpm lint` 0 errors / 46 pre-existing warnings; `pnpm build` exit 0. Production HTML at 390px contains the card/detail sliders, dots and counters. No migrations or database changes were made.
 
 ### Category-adaptive brand filters (2026-11-24)
 

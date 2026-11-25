@@ -49,7 +49,7 @@ function toDemoDetail(card: ListingCardData, region?: Region): ListingDetail {
     isFeatured: Boolean(card.isFeatured),
     views: card.views ?? 0,
     createdAt: card.createdAt,
-    images: [],
+    images: (card.imageUrls ?? (card.imageUrl ? [card.imageUrl] : [])).map((url) => ({ url })),
     attributes,
     seller: {
       name: "GenTech Seller",
