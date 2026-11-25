@@ -2,7 +2,7 @@
 
 Last updated: 2026-11-25
 
-Sources: local Git state, `docs/PROJECT_STATUS.md`, `docs/PROJECT_ROADMAP.md`, and GitHub issue #8.
+Sources: local Git state, `docs/PROJECT_STATUS.md`, `docs/PROJECT_ROADMAP.md`, and GitHub issue #13.
 
 ## Repository state
 
@@ -12,7 +12,7 @@ Sources: local Git state, `docs/PROJECT_STATUS.md`, `docs/PROJECT_ROADMAP.md`, a
 - [x] `main` fast-forwarded to `ca651cd` (`ca651cda5a472ac21c3c1095788403f15bbea7e9`).
 - [x] Working tree clean after the push.
 - [x] GitHub Issues enabled in `Abubakarstu/gentech`.
-- [x] GitHub issue #8 created: [Clear legal gate before enabling browser-side SF3D generation](https://github.com/Abubakarstu/gentech/issues/8).
+- [x] GitHub issue #13 created: [Clear legal gate before enabling browser-side SF3D generation](https://github.com/usamawta-tech/gentech/issues/13).
 
 ## Completed local work
 
@@ -42,14 +42,14 @@ Sources: local Git state, `docs/PROJECT_STATUS.md`, `docs/PROJECT_ROADMAP.md`, a
 - [x] **M2-F01–M2-F03** — dealer registration, verification queue, branches, and inventory verified.
 - [x] **M3-F01** — promotion package management verified.
 - [x] **M3-F02** — PayFast inspection payment code verified; live/promotion payments remain paused pending merchant verification.
-- [ ] **M3-F03** — automated transaction ledger and invoice generation is not implemented; tracked in issue #31.
+- [ ] **M3-F03** — automated transaction ledger and invoice generation is not implemented; tracked in issue #36.
 - [x] **M4-F01–M4-F03** — filters, messaging, favorites, and saved-search alerts verified.
 - [x] **M5-F01, M5-F03, M5-F04** — valuation, spec comparison, and inspection reports verified.
 - [ ] **M5-F02** — PTA/CPID simulator and provider abstraction verified; real PTA DIRBS/CPID adapter pending provider credentials.
 
 ## Active blockers and next actions
 
-- [ ] Close GitHub issue #8: obtain legal clearance for the SF3D runtime, inference kit, and Stability AI weights; record the outcome in ADR-019 and `docs/SF3D_WEBGPU.md`.
+- [ ] Close GitHub issue #13: obtain legal clearance for the SF3D runtime, inference kit, and Stability AI weights; record the outcome in ADR-019 and `docs/SF3D_WEBGPU.md`.
 - [ ] If cleared, configure `NEXT_PUBLIC_SF3D_ENABLED`, `NEXT_PUBLIC_SF3D_WEIGHTS_URL`, `NEXT_PUBLIC_SF3D_WEIGHTS_BYTES`, and `NEXT_PUBLIC_SF3D_WEIGHTS_ETAG` in deployment.
 - [ ] Run `npx prisma migrate deploy` in each target environment before enabling generation.
 - [ ] Verify the seller Generate 3D flow in a WebGPU-capable browser with the pinned weights.
@@ -68,47 +68,47 @@ Sources: local Git state, `docs/PROJECT_STATUS.md`, `docs/PROJECT_ROADMAP.md`, a
 
 Closed archive issues — already fixed and verified:
 
-- [#17](https://github.com/Abubakarstu/gentech/issues/17) — Compare preview listing IDs dropped from selection.
-- [#18](https://github.com/Abubakarstu/gentech/issues/18) — Compare checkbox hit target was intercepted.
-- [#19](https://github.com/Abubakarstu/gentech/issues/19) — Compare selected IDs lost when catalog lookup failed.
-- [#20](https://github.com/Abubakarstu/gentech/issues/20) — Removing one of two compare listings cleared the remaining product.
-- [#21](https://github.com/Abubakarstu/gentech/issues/21) — Compare metadata had placeholder and duplicated suffix.
-- [#22](https://github.com/Abubakarstu/gentech/issues/22) — Compare spec table had blank cells.
-- [#23](https://github.com/Abubakarstu/gentech/issues/23) — Compare browser bundle imported Prisma currency helper.
+- [#22](https://github.com/usamawta-tech/gentech/issues/22) — Compare preview listing IDs dropped from selection.
+- [#23](https://github.com/usamawta-tech/gentech/issues/23) — Compare checkbox hit target was intercepted.
+- [#24](https://github.com/usamawta-tech/gentech/issues/24) — Compare selected IDs lost when catalog lookup failed.
+- [#25](https://github.com/usamawta-tech/gentech/issues/25) — Removing one of two compare listings cleared the remaining product.
+- [#26](https://github.com/usamawta-tech/gentech/issues/26) — Compare metadata had placeholder and duplicated suffix.
+- [#27](https://github.com/usamawta-tech/gentech/issues/27) — Compare spec table had blank cells.
+- [#28](https://github.com/usamawta-tech/gentech/issues/28) — Compare browser bundle imported Prisma currency helper.
 
 Open tracking issues — still actionable:
 
-- [#24](https://github.com/Abubakarstu/gentech/issues/24) — Admin subpage navigation can stay on loading skeleton.
-- [#25](https://github.com/Abubakarstu/gentech/issues/25) — Image upload signing returned 503 without Cloudinary credentials.
-- [#26](https://github.com/Abubakarstu/gentech/issues/26) — Bahrain inspection CTA shows PKR price.
-- [#27](https://github.com/Abubakarstu/gentech/issues/27) — City and area labels are not localized.
-- [#28](https://github.com/Abubakarstu/gentech/issues/28) — Orphaned countries detect helper remains as legacy code.
-- [#29](https://github.com/Abubakarstu/gentech/issues/29) — Live Vercel smoke check is manual.
-- [#30](https://github.com/Abubakarstu/gentech/issues/30) — Local DB unavailable triggers demo-data fallback.
+- [#29](https://github.com/usamawta-tech/gentech/issues/29) — Admin subpage navigation can stay on loading skeleton.
+- [#30](https://github.com/usamawta-tech/gentech/issues/30) — Image upload signing returned 503 without Cloudinary credentials.
+- [#31](https://github.com/usamawta-tech/gentech/issues/31) — Bahrain inspection CTA shows PKR price.
+- [#32](https://github.com/usamawta-tech/gentech/issues/32) — City and area labels are not localized.
+- [#33](https://github.com/usamawta-tech/gentech/issues/33) — Orphaned countries detect helper remains as legacy code.
+- [#34](https://github.com/usamawta-tech/gentech/issues/34) — Live Vercel smoke check is manual.
+- [#35](https://github.com/usamawta-tech/gentech/issues/35) — Local DB unavailable triggers demo-data fallback.
 
 ## Audit-created delivery backlog
 
 New issues created from the full audit. Every issue has labels so a fellow developer can filter by work type:
 
-- [#31](https://github.com/Abubakarstu/gentech/issues/31) — `enhancement, blocked, help wanted` — M3-F03 transaction ledger and invoice generation.
-- [#32](https://github.com/Abubakarstu/gentech/issues/32) — `bug, devops, test` — health endpoint uses placeholder DB/Cloudinary checks.
-- [#33](https://github.com/Abubakarstu/gentech/issues/33) — `enhancement, integration, blocked` — real PTA DIRBS/CPID adapter for M5-F02.
-- [#34](https://github.com/Abubakarstu/gentech/issues/34) — `security, devops, blocked` — live PayFast verification and enablement.
-- [#35](https://github.com/Abubakarstu/gentech/issues/35) — `enhancement, integration, blocked` — BenefitPay for Bahrain checkout.
-- [#36](https://github.com/Abubakarstu/gentech/issues/36) — `enhancement, integration, blocked` — JazzCash and Easypaisa for Pakistan checkout.
-- [#37](https://github.com/Abubakarstu/gentech/issues/37) — `security, enhancement, blocked` — private dealer document storage and upload flow.
-- [#38](https://github.com/Abubakarstu/gentech/issues/38) — `bug, localization, qa` — recheck `/bh/ar` and localized child routes after deployment.
-- [#39](https://github.com/Abubakarstu/gentech/issues/39) — `refactor, good first issue` — reduce remaining ESLint warnings to zero.
-- [#40](https://github.com/Abubakarstu/gentech/issues/40) — `enhancement, blocked` — investigate SF3D fixed 512px image-size limitation.
-- [#41](https://github.com/Abubakarstu/gentech/issues/41) — `test, good first issue` — regression coverage for the previous-comparison history branch.
+- [#36](https://github.com/usamawta-tech/gentech/issues/36) — `enhancement, blocked, help wanted` — M3-F03 transaction ledger and invoice generation.
+- [#37](https://github.com/usamawta-tech/gentech/issues/37) — `bug, devops, test` — health endpoint uses placeholder DB/Cloudinary checks.
+- [#38](https://github.com/usamawta-tech/gentech/issues/38) — `enhancement, integration, blocked` — real PTA DIRBS/CPID adapter for M5-F02.
+- [#39](https://github.com/usamawta-tech/gentech/issues/39) — `security, devops, blocked` — live PayFast verification and enablement.
+- [#40](https://github.com/usamawta-tech/gentech/issues/40) — `enhancement, integration, blocked` — BenefitPay for Bahrain checkout.
+- [#41](https://github.com/usamawta-tech/gentech/issues/41) — `enhancement, integration, blocked` — JazzCash and Easypaisa for Pakistan checkout.
+- [#42](https://github.com/usamawta-tech/gentech/issues/42) — `security, enhancement, blocked` — private dealer document storage and upload flow.
+- [#43](https://github.com/usamawta-tech/gentech/issues/43) — `bug, localization, qa` — recheck `/bh/ar` and localized child routes after deployment.
+- [#44](https://github.com/usamawta-tech/gentech/issues/44) — `refactor, good first issue` — reduce remaining ESLint warnings to zero.
+- [#45](https://github.com/usamawta-tech/gentech/issues/45) — `enhancement, blocked` — investigate SF3D fixed 512px image-size limitation.
+- [#46](https://github.com/usamawta-tech/gentech/issues/46) — `test, good first issue` — regression coverage for the previous-comparison history branch.
 
 ## Marketplace QA audit — 2026-11-25
 
 Created after installing `autonomous-marketplace-qa-github-issues` into `.agent/skills/` and `.agents/skills/`. Findings are code-confirmed at commit `25f74a9`; browser and runtime reproduction were blocked (browser automation disconnected, no local database or FCM credentials).
 
-- [#42](https://github.com/Abubakarstu/gentech/issues/42) — `bug, security`, P0 — unsigned `POST /api/payments/callback` can mark any payment and order as paid.
-- [#43](https://github.com/Abubakarstu/gentech/issues/43) — `security, bug`, P1 — unauthenticated `GET /api/fcm/register` relays arbitrary push notifications.
-- [#44](https://github.com/Abubakarstu/gentech/issues/44) — `bug`, P2 — `POST /api/fcm/register` reports success but discards the token.
+- [#47](https://github.com/usamawta-tech/gentech/issues/47) — `bug, security`, P0 — unsigned `POST /api/payments/callback` can mark any payment and order as paid.
+- [#48](https://github.com/usamawta-tech/gentech/issues/48) — `security, bug`, P1 — unauthenticated `GET /api/fcm/register` relays arbitrary push notifications.
+- [#49](https://github.com/usamawta-tech/gentech/issues/49) — `bug`, P2 — `POST /api/fcm/register` reports success but discards the token.
 
 Not filed: `POST /api/webhooks` is a documented placeholder that only logs events; the in-memory OTP store needs serverless runtime verification before it can be called a defect.
 
@@ -116,21 +116,21 @@ Not filed: `POST /api/webhooks` is a documented placeholder that only logs event
 
 Installed `autonomous-software-house-orchestrator` in `.agent/skills/` and `.agents/skills/`, registered it in `AGENTS.md`, and applied QA, business R&D, project management, architecture, security, DevOps, board, and investor methods to the existing evidence. Full report: [docs/SOFTWARE_HOUSE_REPORT.md](./SOFTWARE_HOUSE_REPORT.md).
 
-- [x] No duplicate GitHub issue created — findings mapped to #8, #31–#44, or #45–#92; the five previously unfiled recommendations became #93–#97.
-- [x] #42 is the narrower QA finding; #67 covers the full payment-verification boundary. Both stay traceable.
+- [x] No duplicate GitHub issue created — findings mapped to #13, #36–#49, or #50–#97; the five previously unfiled recommendations became #98–#102.
+- [x] #47 is the narrower QA finding; #72 covers the full payment-verification boundary. Both stay traceable.
 - [x] Board and investor reviews remained evidence-only: no minutes, resolutions, investor asks, metrics, or confidential material were published.
 - [x] `MARKETPLACE_RND_REPORT.md` issue references reconciled to real issue numbers, not archived PR numbers.
 
 ## Published backlog index
 
-- #42–#44 — code-confirmed QA findings: payment callback, FCM relay, discarded FCM token.
-- #45–#66 — Access report audit findings created from the repository owner's report inventory: broken references, hard-coded tax/rounding, settlement gaps, localization and delivery gaps.
-- #67–#92 — business R&D backlog: payment integrity, checkout totals, inventory atomicity, order roles, refunds, PKR precision, seller/region rules, delivery address, provider config, settlements, observability, RBAC, audit, privacy, tax identity, localization, shipping, CI tests, and OTP hardening.
-- #93–#97 — task/feature issues from previously unfiled R&D recommendations: seller-verification form/upload wiring, buyer review creation, promotions creation route, Bahrain WhatsApp normalization, and admin launch-gate register.
-- Local issue index for #67–#97 is in [R&D Issues](../R%26D%20Issues/README.md).
+- #47–#49 — code-confirmed QA findings: payment callback, FCM relay, discarded FCM token.
+- #50–#71 — Access report audit findings created from the repository owner's report inventory: broken references, hard-coded tax/rounding, settlement gaps, localization and delivery gaps.
+- #72–#97 — business R&D backlog: payment integrity, checkout totals, inventory atomicity, order roles, refunds, PKR precision, seller/region rules, delivery address, provider config, settlements, observability, RBAC, audit, privacy, tax identity, localization, shipping, CI tests, and OTP hardening.
+- #98–#102 — task/feature issues from previously unfiled R&D recommendations: seller-verification form/upload wiring, buyer review creation, promotions creation route, Bahrain WhatsApp normalization, and admin launch-gate register.
+- Local issue index for #72–#102 is in [R&D Issues](../R%26D%20Issues/README.md).
 
 ## Issue hygiene
 
-- Issue #9 was closed as completed after confirming `main` contains the progress checklist and one-by-one status list.
-- Labels applied to earlier issues: #8 `legal, blocked`; #10–#16 `documentation`; #17–#23 `bug, qa`; #24 `bug, qa`; #25 `bug, devops`; #26 `bug, localization, qa`; #27 `enhancement, localization`; #28 `refactor, good first issue`; #29 `devops, test`; #30 `documentation, devops`.
+- Issue #14 was closed as completed after confirming `main` contains the progress checklist and one-by-one status list.
+- Labels applied to earlier issues: #13 `legal, blocked`; #15–#21 `documentation`; #22–#28 `bug, qa`; #29 `bug, qa`; #30 `bug, devops`; #31 `bug, localization, qa`; #32 `enhancement, localization`; #33 `refactor, good first issue`; #34 `devops, test`; #35 `documentation, devops`.
 - Available repository labels now include `bug`, `documentation`, `enhancement`, `good first issue`, `help wanted`, `security`, `devops`, `test`, `refactor`, `localization`, `integration`, `legal`, `blocked`, `qa`, `task`, and `feature`.

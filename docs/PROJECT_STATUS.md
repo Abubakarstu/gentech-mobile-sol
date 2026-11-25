@@ -16,12 +16,12 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 - [x] Browser-side SF3D generation committed as `ca651cd` and pushed to `main`.
 - [x] New branch `feat/sf3d-webgpu-generation` created, committed, and pushed.
 - [x] Consolidated progress checklist added as `docs/PROGRESS_CHECKLIST.md`.
-- [x] GitHub Issues enabled and issue #8 opened for the SF3D legal gate.
-- [x] QA findings archived as issues #17–#23 (closed/fixed) and #24–#30 (open tracking); see `docs/PROGRESS_CHECKLIST.md`.
-- [x] Full audit created labeled delivery backlog issues #31–#41 (finance ledger, health checks, PTA/PayFast/BenefitPay/JazzCash/Easypaisa, dealer documents, `/bh/ar`, lint warnings, SF3D 512px, compare-history test); issue #9 closed and labels applied to #8–#30.
-- [x] Marketplace QA created issues #42–#44 (payment callback, FCM relay, discarded token); full audit index is in `docs/PROGRESS_CHECKLIST.md`.
-- [x] Access report audit and business R&D published issues #45–#66 and #67–#92; no duplicates were re-filed during orchestration.
-- [x] Previously unfiled R&D recommendations published as task/feature issues #93–#97 (seller verification wiring, buyer reviews, promotion route, BH WhatsApp normalization, admin launch-gate register).
+- [x] GitHub Issues enabled and issue #13 opened for the SF3D legal gate.
+- [x] QA findings archived as issues #22–#28 (closed/fixed) and #29–#35 (open tracking); see `docs/PROGRESS_CHECKLIST.md`.
+- [x] Full audit created labeled delivery backlog issues #36–#46 (finance ledger, health checks, PTA/PayFast/BenefitPay/JazzCash/Easypaisa, dealer documents, `/bh/ar`, lint warnings, SF3D 512px, compare-history test); issue #14 closed and labels applied to #13–#35.
+- [x] Marketplace QA created issues #47–#49 (payment callback, FCM relay, discarded token); full audit index is in `docs/PROGRESS_CHECKLIST.md`.
+- [x] Access report audit and business R&D published issues #50–#71 and #72–#97; no duplicates were re-filed during orchestration.
+- [x] Previously unfiled R&D recommendations published as task/feature issues #98–#102 (seller verification wiring, buyer reviews, promotion route, BH WhatsApp normalization, admin launch-gate register).
 - [x] Autonomous software-house orchestrator installed in `.agent/skills/` and `.agents/skills/`, registered in `AGENTS.md`, and run evidence-only; report at `docs/SOFTWARE_HOUSE_REPORT.md`.
 - [x] Seller "Generate 3D" flow added to create-listing and post-publication management.
 - [x] WebGPU capability check and explicit seller licence acceptance gate added.
@@ -40,7 +40,7 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 - [x] M4-F01–M4-F03 filters, messaging, favorites, and saved-search alerts verified.
 - [x] M5-F01, M5-F03, and M5-F04 valuation, spec comparison, and inspection reports verified.
 - [ ] M5-F02 real PTA DIRBS/CPID adapter pending provider credentials; simulator and provider abstraction remain verified.
-- [ ] Close GitHub issue #8: obtain legal clearance for the SF3D runtime, inference kit, and weights; record the outcome in ADR-019 and `docs/SF3D_WEBGPU.md`.
+- [ ] Close GitHub issue #13: obtain legal clearance for the SF3D runtime, inference kit, and weights; record the outcome in ADR-019 and `docs/SF3D_WEBGPU.md`.
 - [ ] If cleared, configure `NEXT_PUBLIC_SF3D_ENABLED` plus pinned weights URL/bytes/ETAG in deployment.
 - [ ] Run `npx prisma migrate deploy` in each target environment before enabling generation.
 - [ ] Verify the seller Generate 3D flow in a WebGPU-capable browser with the pinned weights.
@@ -241,7 +241,7 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 | **M2-F03** | Dealers        | Branch & Inventory Management                                    | P2       | M2-F01, M2-F02                | **VERIFIED**                                                               |
 | **M3-F01** | Monetization   | Promotion Package Management                                     | P2       | Promotion Models              | **VERIFIED**                                                               |
 | **M3-F02** | Monetization   | Payment Gateway Aggregator (PayFast direct API)                  | P2       | M3-F01                        | **VERIFIED — paid promotion checkout with server-verified payment gating** |
-| **M3-F03** | Finance        | Automated Transaction Ledger & Invoice Generation                | P2       | M3-F02, Finance policy        | **NOT STARTED — tracked in issue #31**                                     |
+| **M3-F03** | Finance        | Automated Transaction Ledger & Invoice Generation                | P2       | M3-F02, Finance policy        | **NOT STARTED — tracked in issue #36**                                     |
 | **M4-F01** | Discovery      | Dynamic Multi-Attribute Mobile Filter System                     | P2       | M1-F02, M1-F03                | **VERIFIED**                                                               |
 | **M4-F02** | Communication  | Buyer-Seller Messaging & WhatsApp Lead Link                      | P2       | Conversation Model            | **VERIFIED**                                                               |
 | **M4-F03** | Engagement     | Persistent Favorites & Saved Search Alerts                       | P2       | Favorite, SavedSearch Models  | **VERIFIED**                                                               |
