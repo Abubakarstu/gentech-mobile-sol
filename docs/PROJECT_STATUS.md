@@ -2,6 +2,8 @@
 
 Last Updated: 2026-11-25
 
+Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
+
 ## Overall Status
 
 - **Baseline Technical Quality:** Verified (446/446 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
