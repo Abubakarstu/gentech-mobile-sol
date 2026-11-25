@@ -41,6 +41,10 @@ export interface PaymentInitResult {
 export interface PaymentVerifyParams {
   paymentId: string;
   providerReference: string;
+  /** Value recorded on the payment before the provider was called. */
+  expectedAmount: number;
+  /** Currency recorded on the payment before the provider was called. */
+  expectedCurrency: string;
   signature?: string;
 }
 
@@ -77,6 +81,8 @@ export interface WebhookResult {
   success: boolean;
   paymentId?: string;
   newStatus?: PaymentStatus;
+  amount?: number;
+  currency?: string;
   error?: string;
 }
 

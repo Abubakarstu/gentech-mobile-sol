@@ -129,6 +129,15 @@ Installed `autonomous-software-house-orchestrator` in `.agent/skills/` and `.age
 - #98–#102 — task/feature issues from previously unfiled R&D recommendations: seller-verification form/upload wiring, buyer review creation, promotions creation route, Bahrain WhatsApp normalization, and admin launch-gate register.
 - Local issue index for #72–#102 is in [R&D Issues](../R%26D%20Issues/README.md).
 
+## Payment verification hardening — 2026-11-25
+
+- [x] `GET /api/payments/callback` no longer calls `verifyPayment`; browser returns are read-only.
+- [x] `POST /api/payments/callback` validates payload shape with Zod, requires a provider signature and fresh timestamp, and rejects sandbox webhooks.
+- [x] Payment initiation issues a signed, 15-minute HMAC return token binding payment id, order id and provider reference; the sandbox return accepts only that token.
+- [x] `verifyPayment` rejects provider-reference mismatches and provider amount/currency that differs from the stored payment at BHD 3-fils / PKR 2-decimal precision.
+- [x] Payment state changes use conditional atomic transitions, preventing duplicate callbacks from overwriting state.
+- [x] Verified with 458/458 tests, 0 TypeScript errors, 0 ESLint errors, and a successful 259-page production build.
+
 ## Issue hygiene
 
 - Issue #14 was closed as completed after confirming `main` contains the progress checklist and one-by-one status list.

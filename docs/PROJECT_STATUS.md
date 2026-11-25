@@ -6,7 +6,7 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 
 ## Overall Status
 
-- **Baseline Technical Quality:** Verified (446/446 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
+- **Baseline Technical Quality:** Verified (458/458 unit & integration tests passing, TypeScript 0 errors, ESLint 0 errors / 46 pre-existing non-blocking warnings, Next.js production build compiled successfully from a freshly generated Prisma client).
 - **Active Phase:** Multi-country marketplace (BH/PK), checkout, payments, and order management with **independent country and language preferences**. Country resolution: explicit route → authenticated profile → country cookie → GeoIP → PK default. Language resolution: explicit route → authenticated profile → language cookie → `Accept-Language` → country default → `en`. BHD/BH and PKR/PK commerce configuration remains isolated. Admin region analytics and region filter are live. Real payment providers (BenefitPay, JazzCash, Easypaisa) remain blocked pending verified docs, merchant credentials, and sandbox testing; M5-F02 remains simulated until a real PTA/CPID adapter is issued.
 - **Localization Regression Fixed:** Shared server components (header, footer, hero, how-it-works, CTA, listings grid) resolve the request locale from middleware headers and pass it explicitly to `getTranslations`. A single next-intl config (`i18n.ts`) now drives every server/client translation path; the orphaned `i18n/request.ts` was removed. All three languages work in both countries: `/bh/ar`, `/bh/en`, `/bh/ur`, `/pk/ar`, `/pk/en`, `/pk/ur` all render with correct `<html lang/dir>`, localized copy, BHD/PKR isolation, BH cities vs PK cities, and PTA text only on PK routes. One localized homepage under `app/[country]/[locale]/page.tsx`.
 
@@ -47,6 +47,14 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 - [ ] If not cleared, disable or remove the generation path while keeping manual GLB/GLTF upload intact.
 - [ ] Verify real payment providers (BenefitPay, JazzCash, Easypaisa) with merchant credentials and sandbox tests.
 - [ ] Recheck `/bh/ar` after the next Vercel deployment; the earlier 404 preceded the Prisma build-generation fix.
+
+### Payment verification hardening (2026-11-25)
+
+- **Change:** Closed the unsigned-callback path tracked in [#47](https://github.com/usamawta-tech/gentech/issues/47) and the wider verification-boundary work in [#72](https://github.com/usamawta-tech/gentech/issues/72). `GET /api/payments/callback` is now a read-only browser return that never verifies or mutates payment state; `POST /api/payments/callback` requires a Zod-valid payload, a provider signature, and a fresh timestamp. Sandbox webhooks are rejected outright.
+- **Issued return tokens:** Payment initiation now signs a short-lived HMAC token binding the internal payment id, order id and provider reference. The simulated sandbox return accepts only that token, so a visitor cannot nominate another payment id. The signing key is derived from the existing required `BETTER_AUTH_SECRET`; no new secret was introduced.
+- **Provider parity:** `verifyPayment` now rejects a missing or mismatched provider reference, checks that the provider-reported amount and currency match the stored payment using BHD 3-fils / PKR 2-decimal precision, and uses conditional atomic transitions so duplicate callbacks cannot overwrite state. The sandbox provider echoes the stored amount instead of reporting `0 PKR`.
+- **New files:** `features/payments/services/payment-callback-token.ts`, `payment-amount.ts`, `payment-webhook-validation.ts`, and `tests/payments/payment-security.test.ts`.
+- **Verification:** `pnpm typecheck` 0 errors; `pnpm test` 458/458 across 70 files; `pnpm lint` 0 errors / 46 pre-existing warnings; `SKIP_ENV_VALIDATION=1 next build` completed with 259 pages. No migrations were added.
 
 ### Mobile app shell (2026-11-24)
 

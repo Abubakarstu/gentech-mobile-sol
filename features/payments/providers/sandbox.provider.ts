@@ -22,19 +22,21 @@ export const sandboxProvider: PaymentProvider = {
     return {
       success: true,
       paymentId,
-      redirectUrl: `/api/payments/sandbox/callback?paymentId=${paymentId}&orderId=${params.orderId}`,
+      // The service replaces this with a signed return token after persistence.
+      redirectUrl: undefined,
       providerReference: paymentId,
     };
   },
 
   async verify(params: PaymentVerifyParams): Promise<PaymentVerifyResult> {
-    // Simulate verification — always succeeds in sandbox
+    // Simulate verification — always succeeds in sandbox, but echoes the
+    // stored amount so the service can enforce provider-amount parity.
     return {
       success: true,
       status: "SUCCEEDED",
       providerTransactionId: params.providerReference,
-      amount: 0,
-      currency: "PKR",
+      amount: params.expectedAmount,
+      currency: params.expectedCurrency,
     };
   },
 
@@ -45,16 +47,15 @@ export const sandboxProvider: PaymentProvider = {
     };
   },
 
-  async processWebhook(payload: WebhookPayload): Promise<WebhookResult> {
+  async processWebhook(_payload: WebhookPayload): Promise<WebhookResult> {
     return {
-      success: true,
-      paymentId: payload.data.paymentId as string,
-      newStatus: "SUCCEEDED",
+      success: false,
+      error: "Sandbox webhooks are not accepted; use the signed browser return token",
     };
   },
 
-  verifyWebhookSignature(payload: string, signature: string): boolean {
-    // Sandbox doesn't verify signatures
-    return true;
+  verifyWebhookSignature(_payload: string, _signature: string): boolean {
+    // Sandbox has no external webhook sender; signed browser returns are used.
+    return false;
   },
 };
