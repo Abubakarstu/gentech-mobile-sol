@@ -102,6 +102,32 @@ New issues created from the full audit. Every issue has labels so a fellow devel
 - [#40](https://github.com/Abubakarstu/gentech/issues/40) — `enhancement, blocked` — investigate SF3D fixed 512px image-size limitation.
 - [#41](https://github.com/Abubakarstu/gentech/issues/41) — `test, good first issue` — regression coverage for the previous-comparison history branch.
 
+## Marketplace QA audit — 2026-11-25
+
+Created after installing `autonomous-marketplace-qa-github-issues` into `.agent/skills/` and `.agents/skills/`. Findings are code-confirmed at commit `25f74a9`; browser and runtime reproduction were blocked (browser automation disconnected, no local database or FCM credentials).
+
+- [#42](https://github.com/Abubakarstu/gentech/issues/42) — `bug, security`, P0 — unsigned `POST /api/payments/callback` can mark any payment and order as paid.
+- [#43](https://github.com/Abubakarstu/gentech/issues/43) — `security, bug`, P1 — unauthenticated `GET /api/fcm/register` relays arbitrary push notifications.
+- [#44](https://github.com/Abubakarstu/gentech/issues/44) — `bug`, P2 — `POST /api/fcm/register` reports success but discards the token.
+
+Not filed: `POST /api/webhooks` is a documented placeholder that only logs events; the in-memory OTP store needs serverless runtime verification before it can be called a defect.
+
+## Autonomous software-house orchestrator — 2026-11-25
+
+Installed `autonomous-software-house-orchestrator` in `.agent/skills/` and `.agents/skills/`, registered it in `AGENTS.md`, and applied QA, business R&D, project management, architecture, security, DevOps, board, and investor methods to the existing evidence. Full report: [docs/SOFTWARE_HOUSE_REPORT.md](./SOFTWARE_HOUSE_REPORT.md).
+
+- [x] No duplicate GitHub issue created — every finding mapped to #8, #31–#44, or #45–#92.
+- [x] #42 is the narrower QA finding; #67 covers the full payment-verification boundary. Both stay traceable.
+- [x] Board and investor reviews remained evidence-only: no minutes, resolutions, investor asks, metrics, or confidential material were published.
+- [x] `MARKETPLACE_RND_REPORT.md` issue references reconciled to real issue numbers, not archived PR numbers.
+
+## Published backlog index
+
+- #42–#44 — code-confirmed QA findings: payment callback, FCM relay, discarded FCM token.
+- #45–#66 — Access report audit findings created from the repository owner's report inventory: broken references, hard-coded tax/rounding, settlement gaps, localization and delivery gaps.
+- #67–#92 — business R&D backlog: payment integrity, checkout totals, inventory atomicity, order roles, refunds, PKR precision, seller/region rules, delivery address, provider config, settlements, observability, RBAC, audit, privacy, tax identity, localization, shipping, CI tests, and OTP hardening.
+- Local issue briefs for #67–#92 are in [R&D Issues](../R%26D%20Issues/README.md).
+
 ## Issue hygiene
 
 - Issue #9 was closed as completed after confirming `main` contains the progress checklist and one-by-one status list.

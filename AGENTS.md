@@ -30,6 +30,10 @@ When executing specific project functions, adopt the corresponding skill mindset
 - `qa-testing`: Vitest tests, unit testing domain logic, integration testing flows.
 - `security-review`: Server-side authorization, input sanitation with Zod, role enforcement (`requireAdmin`).
 - `devops-deployment`: Environment variables, build configuration, Vercel deployments.
+- `autonomous-marketplace-qa-github-issues`: Marketplace QA discovery, GitHub deduplication, and labeled developer-handoff issues.
+- `marketplace-board-meeting-review-and-actions`: Evidence-based board packs, risk/decision registers, minutes, and approved resolution handoff.
+- `marketplace-investor-progress-and-demands`: Investor progress/diligence reviews and classified requirement handoff without fabricated traction.
+- `autonomous-software-house-orchestrator`: Integrated QA, business R&D, delivery, security, board, investor, and operations governance without inventing approvals or duplicating GitHub work.
 
 ## 3. Design Skills
 - `landing-page-design`: Load before choosing any landing-page section, headline, CTA, font, size, spacing, radius, background, icon, or transition.
