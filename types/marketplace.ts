@@ -121,6 +121,23 @@ export interface ListingImageData {
   isGenerated?: boolean;
 }
 
+/** Supporting asset for a GLTF model (uri as referenced inside the .gltf file). */
+export interface ListingModelAssetData {
+  uri: string;
+  url: string;
+  publicId: string;
+  bytes: number;
+}
+
+/** Optional, genuine 3D model supplied by the seller. Never synthesized from photos. */
+export interface ListingModelData {
+  url: string;
+  publicId: string;
+  format: "GLB" | "GLTF";
+  sizeBytes: number;
+  assets: ListingModelAssetData[];
+}
+
 /** A formatted attribute row for the specs table. */
 export interface AttributePair {
   label: string;
@@ -163,6 +180,7 @@ export interface ListingDetail {
   views: number;
   createdAt: string;
   images: ListingImageData[];
+  model3d?: ListingModelData | null;
   attributes: AttributePair[];
   seller: ListingSeller;
   videoUrl?: string;

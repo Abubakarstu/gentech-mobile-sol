@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import {
   ChevronLeft,
@@ -32,13 +33,25 @@ import {
 } from "@/lib/product-viewer";
 import type { FrameBlend } from "@/lib/product-viewer";
 import { isOptimizableImageUrl } from "@/lib/validation/image-url";
-import type { ListingImageData } from "@/types/marketplace";
+import type { ListingImageData, ListingModelData } from "@/types/marketplace";
+
+const ModelViewer = dynamic(
+  () => import("./model-viewer").then((module) => module.ModelViewer),
+  {
+    ssr: false,
+    loading: () => <div className="bg-neutral-950 h-full w-full" aria-hidden="true" />,
+  },
+);
+
+type ViewerSelection = "photos" | "rotation" | "3d";
 
 interface Props {
   images: ListingImageData[];
   title: string;
   open: boolean;
   initialFrame?: number;
+  /** Optional genuine seller model. No 3D tab or bundle is loaded without it. */
+  model?: ListingModelData | null;
   onClose: () => void;
 }
 
@@ -57,12 +70,28 @@ interface GestureState {
  * Drag/swipe selects the next photograph, pinch or buttons zoom, and the
  * honest tier label never claims a genuine 360° capture without 24 frames.
  */
-export function ProductViewer({ images, title, open, initialFrame = 0, onClose }: Props) {
+export function ProductViewer({
+  images,
+  title,
+  open,
+  initialFrame = 0,
+  model,
+  onClose,
+}: Props) {
   const t = useTranslations("productViewer");
   const count = images.length;
   const tier = React.useMemo(() => getViewerTier(count), [count]);
   const wrap = tier.mode === "rotation" || tier.mode === "full-360";
+  const rotationAvailable = tier.autoRotate && count > 1;
+  const modelAvailable = Boolean(model);
+  const availableModes: ViewerSelection[] = [
+    "photos",
+    ...(rotationAvailable ? (["rotation"] as const) : []),
+    ...(modelAvailable ? (["3d"] as const) : []),
+  ];
 
+  const [selection, setSelection] = React.useState<ViewerSelection>("photos");
+  const isPhotoMode = selection !== "3d";
   const [frame, setFrame] = React.useState(() => clampFrame(initialFrame, count));
   const [zoom, setZoom] = React.useState(MIN_ZOOM);
   const [pan, setPan] = React.useState({ x: 0, y: 0 });
@@ -84,18 +113,18 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
 
   const step = React.useCallback(
     (direction: -1 | 1) => {
-      if (count < 2) return;
+      if (!isPhotoMode || count < 2) return;
       setAutoRotate(false);
       setBlend(null);
       setFrame((previous) =>
         wrap ? wrapFrameIndex(previous + direction, count) : clampFrame(previous + direction, count),
       );
     },
-    [count, wrap],
+    [count, isPhotoMode, wrap],
   );
 
   React.useEffect(() => {
-    if (!open || count === 0) return;
+    if (!open || !isPhotoMode || count === 0) return;
     const warmed: HTMLImageElement[] = [];
     for (const index of preloadFrames(frame, count, 2, wrap)) {
       const url = images[index]?.url;
@@ -110,10 +139,10 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
         image.onerror = null;
       });
     };
-  }, [open, frame, count, wrap, images]);
+  }, [open, isPhotoMode, frame, count, wrap, images]);
 
   React.useEffect(() => {
-    if (!open || !autoRotate || !tier.autoRotate || count < 2) return;
+    if (!open || !isPhotoMode || !autoRotate || !tier.autoRotate || count < 2) return;
     const timer = window.setInterval(() => {
       setBlend(null);
       setFrame((previous) =>
@@ -121,7 +150,7 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
       );
     }, 1100);
     return () => window.clearInterval(timer);
-  }, [open, autoRotate, tier.autoRotate, count, wrap]);
+  }, [open, isPhotoMode, autoRotate, tier.autoRotate, count, wrap]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -266,6 +295,8 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
       aria-modal="true"
       aria-label={t("title")}
       data-product-viewer-tier={tier.mode}
+      data-product-viewer-mode={selection}
+      data-product-viewer-modes={availableModes.join(",")}
       data-product-viewer-count={count}
       data-product-viewer-frame={frame}
       data-product-viewer-zoom={zoom}
@@ -278,11 +309,13 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{title}</p>
           <p className="text-xs text-white/60">
-            {t(tier.labelKey)} · {t("frame", { current: frame + 1, total: count })}
+            {isPhotoMode
+              ? `${t(tier.labelKey)} · ${t("frame", { current: frame + 1, total: count })}`
+              : t("mode3d")}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1">
-          {tier.autoRotate && count > 1 ? (
+          {isPhotoMode && tier.autoRotate && count > 1 ? (
             <button
               type="button"
               aria-label={autoRotate ? t("stopAutoRotate") : t("autoRotate")}
@@ -292,7 +325,7 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
               {autoRotate ? <Pause className="size-4" /> : <Play className="size-4" />}
             </button>
           ) : null}
-          {count > 1 ? (
+          {isPhotoMode && count > 1 ? (
             <button
               type="button"
               aria-label={blending ? t("blendOff") : t("blendOn")}
@@ -309,14 +342,16 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
               <Layers className="size-4" />
             </button>
           ) : null}
-          <button
-            type="button"
-            aria-label={t("fullscreen")}
-            onClick={() => void toggleFullscreen()}
-            className="grid size-9 place-items-center rounded-full transition-colors hover:bg-white/10"
-          >
-            <Maximize2 className="size-4" />
-          </button>
+          {isPhotoMode ? (
+            <button
+              type="button"
+              aria-label={t("fullscreen")}
+              onClick={() => void toggleFullscreen()}
+              className="grid size-9 place-items-center rounded-full transition-colors hover:bg-white/10"
+            >
+              <Maximize2 className="size-4" />
+            </button>
+          ) : null}
           <button
             type="button"
             aria-label={t("close")}
@@ -328,7 +363,55 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
         </div>
       </header>
 
-      <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
+      {availableModes.length > 1 ? (
+        <nav
+          aria-label={t("title")}
+          data-product-viewer-mode-tabs
+          className="flex shrink-0 gap-1 border-b border-white/10 px-3 py-2 sm:px-5"
+        >
+          {availableModes.map((available) => (
+            <button
+              key={available}
+              type="button"
+              data-viewer-mode={available}
+              aria-pressed={selection === available}
+              onClick={() => {
+                if (available === "rotation") {
+                  setSelection("rotation");
+                  setAutoRotate(true);
+                  setBlend(null);
+                } else if (available === "3d") {
+                  setSelection("3d");
+                  setAutoRotate(false);
+                } else {
+                  setSelection("photos");
+                  setAutoRotate(false);
+                }
+              }}
+              className={cn(
+                "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                selection === available
+                  ? "bg-white text-neutral-950"
+                  : "bg-white/10 text-white/80 hover:bg-white/20",
+              )}
+            >
+              {available === "photos"
+                ? t("modePhotos")
+                : available === "rotation"
+                  ? t(tier.labelKey)
+                  : t("mode3d")}
+            </button>
+          ))}
+        </nav>
+      ) : null}
+
+      {!isPhotoMode && model ? (
+        <div className="min-h-0 flex-1" data-product-viewer-3d>
+          <ModelViewer model={model} title={title} />
+        </div>
+      ) : (
+        <>
+          <div className="relative min-h-0 flex-1 overflow-hidden bg-black">
         <div
           data-product-viewer-stage
           onPointerDown={onPointerDown}
@@ -509,7 +592,9 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
             ))}
           </div>
         ) : null}
-      </footer>
+        </footer>
+        </>
+      )}
     </div>
   );
 }

@@ -3,7 +3,10 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { LISTING_STATUSES, type ListingStatus } from "@/lib/constants";
+import { MOBILE_CAROUSEL_IMAGE_LIMIT } from "@/lib/mobile-carousel";
+import type { ListingModelAssetData, ListingModelData } from "@/types/marketplace";
 import type { SellerListingRow, SellerStats } from "@/features/seller/types";
+import type { UploadedModel } from "@/features/listings/schemas/create-listing";
 
 /** Projection for a seller management row, incl. favorites count + primary image. */
 const rowSelect = {
@@ -20,15 +23,49 @@ const rowSelect = {
   createdAt: true,
   soldAt: true,
   images: {
-    where: { isPrimary: true },
-    take: 1,
+    take: MOBILE_CAROUSEL_IMAGE_LIMIT,
     select: { url: true },
-    orderBy: { position: "asc" },
+    orderBy: [{ isPrimary: "desc" }, { position: "asc" }],
+  },
+  model3d: {
+    select: { url: true, publicId: true, format: true, sizeBytes: true, assets: true },
   },
   _count: { select: { favorites: true } },
 } satisfies Prisma.ListingSelect;
 
 type SellerListingRecord = Prisma.ListingGetPayload<{ select: typeof rowSelect }>;
+
+function toModelData(model: SellerListingRecord["model3d"]): ListingModelData | null {
+  if (!model) return null;
+  const assets: ListingModelAssetData[] = Array.isArray(model.assets)
+    ? model.assets.flatMap((entry) => {
+        if (typeof entry !== "object" || entry === null) return [];
+        const asset = entry as Record<string, unknown>;
+        if (
+          typeof asset.uri !== "string" ||
+          typeof asset.url !== "string" ||
+          typeof asset.publicId !== "string"
+        ) {
+          return [];
+        }
+        return [
+          {
+            uri: asset.uri,
+            url: asset.url,
+            publicId: asset.publicId,
+            bytes: typeof asset.bytes === "number" ? asset.bytes : 0,
+          },
+        ];
+      })
+    : [];
+  return {
+    url: model.url,
+    publicId: model.publicId,
+    format: model.format === "GLTF" ? "GLTF" : "GLB",
+    sizeBytes: model.sizeBytes,
+    assets,
+  };
+}
 
 function toRow(row: SellerListingRecord): SellerListingRow {
   return {
@@ -44,6 +81,8 @@ function toRow(row: SellerListingRecord): SellerListingRow {
     favorites: row._count.favorites,
     isFeatured: row.isFeatured,
     imageUrl: row.images[0]?.url,
+    imageUrls: row.images.map((image) => image.url),
+    model3d: toModelData(row.model3d),
     createdAt: row.createdAt.toISOString(),
     soldAt: row.soldAt ? row.soldAt.toISOString() : undefined,
   };
@@ -120,4 +159,74 @@ export async function softDeleteListing(
     data: { status: LISTING_STATUSES.REMOVED, deletedAt: new Date() },
   });
   return result.count;
+}
+
+function publicIdsFromStoredModel(model: {
+  publicId: string;
+  assets: unknown;
+}): string[] {
+  const ids = [model.publicId];
+  if (Array.isArray(model.assets)) {
+    for (const entry of model.assets) {
+      if (typeof entry !== "object" || entry === null) continue;
+      const publicId = (entry as Record<string, unknown>).publicId;
+      if (typeof publicId === "string") ids.push(publicId);
+    }
+  }
+  return ids;
+}
+
+/**
+ * Replaces or removes a listing's optional model, scoped to the owner.
+ * Returns the previous Cloudinary public IDs so the service can delete them
+ * only after the database transaction has committed.
+ */
+export async function replaceOwnedListingModel(
+  sellerId: string,
+  listingId: string,
+  model: UploadedModel | null,
+): Promise<{ ok: boolean; previousPublicIds: string[] }> {
+  const result = await prisma.$transaction(async (tx) => {
+    const listing = await tx.listing.findFirst({
+      where: { id: listingId, sellerId, deletedAt: null },
+      select: {
+        id: true,
+        model3d: { select: { publicId: true, assets: true } },
+      },
+    });
+    if (!listing) return null;
+
+    const previousPublicIds = listing.model3d
+      ? publicIdsFromStoredModel(listing.model3d)
+      : [];
+
+    if (model) {
+      await tx.listingModel.upsert({
+        where: { listingId },
+        create: {
+          listingId,
+          url: model.url,
+          publicId: model.publicId,
+          format: model.format,
+          sizeBytes: model.sizeBytes,
+          assets: model.assets as unknown as Prisma.InputJsonValue,
+        },
+        update: {
+          url: model.url,
+          publicId: model.publicId,
+          format: model.format,
+          sizeBytes: model.sizeBytes,
+          assets: model.assets as unknown as Prisma.InputJsonValue,
+        },
+      });
+    } else {
+      await tx.listingModel.deleteMany({ where: { listingId } });
+    }
+
+    return { previousPublicIds };
+  });
+
+  return result
+    ? { ok: true, previousPublicIds: result.previousPublicIds }
+    : { ok: false, previousPublicIds: [] };
 }

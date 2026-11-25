@@ -25,10 +25,12 @@ import {
   createListingSchema,
   type CreateListingInput,
   type UploadedImage,
+  type UploadedModel,
 } from "@/features/listings/schemas/create-listing";
 import { createListingAction } from "@/features/listings/actions/create-listing";
 import { trackCreateListing } from "@/features/analytics/lib/events";
 import { ImageUploader } from "./image-uploader";
+import { ModelUploader } from "./model-uploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,6 +66,7 @@ export function CreateListingForm({
     resolver: zodResolver(createListingSchema),
     defaultValues: {
       images: [],
+      model3d: null,
       negotiable: false,
       ptaApproved: false,
       ptaStatus: undefined,
@@ -75,6 +78,7 @@ export function CreateListingForm({
   });
 
   const images = useWatch({ control, name: "images" }) ?? [];
+  const model3d = useWatch({ control, name: "model3d" }) ?? null;
   const countryId = useWatch({ control, name: "countryId" }) ?? "";
   const cityId = useWatch({ control, name: "cityId" }) ?? "";
   const areaId = useWatch({ control, name: "areaId" }) ?? "";
@@ -84,6 +88,10 @@ export function CreateListingForm({
 
   function setImages(next: UploadedImage[]) {
     setValue("images", next, { shouldValidate: true });
+  }
+
+  function setModel3d(next: UploadedModel | null) {
+    setValue("model3d", next, { shouldValidate: true });
   }
 
   async function onSubmit(values: CreateListingInput) {
@@ -105,6 +113,19 @@ export function CreateListingForm({
         <Label>Photos</Label>
         <ImageUploader value={images} onChange={setImages} allowUrl />
         <FieldError message={errors.images?.message} />
+      </section>
+
+      {/* Optional genuine 3D model — never required and never synthesized from photos. */}
+      <section className="space-y-2">
+        <ModelUploader value={model3d} onChange={setModel3d} />
+        {errors.model3d ? (
+          <FieldError
+            message={
+              (errors.model3d as { message?: string } | undefined)?.message ??
+              "Check the 3D model details and try again."
+            }
+          />
+        ) : null}
       </section>
 
       {/* Basics */}

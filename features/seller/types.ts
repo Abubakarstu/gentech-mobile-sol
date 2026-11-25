@@ -1,4 +1,5 @@
 import type { ListingCondition, ListingStatus } from "@/lib/constants";
+import type { ListingModelData } from "@/types/marketplace";
 
 /** Aggregate engagement metrics for a seller's whole inventory. */
 export interface SellerStats {
@@ -24,6 +25,10 @@ export interface SellerListingRow {
   favorites: number;
   isFeatured: boolean;
   imageUrl?: string;
+  /** Up to four images for the management thumbnail carousel. */
+  imageUrls?: string[];
+  /** Optional genuine 3D model supplied by the seller. */
+  model3d?: ListingModelData | null;
   /** ISO timestamp. */
   createdAt: string;
   /** ISO timestamp, present when status is SOLD. */

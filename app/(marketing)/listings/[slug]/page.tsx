@@ -138,7 +138,12 @@ export default async function ListingDetailPage({ params }: PageProps) {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main column */}
         <div className="space-y-6 lg:col-span-2">
-          <ListingGallery images={detail.images} title={detail.title} brand={detail.brand} />
+          <ListingGallery
+            images={detail.images}
+            title={detail.title}
+            brand={detail.brand}
+            model3d={detail.model3d}
+          />
 
           <div>
             <div className="flex items-start justify-between gap-3">

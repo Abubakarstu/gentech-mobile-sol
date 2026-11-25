@@ -6,7 +6,6 @@ import { Check, GitCompareArrows, MapPin, Smartphone, ShieldCheck, CheckCircle2 
 
 import { cn } from "@/lib/utils";
 import { MOBILE_CAROUSEL_IMAGE_LIMIT } from "@/lib/mobile-carousel";
-import { useMobileCarousel } from "@/hooks/use-mobile-carousel";
 import { LocalizedLink } from "@/components/localized-link";
 import { useLocalizedRouteInfo } from "@/lib/localized-routing";
 import { LISTING_CONDITION_LABELS } from "@/lib/constants";
@@ -14,6 +13,7 @@ import { formatPrice, formatRelativeTime } from "@/utils/format";
 import type { ListingCardData } from "@/types/marketplace";
 import { Badge } from "@/components/ui/badge";
 import { useCompareSelection } from "@/features/compare/components/compare-selection-provider";
+import { ProductImageCarousel } from "@/features/marketplace/components/product-image-carousel";
 import { FavoriteButton } from "./favorite-button";
 
 export function ListingCard({
@@ -40,7 +40,6 @@ export function ListingCard({
     : listing.imageUrl
       ? [listing.imageUrl]
       : [];
-  const { active, scrollerRef, onScroll, goTo } = useMobileCarousel(carouselImages.length);
 
   const longPressTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressOrigin = React.useRef<{ x: number; y: number } | null>(null);
@@ -94,108 +93,64 @@ export function ListingCard({
 
   const body = (
     <>
-      <div className="bg-muted relative aspect-4/3 w-full overflow-hidden">
-        {carouselImages.length > 0 ? (
-          <div
-            ref={scrollerRef}
-            onScroll={onScroll}
-            data-mobile-card-carousel={carouselImages.length}
-            className="scroll-smooth flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden md:snap-none md:overflow-hidden"
-          >
-            {carouselImages.map((url, index) => (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                key={`${url}-${index}`}
-                src={url}
-                alt={listing.title}
-                className={cn(
-                  "h-full w-full shrink-0 snap-center object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105",
-                  index > 0 && "md:hidden",
-                )}
-              />
-            ))}
-          </div>
-        ) : (
+      <ProductImageCarousel
+        images={carouselImages}
+        title={listing.title}
+        fallback={
           <div className="text-foreground/30 flex h-full flex-col items-center justify-center gap-2">
             <Smartphone className="size-10" />
             {listing.brand ? (
               <span className="text-foreground/50 text-sm font-medium">{listing.brand}</span>
             ) : null}
           </div>
+        }
+      />
+
+      <div
+        className={cn(
+          "absolute top-2 flex flex-wrap gap-1",
+          selectionMode ? "start-10 pe-1" : "start-2 pe-10 sm:pe-0",
         )}
-
-        {carouselImages.length > 1 ? (
-          <>
-            <div className="absolute bottom-2 start-2 z-10 flex items-center gap-1.5 md:hidden">
-              {carouselImages.map((_, index) => (
-                <button
-                  key={index}
-                  type="button"
-                  onClick={() => goTo(index)}
-                  aria-label={`View image ${index + 1}`}
-                  aria-current={index === active ? "true" : undefined}
-                  className={cn(
-                    "h-1.5 rounded-full bg-white/70 shadow transition-all",
-                    index === active ? "w-4 bg-white" : "w-1.5",
-                  )}
-                />
-              ))}
-            </div>
-            <span
-              data-mobile-card-counter
-              className="absolute bottom-2 end-2 z-10 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-medium text-white md:hidden"
-            >
-              {active + 1}/{carouselImages.length}
-            </span>
-          </>
+      >
+        {listing.isFeatured ? (
+          <Badge className="bg-brand text-brand-foreground hover:bg-brand">{t("featured")}</Badge>
         ) : null}
-
-        <div
-          className={cn(
-            "absolute top-2 flex flex-wrap gap-1",
-            selectionMode ? "start-10 pe-1" : "start-2 pe-10 sm:pe-0",
-          )}
-        >
-          {listing.isFeatured ? (
-            <Badge className="bg-brand text-brand-foreground hover:bg-brand">{t("featured")}</Badge>
-          ) : null}
-          {showPakistanSignals && listing.ptaStatus === "PTA_APPROVED" ? (
-            <Badge
-              variant="outline"
-              className="border-green-500 bg-green-50/90 text-xs text-green-700 backdrop-blur"
-            >
-              <CheckCircle2 className="me-0.5 size-3" />
-              {t("ptaApproved")}
-            </Badge>
-          ) : null}
-          {showPakistanSignals && listing.cpidStatus === "CPID_APPROVED" ? (
-            <Badge
-              variant="outline"
-              className="border-blue-500 bg-blue-50/90 text-xs text-blue-700 backdrop-blur"
-            >
-              <CheckCircle2 className="me-0.5 size-3" />
-              {t("cpidApproved")}
-            </Badge>
-          ) : null}
-          {listing.isInspected ? (
-            <Badge
-              variant="outline"
-              className="border-purple-500 bg-purple-50/90 text-xs text-purple-700 backdrop-blur"
-            >
-              <ShieldCheck className="me-0.5 size-3" />
-              {t("inspected")}
-            </Badge>
-          ) : null}
-          {listing.isVerifiedSeller ? (
-            <Badge
-              variant="outline"
-              className="border-sky-500 bg-sky-50/90 text-xs text-sky-700 backdrop-blur"
-            >
-              <ShieldCheck className="me-0.5 size-3" />
-              {t("verifiedSeller")}
-            </Badge>
-          ) : null}
-        </div>
+        {showPakistanSignals && listing.ptaStatus === "PTA_APPROVED" ? (
+          <Badge
+            variant="outline"
+            className="border-green-500 bg-green-50/90 text-xs text-green-700 backdrop-blur"
+          >
+            <CheckCircle2 className="me-0.5 size-3" />
+            {t("ptaApproved")}
+          </Badge>
+        ) : null}
+        {showPakistanSignals && listing.cpidStatus === "CPID_APPROVED" ? (
+          <Badge
+            variant="outline"
+            className="border-blue-500 bg-blue-50/90 text-xs text-blue-700 backdrop-blur"
+          >
+            <CheckCircle2 className="me-0.5 size-3" />
+            {t("cpidApproved")}
+          </Badge>
+        ) : null}
+        {listing.isInspected ? (
+          <Badge
+            variant="outline"
+            className="border-purple-500 bg-purple-50/90 text-xs text-purple-700 backdrop-blur"
+          >
+            <ShieldCheck className="me-0.5 size-3" />
+            {t("inspected")}
+          </Badge>
+        ) : null}
+        {listing.isVerifiedSeller ? (
+          <Badge
+            variant="outline"
+            className="border-sky-500 bg-sky-50/90 text-xs text-sky-700 backdrop-blur"
+          >
+            <ShieldCheck className="me-0.5 size-3" />
+            {t("verifiedSeller")}
+          </Badge>
+        ) : null}
       </div>
 
       <div className="space-y-2 p-3">

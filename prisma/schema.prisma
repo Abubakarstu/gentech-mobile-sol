@@ -297,6 +297,7 @@ model Listing {
   dealer   Dealer? @relation(fields: [dealerId], references: [id], onDelete: SetNull)
 
   images          ListingImage[]
+  model3d         ListingModel?
   favorites       Favorite[]
   conversations   Conversation[]
   reports         Report[]
@@ -355,6 +356,28 @@ model ListingImage {
 
   @@index([listingId])
   @@map("listing_image")
+}
+
+/**
+ * Optional, seller-supplied 3D asset. Ordinary photographs remain the source of
+ * truth; this record never replaces or derives from `ListingImage` rows.
+ */
+model ListingModel {
+  id        String @id @default(cuid())
+  url       String
+  publicId  String
+  format    String // GLB | GLTF
+  sizeBytes Int
+  /// Supporting assets for GLTF: [{ uri, url, publicId }]
+  assets    Json?
+
+  listingId String  @unique
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("listing_model")
 }
 
 // ---------------------------------------------------------------------------

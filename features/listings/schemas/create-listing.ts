@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+import {
+  MAX_ASSET_BYTES,
+  MAX_MODEL_ASSETS,
+  MAX_MODEL_BYTES,
+  MAX_MODEL_TOTAL_BYTES,
+  assetBaseName,
+  isCloudinaryAssetUrl,
+  isSafeAssetName,
+} from "@/lib/model-assets";
 import { isValidImageUrl, MAX_IMAGE_URL_LENGTH } from "@/lib/validation/image-url";
 
 export const CONDITION_VALUES = ["NEW", "OPEN_BOX", "USED", "REFURBISHED", "FOR_PARTS"] as const;
@@ -16,6 +25,39 @@ export const uploadedImageSchema = z.object({
 });
 
 export type UploadedImage = z.infer<typeof uploadedImageSchema>;
+
+export const uploadedModelAssetSchema = z.object({
+  uri: z
+    .string()
+    .min(1)
+    .max(255)
+    .refine((uri) => isSafeAssetName(assetBaseName(uri)), "Invalid model asset name."),
+  url: z
+    .string()
+    .max(MAX_IMAGE_URL_LENGTH)
+    .refine(isCloudinaryAssetUrl, "Model assets must use secure Cloudinary URLs."),
+  publicId: z.string().min(1).max(255),
+  bytes: z.number().int().positive().max(MAX_ASSET_BYTES),
+});
+
+export const uploadedModelSchema = z
+  .object({
+    url: z
+      .string()
+      .max(MAX_IMAGE_URL_LENGTH)
+      .refine(isCloudinaryAssetUrl, "Models must use secure Cloudinary URLs."),
+    publicId: z.string().min(1).max(255),
+    format: z.enum(["GLB", "GLTF"]),
+    sizeBytes: z.number().int().positive().max(MAX_MODEL_BYTES),
+    assets: z.array(uploadedModelAssetSchema).max(MAX_MODEL_ASSETS),
+  })
+  .refine((model) => {
+    const total = model.sizeBytes + model.assets.reduce((sum, asset) => sum + asset.bytes, 0);
+    return total <= MAX_MODEL_TOTAL_BYTES;
+  }, "The 3D model and its assets are too large.");
+
+export type UploadedModelAsset = z.infer<typeof uploadedModelAssetSchema>;
+export type UploadedModel = z.infer<typeof uploadedModelSchema>;
 
 /**
  * Ordinary photographs only. 36 frames is the upper bound for the honest
@@ -81,6 +123,9 @@ export const createListingSchema = z.object({
     .refine((images) => new Set(images.map((image) => image.url)).size === images.length, {
       message: "Duplicate photos are not allowed.",
     }),
+
+  /** Optional genuine 3D model. Sellers are never required to provide one. */
+  model3d: uploadedModelSchema.nullable().optional(),
 });
 
 export type CreateListingInput = z.infer<typeof createListingSchema>;

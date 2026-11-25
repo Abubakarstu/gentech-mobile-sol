@@ -11,6 +11,8 @@ import type {
   ListingDetail,
   ListingFilters,
   ListingFilterOptions,
+  ListingModelAssetData,
+  ListingModelData,
   ListingSearchResult,
 } from "@/types/marketplace";
 import type { CreateListingInput } from "@/features/listings/schemas/create-listing";
@@ -446,6 +448,9 @@ const detailSelect = {
     orderBy: { position: "asc" },
     select: { url: true, width: true, height: true },
   },
+  model3d: {
+    select: { url: true, publicId: true, format: true, sizeBytes: true, assets: true },
+  },
   seller: {
     select: {
       id: true,
@@ -459,6 +464,39 @@ const detailSelect = {
 } satisfies Prisma.ListingSelect;
 
 type ListingDetailRow = Prisma.ListingGetPayload<{ select: typeof detailSelect }>;
+
+/** Persisted 3D assets are validated again at read time before reaching a client. */
+function toModelData(model: ListingDetailRow["model3d"]): ListingModelData | null {
+  if (!model) return null;
+  const assets: ListingModelAssetData[] = Array.isArray(model.assets)
+    ? model.assets.flatMap((entry) => {
+        if (typeof entry !== "object" || entry === null) return [];
+        const asset = entry as Record<string, unknown>;
+        if (
+          typeof asset.uri !== "string" ||
+          typeof asset.url !== "string" ||
+          typeof asset.publicId !== "string"
+        ) {
+          return [];
+        }
+        return [
+          {
+            uri: asset.uri,
+            url: asset.url,
+            publicId: asset.publicId,
+            bytes: typeof asset.bytes === "number" ? asset.bytes : 0,
+          },
+        ];
+      })
+    : [];
+  return {
+    url: model.url,
+    publicId: model.publicId,
+    format: model.format === "GLTF" ? "GLTF" : "GLB",
+    sizeBytes: model.sizeBytes,
+    assets,
+  };
+}
 
 function toDetail(row: ListingDetailRow): ListingDetail {
   return {
@@ -486,6 +524,7 @@ function toDetail(row: ListingDetailRow): ListingDetail {
       width: img.width ?? undefined,
       height: img.height ?? undefined,
     })),
+    model3d: toModelData(row.model3d),
     attributes: formatAttributes(row.attributes),
     videoUrl: row.videoUrl ?? undefined,
     seller: {
@@ -735,6 +774,19 @@ export async function createListing(
           isPrimary: index === 0,
         })),
       },
+      ...(input.model3d
+        ? {
+            model3d: {
+              create: {
+                url: input.model3d.url,
+                publicId: input.model3d.publicId,
+                format: input.model3d.format,
+                sizeBytes: input.model3d.sizeBytes,
+                assets: input.model3d.assets,
+              },
+            },
+          }
+        : {}),
     },
     select: { id: true, slug: true },
   });

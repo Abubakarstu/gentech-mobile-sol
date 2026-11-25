@@ -1,15 +1,15 @@
-import Image from "next/image";
 import { ShieldCheck } from "lucide-react";
 
 import { getServerTranslations } from "@/lib/i18n/get-server-translations";
-import { isOptimizableImageUrl } from "@/lib/validation/image-url";
 import { APP } from "@/lib/constants";
+import { MOBILE_CAROUSEL_IMAGE_LIMIT } from "@/lib/mobile-carousel";
 import { getCountryName } from "@/lib/countries";
 import type { CountryCode, LocaleCode } from "@/lib/countries/types";
 import type { CategoryItem, ListingCardData } from "@/types/marketplace";
 import type { LocationTree } from "@/features/locations/services/location.service";
 import { formatPrice } from "@/utils/format";
 import { LocalizedLink } from "@/components/localized-link";
+import { ProductImageCarousel } from "@/features/marketplace/components/product-image-carousel";
 import { SearchBar } from "./search-bar";
 
 export async function HomeHero({
@@ -29,6 +29,11 @@ export async function HomeHero({
   const tSearch = await getServerTranslations("search");
   const tCategories = await getServerTranslations("categories");
   const countryName = getCountryName(country, locale);
+  const heroImages = featuredListing?.imageUrls?.length
+    ? featuredListing.imageUrls.slice(0, MOBILE_CAROUSEL_IMAGE_LIMIT)
+    : featuredListing?.imageUrl
+      ? [featuredListing.imageUrl]
+      : [];
 
   return (
     <section aria-labelledby="home-hero-title" className="border-b border-brand/10 bg-brand-soft/50">
@@ -85,22 +90,17 @@ export async function HomeHero({
               href={`/listings/${featuredListing.slug}`}
               className="focus-visible:ring-ring block outline-none focus-visible:ring-2"
             >
-              <div className="bg-muted relative aspect-4/3 overflow-hidden">
-                {featuredListing.imageUrl ? (
-                  <Image
-                    src={featuredListing.imageUrl}
-                    alt={featuredListing.title}
-                    fill
-                    unoptimized={!isOptimizableImageUrl(featuredListing.imageUrl)}
-                    sizes="(max-width: 1024px) 100vw, 40vw"
-                    className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="text-foreground/30 grid h-full place-items-center text-4xl font-semibold">
-                    {featuredListing.brand?.charAt(0) ?? featuredListing.title.charAt(0)}
-                  </div>
-                )}
-                <span className="bg-brand text-brand-foreground caption-3 absolute start-3 top-3 rounded-md px-2 py-1 font-semibold uppercase tracking-wide">
+              <div className="relative">
+                <ProductImageCarousel
+                  images={heroImages}
+                  title={featuredListing.title}
+                  fallback={
+                    <div className="text-foreground/30 grid h-full place-items-center text-4xl font-semibold">
+                      {featuredListing.brand?.charAt(0) ?? featuredListing.title.charAt(0)}
+                    </div>
+                  }
+                />
+                <span className="bg-brand text-brand-foreground caption-3 absolute start-3 top-3 z-10 rounded-md px-2 py-1 font-semibold uppercase tracking-wide">
                   {t("featuredListings")}
                 </span>
               </div>
