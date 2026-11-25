@@ -117,6 +117,8 @@ export interface ListingImageData {
   url: string;
   width?: number;
   height?: number;
+  /** True only for derived/synthesized views, never for a seller's photograph. */
+  isGenerated?: boolean;
 }
 
 /** A formatted attribute row for the specs table. */

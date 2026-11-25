@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { ImageOff, ImagePlus, Link2, Loader2, Star, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, ImageOff, ImagePlus, Link2, Loader2, Star, X } from "lucide-react";
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
 import { isValidImageUrl, parseImageUrls } from "@/lib/validation/image-url";
+import { MAX_LISTING_PHOTOS } from "@/features/listings/schemas/create-listing";
 import type { UploadedImage } from "@/features/listings/schemas/create-listing";
 
 interface Props {
@@ -27,7 +28,13 @@ interface SignResponse {
   allowedFormats: string[];
 }
 
-export function ImageUploader({ value, onChange, max = 10, folder, allowUrl = false }: Props) {
+export function ImageUploader({
+  value,
+  onChange,
+  max = MAX_LISTING_PHOTOS,
+  folder,
+  allowUrl = false,
+}: Props) {
   const [uploading, setUploading] = React.useState(false);
   const [imageUrls, setImageUrls] = React.useState("");
   const [brokenUrls, setBrokenUrls] = React.useState<Set<string>>(() => new Set());
@@ -162,6 +169,16 @@ export function ImageUploader({ value, onChange, max = 10, folder, allowUrl = fa
     onChange([cover, ...reordered]);
   }
 
+  function moveImage(index: number, direction: -1 | 1) {
+    const target = index + direction;
+    if (target < 0 || target >= value.length) return;
+    const reordered = [...value];
+    const [moved] = reordered.splice(index, 1);
+    if (!moved) return;
+    reordered.splice(target, 0, moved);
+    onChange(reordered);
+  }
+
   function markBroken(url: string) {
     setBrokenUrls((previous) => new Set(previous).add(url));
   }
@@ -208,10 +225,30 @@ export function ImageUploader({ value, onChange, max = 10, folder, allowUrl = fa
                 type="button"
                 aria-label="Remove photo"
                 onClick={() => onChange(value.filter((_, i) => i !== index))}
-                className="bg-background/80 absolute top-1 right-1 grid size-6 place-items-center rounded-full opacity-0 transition-opacity group-hover:opacity-100"
+                className="bg-background/80 absolute top-1 right-1 grid size-6 place-items-center rounded-full opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
               >
                 <X className="size-3.5" />
               </button>
+              <div className="absolute right-1 bottom-1 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+                <button
+                  type="button"
+                  aria-label={`Move photo ${index + 1} left`}
+                  disabled={index === 0}
+                  onClick={() => moveImage(index, -1)}
+                  className="bg-background/80 grid size-6 place-items-center rounded-full disabled:opacity-40"
+                >
+                  <ArrowLeft className="size-3.5" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Move photo ${index + 1} right`}
+                  disabled={index === value.length - 1}
+                  onClick={() => moveImage(index, 1)}
+                  className="bg-background/80 grid size-6 place-items-center rounded-full disabled:opacity-40"
+                >
+                  <ArrowRight className="size-3.5" />
+                </button>
+              </div>
             </div>
           );
         })}
@@ -279,7 +316,8 @@ export function ImageUploader({ value, onChange, max = 10, folder, allowUrl = fa
       ) : null}
 
       <p className="text-muted-foreground mt-2 text-xs">
-        Up to {max} photos. The first photo is the cover.
+        Up to {max} ordinary photos. The first photo is the cover; use the arrows to set the angle
+        order. Buyers use that order to explore the product.
       </p>
     </div>
   );

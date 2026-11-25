@@ -135,6 +135,19 @@ describe("listing image uploader", () => {
     expect(onChange).toHaveBeenCalledWith([...images].reverse());
   });
 
+  it("lets a seller reorder ordinary photos into angle sequence", () => {
+    const images: UploadedImage[] = [
+      { url: "https://res.cloudinary.com/gentech/image/upload/a.jpg" },
+      { url: firstUrl },
+      { url: secondUrl },
+    ];
+    const { onChange } = renderUploader(images);
+
+    fireEvent.click(screen.getByRole("button", { name: "Move photo 2 left" }));
+
+    expect(onChange).toHaveBeenCalledWith([images[1], images[0], images[2]]);
+  });
+
   it("keeps URL entry out of non-listing uploaders", () => {
     renderUploader([], vi.fn(), false);
     expect(screen.queryByLabelText(/paste image URLs/i)).not.toBeInTheDocument();

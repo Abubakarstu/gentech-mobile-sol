@@ -2,11 +2,13 @@
 
 import * as React from "react";
 import Image from "next/image";
-import { Smartphone } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { RotateCw, Smartphone, ZoomIn } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { useMobileCarousel } from "@/hooks/use-mobile-carousel";
 import { isOptimizableImageUrl } from "@/lib/validation/image-url";
+import { ProductViewer } from "@/features/listings/components/product-viewer";
 import type { ListingImageData } from "@/types/marketplace";
 
 export function ListingGallery({
@@ -19,6 +21,8 @@ export function ListingGallery({
   brand?: string;
 }) {
   const { active, scrollerRef, onScroll, goTo } = useMobileCarousel(images.length);
+  const t = useTranslations("productViewer");
+  const [viewerOpen, setViewerOpen] = React.useState(false);
 
   if (images.length === 0) {
     return (
@@ -56,6 +60,17 @@ export function ListingGallery({
               </div>
             ))}
           </div>
+
+          <button
+            type="button"
+            data-product-viewer-trigger
+            onClick={() => setViewerOpen(true)}
+            aria-label={images.length > 1 ? t("openAngles") : t("openPhoto")}
+            className="absolute end-2 top-2 z-10 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm"
+          >
+            {images.length > 1 ? <RotateCw className="size-3.5" /> : <ZoomIn className="size-3.5" />}
+            {images.length > 1 ? t("explore") : t("zoom")}
+          </button>
 
           {images.length > 1 ? (
             <>
@@ -97,6 +112,15 @@ export function ListingGallery({
             sizes="(max-width: 1024px) 100vw, 60vw"
             className="object-cover"
           />
+          <button
+            type="button"
+            onClick={() => setViewerOpen(true)}
+            aria-label={images.length > 1 ? t("openAngles") : t("openPhoto")}
+            className="absolute end-2 top-2 z-10 flex items-center gap-1 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm"
+          >
+            {images.length > 1 ? <RotateCw className="size-3.5" /> : <ZoomIn className="size-3.5" />}
+            {images.length > 1 ? t("explore") : t("zoom")}
+          </button>
         </div>
 
         {images.length > 1 ? (
@@ -125,6 +149,16 @@ export function ListingGallery({
           </div>
         ) : null}
       </div>
+
+      {viewerOpen ? (
+        <ProductViewer
+          images={images}
+          title={title}
+          open
+          initialFrame={active}
+          onClose={() => setViewerOpen(false)}
+        />
+      ) : null}
     </div>
   );
 }

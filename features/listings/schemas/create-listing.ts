@@ -17,6 +17,12 @@ export const uploadedImageSchema = z.object({
 
 export type UploadedImage = z.infer<typeof uploadedImageSchema>;
 
+/**
+ * Ordinary photographs only. 36 frames is the upper bound for the honest
+ * 360° tier; the seller's upload order is the viewer's rotation order.
+ */
+export const MAX_LISTING_PHOTOS = 36;
+
 export const createListingSchema = z.object({
   title: z.string().trim().min(5, "Title is too short").max(120),
   description: z.string().trim().min(20, "Add a bit more detail").max(4000),
@@ -71,7 +77,7 @@ export const createListingSchema = z.object({
   images: z
     .array(uploadedImageSchema)
     .min(1, "Add at least one photo")
-    .max(10)
+    .max(MAX_LISTING_PHOTOS)
     .refine((images) => new Set(images.map((image) => image.url)).size === images.length, {
       message: "Duplicate photos are not allowed.",
     }),

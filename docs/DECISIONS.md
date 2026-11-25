@@ -89,3 +89,9 @@
 - **Date:** 2026-11-19
 - **Status:** Approved
 - **Decision:** All demo flags, accounts, sessions, seeding, and UI are removed. `DEMO_MODE` is ignored. Better Auth's `user.create.before` hook marks new accounts `emailVerified: true`; its `user.create.after` hook promotes the first persisted account to `ADMIN` only when no active `ADMIN` exists, guarded by `pg_advisory_xact_lock`, so simultaneous sign-ups cannot both claim the role. No verification route, setting, or sign-in gate remains.
+
+## ADR-016: Photo-Sequence Product Viewer, Honest Tiers, No Default AI Synthesis
+
+- **Date:** 2026-11-25
+- **Status:** Approved
+- **Decision:** The interactive viewer is built only from the seller's ordinary JPG/JPEG/PNG/WebP photographs in upload order. No 360 image format, video, or 3D model is accepted. Tiers are honest: 1 photo is a zoomable photo, 2–3 switch between photos, 4–11 are multi-angle with an explicit limited-angle label, 12–23 provide interactive rotation, and 24–36 provide the recommended 360° experience. Sellers may upload up to 36 photos, reorder them with arrow controls, and remove any photo; the existing Cloudinary signature and seller ownership rules are unchanged. AI-generated intermediate views remain optional and are **not enabled**: no provider, cost approval, or async worker exists yet. If enabled later, derived frames must be stored separately from `listing_image`, marked `isGenerated`, never overwrite seller photos, be produced asynchronously with per-listing cost caps and seller ownership checks, and must never be described as genuine product photographs or used to infer product attributes.

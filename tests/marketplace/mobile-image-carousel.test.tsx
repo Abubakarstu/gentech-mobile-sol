@@ -144,6 +144,14 @@ describe("mobile listing detail gallery", () => {
     expect(counter.textContent).toBe("3 / 3");
   });
 
+  it("opens the interactive viewer from the gallery trigger", () => {
+    render(<ListingGallery images={galleryImages} title="iPhone 15 Pro" brand="Apple" />);
+
+    fireEvent.click(required("[data-product-viewer-trigger]"));
+
+    expect(required("[data-product-viewer-tier='switch']")).toBeTruthy();
+  });
+
   it("omits mobile controls when the listing has a single photo", () => {
     render(<ListingGallery images={[galleryImages[0]!]} title="iPhone 15 Pro" />);
 

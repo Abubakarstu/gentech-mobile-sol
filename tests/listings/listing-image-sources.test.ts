@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createListingSchema } from "@/features/listings/schemas/create-listing";
+import { MAX_LISTING_PHOTOS, createListingSchema } from "@/features/listings/schemas/create-listing";
 import {
   isOptimizableImageUrl,
   isValidImageUrl,
@@ -49,6 +49,19 @@ describe("listing image sources", () => {
   ])("rejects unsafe or malformed image URL %s", (url) => {
     expect(isValidImageUrl(url)).toBe(false);
     expect(createListingSchema.safeParse({ ...listing, images: [{ url }] }).success).toBe(false);
+  });
+
+  it("accepts the full 36-photo rotation sequence and rejects more", () => {
+    const images = Array.from({ length: MAX_LISTING_PHOTOS }, (_, index) => ({
+      url: `https://example.com/angle-${index}.jpg`,
+    }));
+    expect(createListingSchema.safeParse({ ...listing, images }).success).toBe(true);
+    expect(
+      createListingSchema.safeParse({
+        ...listing,
+        images: [...images, { url: "https://example.com/angle-extra.jpg" }],
+      }).success,
+    ).toBe(false);
   });
 
   it("rejects duplicate image URLs", () => {
