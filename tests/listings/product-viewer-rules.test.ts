@@ -6,12 +6,14 @@ import {
   MIN_FULL_360_FRAMES,
   MIN_ROTATION_FRAMES,
   MIN_ZOOM,
+  blendFromDrag,
   clampFrame,
   clampPanOffset,
   clampZoom,
   frameFromDrag,
   getViewerTier,
   preloadFrames,
+  wrapFrameIndex,
 } from "@/lib/product-viewer";
 
 describe("product viewer tiers", () => {
@@ -53,6 +55,46 @@ describe("product viewer frame geometry", () => {
     expect(clampFrame(Number.NaN, 4)).toBe(0);
     expect(clampFrame(99, 4)).toBe(3);
     expect(frameFromDrag(2, Number.NaN, 4, true)).toBe(2);
+  });
+});
+
+describe("zero-cost frame blending", () => {
+  it("wraps indices for rotation tiers", () => {
+    expect(wrapFrameIndex(-1, 12)).toBe(11);
+    expect(wrapFrameIndex(12, 12)).toBe(0);
+  });
+
+  it("blends adjacent real photos in the drag direction", () => {
+    expect(blendFromDrag(0, -DRAG_PIXELS_PER_FRAME / 2, 12, true)).toEqual({
+      from: 0,
+      to: 1,
+      ratio: 0.5,
+    });
+    expect(blendFromDrag(0, DRAG_PIXELS_PER_FRAME / 2, 12, true)).toEqual({
+      from: 0,
+      to: 11,
+      ratio: 0.5,
+    });
+  });
+
+  it("does not blend past the ends of limited-angle sets", () => {
+    expect(blendFromDrag(2, -DRAG_PIXELS_PER_FRAME, 3, false)).toEqual({
+      from: 2,
+      to: 2,
+      ratio: 0,
+    });
+  });
+
+  it("never blends with one photo or an invalid drag", () => {
+    expect(blendFromDrag(0, -13, 1, true)).toEqual({ from: 0, to: 0, ratio: 0 });
+    expect(blendFromDrag(0, Number.NaN, 4, true)).toEqual({ from: 0, to: 0, ratio: 0 });
+  });
+
+  it("keeps the blend base aligned with the selected frame", () => {
+    const delta = -DRAG_PIXELS_PER_FRAME - 5;
+    expect(blendFromDrag(0, delta, 12, true).from).toBe(
+      frameFromDrag(0, delta, 12, true),
+    );
   });
 });
 

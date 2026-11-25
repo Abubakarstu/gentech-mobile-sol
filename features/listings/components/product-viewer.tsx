@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import {
   ChevronLeft,
   ChevronRight,
+  Layers,
   Maximize2,
   Pause,
   Play,
@@ -20,13 +21,16 @@ import {
   MAX_ZOOM,
   MIN_ZOOM,
   ZOOM_STEP,
+  blendFromDrag,
   clampFrame,
   clampPanOffset,
   clampZoom,
   frameFromDrag,
   getViewerTier,
   preloadFrames,
+  wrapFrameIndex,
 } from "@/lib/product-viewer";
+import type { FrameBlend } from "@/lib/product-viewer";
 import { isOptimizableImageUrl } from "@/lib/validation/image-url";
 import type { ListingImageData } from "@/types/marketplace";
 
@@ -48,10 +52,6 @@ interface GestureState {
   pinchDistance: number;
 }
 
-function wrapIndex(index: number, count: number): number {
-  return ((index % count) + count) % count;
-}
-
 /**
  * Interactive viewer built only from the seller's ordinary photographs.
  * Drag/swipe selects the next photograph, pinch or buttons zoom, and the
@@ -68,6 +68,8 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
   const [pan, setPan] = React.useState({ x: 0, y: 0 });
   const [dragging, setDragging] = React.useState(false);
   const [autoRotate, setAutoRotate] = React.useState(false);
+  const [blending, setBlending] = React.useState(false);
+  const [blend, setBlend] = React.useState<FrameBlend | null>(null);
 
   const overlayRef = React.useRef<HTMLDivElement>(null);
   const pointers = React.useRef(new Map<number, { x: number; y: number }>());
@@ -84,8 +86,9 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
     (direction: -1 | 1) => {
       if (count < 2) return;
       setAutoRotate(false);
+      setBlend(null);
       setFrame((previous) =>
-        wrap ? wrapIndex(previous + direction, count) : clampFrame(previous + direction, count),
+        wrap ? wrapFrameIndex(previous + direction, count) : clampFrame(previous + direction, count),
       );
     },
     [count, wrap],
@@ -112,8 +115,9 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
   React.useEffect(() => {
     if (!open || !autoRotate || !tier.autoRotate || count < 2) return;
     const timer = window.setInterval(() => {
+      setBlend(null);
       setFrame((previous) =>
-        wrap ? wrapIndex(previous + 1, count) : clampFrame(previous + 1, count),
+        wrap ? wrapFrameIndex(previous + 1, count) : clampFrame(previous + 1, count),
       );
     }, 1100);
     return () => window.clearInterval(timer);
@@ -214,6 +218,10 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
     const deltaY = event.clientY - current.startY;
     if (tier.rotates && count > 1 && Math.abs(deltaX) > Math.abs(deltaY)) {
       setFrame(frameFromDrag(current.startFrame, deltaX, count, wrap));
+      if (blending) {
+        const next = blendFromDrag(current.startFrame, deltaX, count, wrap);
+        setBlend(next.ratio > 0 && next.from !== next.to ? next : null);
+      }
       return;
     }
     if (zoom > 1) {
@@ -243,11 +251,13 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
     }
     gesture.current = null;
     setDragging(false);
+    setBlend(null);
   }
 
   if (!open || count === 0) return null;
 
   const currentImage = images[frame];
+  const blendActive = blending && blend !== null && blend.ratio > 0;
 
   return (
     <div
@@ -259,6 +269,8 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
       data-product-viewer-count={count}
       data-product-viewer-frame={frame}
       data-product-viewer-zoom={zoom}
+      data-product-viewer-blending={blending ? "true" : "false"}
+      data-product-viewer-blend={blendActive ? "true" : undefined}
       data-zoom={zoom}
       className="fixed inset-0 z-50 flex flex-col bg-neutral-950 text-white"
     >
@@ -278,6 +290,23 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
               className="grid size-9 place-items-center rounded-full transition-colors hover:bg-white/10"
             >
               {autoRotate ? <Pause className="size-4" /> : <Play className="size-4" />}
+            </button>
+          ) : null}
+          {count > 1 ? (
+            <button
+              type="button"
+              aria-label={blending ? t("blendOff") : t("blendOn")}
+              aria-pressed={blending}
+              onClick={() => {
+                setBlending((previous) => !previous);
+                setBlend(null);
+              }}
+              className={cn(
+                "grid size-9 place-items-center rounded-full transition-colors hover:bg-white/10",
+                blending && "bg-white/15",
+              )}
+            >
+              <Layers className="size-4" />
             </button>
           ) : null}
           <button
@@ -318,24 +347,35 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
               transition: dragging ? "none" : "transform 180ms ease-out",
             }}
           >
-            {visibleFrames.map(({ image, index }) => (
-              <div
-                key={`${image.url}-${index}`}
-                className="absolute inset-0 flex items-center justify-center transition-opacity duration-200"
-                style={{ opacity: index === frame ? 1 : 0 }}
-              >
-                <Image
-                  src={image.url}
-                  alt={index === frame ? `${title} — ${t("frame", { current: index + 1, total: count })}` : ""}
-                  fill
-                  priority={index === 0 && index === frame}
-                  loading={index === frame && index !== 0 ? "eager" : undefined}
-                  unoptimized={!isOptimizableImageUrl(image.url)}
-                  sizes="100vw"
-                  className="object-contain"
-                />
-              </div>
-            ))}
+            {visibleFrames.map(({ image, index }) => {
+              let opacity = index === frame ? 1 : 0;
+              if (blendActive && blend) {
+                if (index === blend.from) opacity = 1 - blend.ratio;
+                else if (index === blend.to) opacity = blend.ratio;
+                else opacity = 0;
+              }
+              const labelled =
+                index === frame ||
+                (blendActive && (index === blend?.from || index === blend?.to));
+              return (
+                <div
+                  key={`${image.url}-${index}`}
+                  className="absolute inset-0 flex items-center justify-center transition-opacity duration-200"
+                  style={{ opacity, transition: blendActive ? "none" : undefined }}
+                >
+                  <Image
+                    src={image.url}
+                    alt={labelled ? `${title} — ${t("frame", { current: index + 1, total: count })}` : ""}
+                    fill
+                    priority={index === 0 && index === frame}
+                    loading={index === frame && index !== 0 ? "eager" : undefined}
+                    unoptimized={!isOptimizableImageUrl(image.url)}
+                    sizes="100vw"
+                    className="object-contain"
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -349,6 +389,15 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
             className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2 rounded-full bg-sky-500/90 px-2.5 py-1 text-xs font-medium"
           >
             {t("generatedView")}
+          </span>
+        ) : null}
+
+        {blendActive ? (
+          <span
+            data-blend-badge
+            className="pointer-events-none absolute bottom-12 left-1/2 -translate-x-1/2 rounded-full bg-sky-500/90 px-2.5 py-1 text-xs font-medium"
+          >
+            {t("blendedView")}
           </span>
         ) : null}
 
@@ -416,9 +465,12 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
               <RotateCcw className="size-4" />
             </button>
           </div>
-          <p className="text-center text-xs text-white/60">
-            {tier.mode === "multi-angle" ? t("limitedAngles", { count }) : null}
-          </p>
+          <div className="flex flex-col items-center gap-0.5 text-center">
+            {blending ? <p className="text-xs text-sky-200">{t("blendNotice")}</p> : null}
+            {tier.mode === "multi-angle" ? (
+              <p className="text-xs text-white/60">{t("limitedAngles", { count })}</p>
+            ) : null}
+          </div>
         </div>
 
         {count > 1 ? (
@@ -429,6 +481,7 @@ export function ProductViewer({ images, title, open, initialFrame = 0, onClose }
                 type="button"
                 onClick={() => {
                   setAutoRotate(false);
+                  setBlend(null);
                   setFrame(index);
                 }}
                 aria-label={t("frame", { current: index + 1, total: count })}

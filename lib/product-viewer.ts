@@ -46,6 +46,47 @@ export function clampFrame(index: number, frameCount: number): number {
   return Math.min(Math.max(Math.round(index), 0), frameCount - 1);
 }
 
+export function wrapFrameIndex(index: number, frameCount: number): number {
+  if (frameCount <= 0) return 0;
+  return ((index % frameCount) + frameCount) % frameCount;
+}
+
+/** A zero-cost, in-memory blend between two existing photographs. */
+export interface FrameBlend {
+  from: number;
+  to: number;
+  /** 0 = entirely `from`, 1 = entirely `to`. */
+  ratio: number;
+}
+
+/**
+ * Derives a smooth interpolated view from continuous drag displacement.
+ * Only the seller's real photographs are displayed; the blend is computed in
+ * the browser, never stored, and must be labelled as interpolated.
+ */
+export function blendFromDrag(
+  current: number,
+  deltaX: number,
+  frameCount: number,
+  wrap: boolean,
+): FrameBlend {
+  if (frameCount < 2 || !Number.isFinite(deltaX)) {
+    const only = clampFrame(current, frameCount);
+    return { from: only, to: only, ratio: 0 };
+  }
+  const position = -deltaX / DRAG_PIXELS_PER_FRAME;
+  const whole = Math.trunc(position);
+  const fraction = Math.abs(position - whole);
+  const from = wrap
+    ? wrapFrameIndex(current + whole, frameCount)
+    : clampFrame(current + whole, frameCount);
+  const direction = position >= 0 ? 1 : -1;
+  const target = from + direction;
+  const to = wrap ? wrapFrameIndex(target, frameCount) : clampFrame(target, frameCount);
+  if (to === from) return { from, to, ratio: 0 };
+  return { from, to, ratio: Math.min(fraction, 1) };
+}
+
 /**
  * Maps drag displacement to a frame. Dragging left (negative delta) advances to
  * the next angle; dragging right steps back. Wrapping is enabled only for true
@@ -87,9 +128,7 @@ export function preloadFrames(current: number, frameCount: number, radius: numbe
   const frames = new Set<number>();
   for (let offset = -radius; offset <= radius; offset += 1) {
     if (offset === 0) continue;
-    const index = wrap
-      ? ((current + offset) % frameCount + frameCount) % frameCount
-      : current + offset;
+    const index = wrap ? wrapFrameIndex(current + offset, frameCount) : current + offset;
     if (index === current) continue;
     if (!wrap && (index < 0 || index >= frameCount)) continue;
     frames.add(index);

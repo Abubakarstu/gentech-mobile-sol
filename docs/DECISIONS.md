@@ -93,5 +93,13 @@
 ## ADR-016: Photo-Sequence Product Viewer, Honest Tiers, No Default AI Synthesis
 
 - **Date:** 2026-11-25
-- **Status:** Approved
+- **Status:** Amended by ADR-017
 - **Decision:** The interactive viewer is built only from the seller's ordinary JPG/JPEG/PNG/WebP photographs in upload order. No 360 image format, video, or 3D model is accepted. Tiers are honest: 1 photo is a zoomable photo, 2–3 switch between photos, 4–11 are multi-angle with an explicit limited-angle label, 12–23 provide interactive rotation, and 24–36 provide the recommended 360° experience. Sellers may upload up to 36 photos, reorder them with arrow controls, and remove any photo; the existing Cloudinary signature and seller ownership rules are unchanged. AI-generated intermediate views remain optional and are **not enabled**: no provider, cost approval, or async worker exists yet. If enabled later, derived frames must be stored separately from `listing_image`, marked `isGenerated`, never overwrite seller photos, be produced asynchronously with per-listing cost caps and seller ownership checks, and must never be described as genuine product photographs or used to infer product attributes.
+
+## ADR-017: Zero-Cost Browser Blending Instead of Free AI Synthesis
+
+- **Date:** 2026-11-25
+- **Status:** Approved
+- **Context:** A genuinely new camera angle requires a generative model and compute, so no provider can honestly promise unlimited free synthesis. The request for free enhancement is satisfied without any external service, API key, storage or per-view cost.
+- **Decision:** The viewer offers an opt-in "smooth photo blending" mode for listings with two or more photos. During a drag it cross-fades the two adjacent **seller photographs** in the browser using their measured displacement (`blendFromDrag`), so transitions feel continuous. The blend is transient client state: it is never uploaded, stored in `listing_image`, or given a public URL. It is always labelled "Blended between your photos" with an explicit notice that no new angle is generated, and it is cleared on release, navigation, thumbnail selection and auto-rotation. This is not AI generation and never replaces the honest photo-count tiers. Real synthesis remains disabled under ADR-016 until a provider, cost approval and async worker exist.
+- **Consequences:** Zero marginal cost, no new dependencies, no database migration, and no change to seller ownership or upload authorization. A cross-fade is a transition effect, not a reconstructed viewpoint; it must never be marketed as a captured or synthesized angle.

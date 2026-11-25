@@ -292,7 +292,11 @@
     "fullscreen": "Fullscreen",
     "close": "Close viewer",
     "generatedView": "AI-generated view",
-    "generatedNotice": "Some views are AI-generated, not real photographs"
+    "generatedNotice": "Some views are AI-generated, not real photographs",
+    "blendOn": "Enable smooth photo blending",
+    "blendOff": "Disable smooth photo blending",
+    "blendNotice": "In-browser blend between your photos — no new angle is generated",
+    "blendedView": "Blended between your photos"
   },
   "authentication": {
     "signIn": "Sign In",

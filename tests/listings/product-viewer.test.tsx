@@ -41,6 +41,7 @@ describe("product viewer", () => {
 
     expect(required("[data-product-viewer-tier='photo']")).toBeTruthy();
     expect(screen.queryByRole("button", { name: "previous" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "blendOn" })).toBeNull();
 
     fireEvent.click(screen.getByRole("button", { name: "zoomIn" }));
     expect(required("[data-product-viewer-zoom]").dataset.zoom).toBe("1.25");
@@ -73,6 +74,28 @@ describe("product viewer", () => {
 
     drag(required("[data-product-viewer-stage]"), 200, 230);
     expect(required("[data-product-viewer-frame='23']")).toBeTruthy();
+  });
+
+  it("blends only real photos in-browser and clears the blend on release", () => {
+    renderViewer(makeFrames(4));
+
+    const overlay = required("[data-product-viewer-tier]");
+    const stage = required("[data-product-viewer-stage]");
+    expect(overlay.dataset.productViewerBlending).toBe("false");
+    expect(screen.queryByRole("button", { name: "blendOn" })).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: "blendOn" }));
+    expect(required("[data-product-viewer-tier]").dataset.productViewerBlending).toBe("true");
+
+    fireEvent.pointerDown(stage, { pointerId: 1, pointerType: "mouse", button: 0, clientX: 200 });
+    fireEvent.pointerMove(stage, { pointerId: 1, pointerType: "mouse", clientX: 187 });
+    expect(required("[data-product-viewer-tier]").dataset.productViewerBlend).toBe("true");
+    expect(document.querySelector("[data-blend-badge]")).not.toBeNull();
+    expect(required("[data-product-viewer-frame='0']")).toBeTruthy();
+
+    fireEvent.pointerUp(stage, { pointerId: 1, pointerType: "mouse", clientX: 187 });
+    expect(required("[data-product-viewer-tier]").dataset.productViewerBlend).toBeUndefined();
+    expect(document.querySelector("[data-blend-badge]")).toBeNull();
   });
 
   it("labels AI-generated views separately from seller photographs", () => {
