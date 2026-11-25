@@ -17,6 +17,7 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 - [x] New branch `feat/sf3d-webgpu-generation` created, committed, and pushed.
 - [x] Consolidated progress checklist added as `docs/PROGRESS_CHECKLIST.md`.
 - [x] GitHub Issues enabled and issue #8 opened for the SF3D legal gate.
+- [x] QA findings archived as issues #17–#23 (closed/fixed) and #24–#30 (open tracking); see `docs/PROGRESS_CHECKLIST.md`.
 - [x] Seller "Generate 3D" flow added to create-listing and post-publication management.
 - [x] WebGPU capability check and explicit seller licence acceptance gate added.
 - [x] SF3D producer vendored under `public/sf3d/`; weights remain external to source.

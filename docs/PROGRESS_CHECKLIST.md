@@ -62,3 +62,25 @@ Sources: local Git state, `docs/PROJECT_STATUS.md`, `docs/PROJECT_ROADMAP.md`, a
 - Generated 3D is explicitly labelled as an approximation; it is not a measured 3D scan.
 - Manual seller GLB/GLTF upload remains fully supported when WebGPU or generation is unavailable.
 - Honest photo tiers stay `1`, `2–3`, `4–11`, `12–23`, `24–36`; rotation only at `12+`, and `360°` only at `24+`.
+
+## QA finding issues
+
+Closed archive issues — already fixed and verified:
+
+- [#17](https://github.com/Abubakarstu/gentech/issues/17) — Compare preview listing IDs dropped from selection.
+- [#18](https://github.com/Abubakarstu/gentech/issues/18) — Compare checkbox hit target was intercepted.
+- [#19](https://github.com/Abubakarstu/gentech/issues/19) — Compare selected IDs lost when catalog lookup failed.
+- [#20](https://github.com/Abubakarstu/gentech/issues/20) — Removing one of two compare listings cleared the remaining product.
+- [#21](https://github.com/Abubakarstu/gentech/issues/21) — Compare metadata had placeholder and duplicated suffix.
+- [#22](https://github.com/Abubakarstu/gentech/issues/22) — Compare spec table had blank cells.
+- [#23](https://github.com/Abubakarstu/gentech/issues/23) — Compare browser bundle imported Prisma currency helper.
+
+Open tracking issues — still actionable:
+
+- [#24](https://github.com/Abubakarstu/gentech/issues/24) — Admin subpage navigation can stay on loading skeleton.
+- [#25](https://github.com/Abubakarstu/gentech/issues/25) — Image upload signing returned 503 without Cloudinary credentials.
+- [#26](https://github.com/Abubakarstu/gentech/issues/26) — Bahrain inspection CTA shows PKR price.
+- [#27](https://github.com/Abubakarstu/gentech/issues/27) — City and area labels are not localized.
+- [#28](https://github.com/Abubakarstu/gentech/issues/28) — Orphaned countries detect helper remains as legacy code.
+- [#29](https://github.com/Abubakarstu/gentech/issues/29) — Live Vercel smoke check is manual.
+- [#30](https://github.com/Abubakarstu/gentech/issues/30) — Local DB unavailable triggers demo-data fallback.
