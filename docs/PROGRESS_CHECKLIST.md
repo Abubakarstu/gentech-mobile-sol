@@ -42,6 +42,7 @@ Sources: local Git state, `docs/PROJECT_STATUS.md`, `docs/PROJECT_ROADMAP.md`, a
 - [x] **M2-F01–M2-F03** — dealer registration, verification queue, branches, and inventory verified.
 - [x] **M3-F01** — promotion package management verified.
 - [x] **M3-F02** — PayFast inspection payment code verified; live/promotion payments remain paused pending merchant verification.
+- [ ] **M3-F03** — automated transaction ledger and invoice generation is not implemented; tracked in issue #31.
 - [x] **M4-F01–M4-F03** — filters, messaging, favorites, and saved-search alerts verified.
 - [x] **M5-F01, M5-F03, M5-F04** — valuation, spec comparison, and inspection reports verified.
 - [ ] **M5-F02** — PTA/CPID simulator and provider abstraction verified; real PTA DIRBS/CPID adapter pending provider credentials.
@@ -84,3 +85,25 @@ Open tracking issues — still actionable:
 - [#28](https://github.com/Abubakarstu/gentech/issues/28) — Orphaned countries detect helper remains as legacy code.
 - [#29](https://github.com/Abubakarstu/gentech/issues/29) — Live Vercel smoke check is manual.
 - [#30](https://github.com/Abubakarstu/gentech/issues/30) — Local DB unavailable triggers demo-data fallback.
+
+## Audit-created delivery backlog
+
+New issues created from the full audit. Every issue has labels so a fellow developer can filter by work type:
+
+- [#31](https://github.com/Abubakarstu/gentech/issues/31) — `enhancement, blocked, help wanted` — M3-F03 transaction ledger and invoice generation.
+- [#32](https://github.com/Abubakarstu/gentech/issues/32) — `bug, devops, test` — health endpoint uses placeholder DB/Cloudinary checks.
+- [#33](https://github.com/Abubakarstu/gentech/issues/33) — `enhancement, integration, blocked` — real PTA DIRBS/CPID adapter for M5-F02.
+- [#34](https://github.com/Abubakarstu/gentech/issues/34) — `security, devops, blocked` — live PayFast verification and enablement.
+- [#35](https://github.com/Abubakarstu/gentech/issues/35) — `enhancement, integration, blocked` — BenefitPay for Bahrain checkout.
+- [#36](https://github.com/Abubakarstu/gentech/issues/36) — `enhancement, integration, blocked` — JazzCash and Easypaisa for Pakistan checkout.
+- [#37](https://github.com/Abubakarstu/gentech/issues/37) — `security, enhancement, blocked` — private dealer document storage and upload flow.
+- [#38](https://github.com/Abubakarstu/gentech/issues/38) — `bug, localization, qa` — recheck `/bh/ar` and localized child routes after deployment.
+- [#39](https://github.com/Abubakarstu/gentech/issues/39) — `refactor, good first issue` — reduce remaining ESLint warnings to zero.
+- [#40](https://github.com/Abubakarstu/gentech/issues/40) — `enhancement, blocked` — investigate SF3D fixed 512px image-size limitation.
+- [#41](https://github.com/Abubakarstu/gentech/issues/41) — `test, good first issue` — regression coverage for the previous-comparison history branch.
+
+## Issue hygiene
+
+- Issue #9 was closed as completed after confirming `main` contains the progress checklist and one-by-one status list.
+- Labels applied to earlier issues: #8 `legal, blocked`; #10–#16 `documentation`; #17–#23 `bug, qa`; #24 `bug, qa`; #25 `bug, devops`; #26 `bug, localization, qa`; #27 `enhancement, localization`; #28 `refactor, good first issue`; #29 `devops, test`; #30 `documentation, devops`.
+- Available repository labels now include `bug`, `documentation`, `enhancement`, `good first issue`, `help wanted`, `security`, `devops`, `test`, `refactor`, `localization`, `integration`, `legal`, `blocked`, and `qa`.

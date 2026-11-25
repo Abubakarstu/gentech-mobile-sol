@@ -18,6 +18,7 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 - [x] Consolidated progress checklist added as `docs/PROGRESS_CHECKLIST.md`.
 - [x] GitHub Issues enabled and issue #8 opened for the SF3D legal gate.
 - [x] QA findings archived as issues #17–#23 (closed/fixed) and #24–#30 (open tracking); see `docs/PROGRESS_CHECKLIST.md`.
+- [x] Full audit created labeled delivery backlog issues #31–#41 (finance ledger, health checks, PTA/PayFast/BenefitPay/JazzCash/Easypaisa, dealer documents, `/bh/ar`, lint warnings, SF3D 512px, compare-history test); issue #9 closed and labels applied to #8–#30.
 - [x] Seller "Generate 3D" flow added to create-listing and post-publication management.
 - [x] WebGPU capability check and explicit seller licence acceptance gate added.
 - [x] SF3D producer vendored under `public/sf3d/`; weights remain external to source.
@@ -236,6 +237,7 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 | **M2-F03** | Dealers        | Branch & Inventory Management                                    | P2       | M2-F01, M2-F02                | **VERIFIED**                                                               |
 | **M3-F01** | Monetization   | Promotion Package Management                                     | P2       | Promotion Models              | **VERIFIED**                                                               |
 | **M3-F02** | Monetization   | Payment Gateway Aggregator (PayFast direct API)                  | P2       | M3-F01                        | **VERIFIED — paid promotion checkout with server-verified payment gating** |
+| **M3-F03** | Finance        | Automated Transaction Ledger & Invoice Generation                | P2       | M3-F02, Finance policy        | **NOT STARTED — tracked in issue #31**                                     |
 | **M4-F01** | Discovery      | Dynamic Multi-Attribute Mobile Filter System                     | P2       | M1-F02, M1-F03                | **VERIFIED**                                                               |
 | **M4-F02** | Communication  | Buyer-Seller Messaging & WhatsApp Lead Link                      | P2       | Conversation Model            | **VERIFIED**                                                               |
 | **M4-F03** | Engagement     | Persistent Favorites & Saved Search Alerts                       | P2       | Favorite, SavedSearch Models  | **VERIFIED**                                                               |
