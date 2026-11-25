@@ -105,6 +105,18 @@ All issues are local Markdown files under `R&D Issues\` and published at https:/
 | [#91](https://github.com/Abubakarstu/gentech/issues/91) | [P2][Quality][Improvement] Run unit tests in CI and replace placeholder integration suites | enhancement, test, devops | P2 / Ready for development | BH + PK (general) |
 | [#92](https://github.com/Abubakarstu/gentech/issues/92) | [P2][Authentication][Research] Harden or retire the simulated OTP subsystem before production use | investigation, security, devops | P2 / Research required | BH + PK (general) |
 
+### Additional task and feature issues (#93–#97)
+
+Filed after dedupe from the five previously unfiled recommendations. Labels `task` and `feature` were created in the repository for work-type filtering.
+
+| GitHub | Title | Labels |
+|---|---|---|
+| [#93](https://github.com/Abubakarstu/gentech/issues/93) | [Task][P1][Seller] Wire verification form to upload API and JSON submit contract | task, bug, security, validation, bahrain-market, pakistan-market |
+| [#94](https://github.com/Abubakarstu/gentech/issues/94) | [Feature][P2][Trust] Add buyer-facing review creation for completed listings | feature, enhancement, ux, bahrain-market, pakistan-market |
+| [#95](https://github.com/Abubakarstu/gentech/issues/95) | [Task][P1][Promotions] Add /dashboard/promotions/new route | task, enhancement, ux, payments |
+| [#96](https://github.com/Abubakarstu/gentech/issues/96) | [Task][P2][Bahrain] Make WhatsApp number normalization region-aware | task, bug, localization, bahrain-market |
+| [#97](https://github.com/Abubakarstu/gentech/issues/97) | [Feature][P2][Admin] Replace static readiness panels with evidence-backed launch-gate register | feature, enhancement, devops, security, documentation |
+
 ## 6. Existing issues reused / not duplicated
 
 - #26 Bahrain CTA PKR price; #89 removes other PKR defaults but explicitly excludes #26.
@@ -131,7 +143,7 @@ All issues are local Markdown files under `R&D Issues\` and published at https:/
 - Foundation: #8, #26, #31, #32, #74, #82, #84, #85, #86, #87, #91, #92.
 - Core marketplace: #68, #69, #71, #72, #73, #76, #77, #79, #80.
 - Regional expansion: #34-#36, #75, #78, #88, #89, #90.
-- Growth: promotion completion remains paused pending product decision; user review/report creation not filed.
+- Growth: #94 user review creation and #95 promotion creation route filed; promotion completion remains paused pending product decision and #34.
 - Optimization: #39, #41, #88, #91.
 
 ## 9. Coverage and limitations
@@ -140,7 +152,7 @@ All issues are local Markdown files under `R&D Issues\` and published at https:/
 - Evidence is code-level at commit `25f74a9`; no browser, database, provider credentials or live runtime checks were performed.
 - No external market research was performed; regulatory/provider facts are marked Research required or Needs business validation.
 - Pre-existing working-tree changes (`AGENTS.md`, `docs/PROGRESS_CHECKLIST.md`, untracked skill files) were left untouched.
-- Only existing repository labels were used; no labels were created or renamed.
-- Recommendations not filed: user-facing review/report creation; seller-verification form/upload mismatch; missing `/dashboard/promotions/new` route; WhatsApp number normalisation for BH; static admin readiness panels/launch-gate register.
+- Existing labels were used for #67–#92; `task` and `feature` were created for #93–#97 work-type filtering.
+- Previously unfiled recommendations are now #93–#97: seller-verification form/upload mismatch, review creation, promotions route, BH WhatsApp normalization, and launch-gate register.
 
-Counts: opportunities discovered 31; issues created/published 26; existing issues matched 12+; recommendations not filed 5; items needing validation 8.
+Counts: opportunities discovered 31; issues created/published 31; existing issues matched 12+; recommendations not filed 0; items needing validation 8.

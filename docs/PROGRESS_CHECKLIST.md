@@ -116,7 +116,7 @@ Not filed: `POST /api/webhooks` is a documented placeholder that only logs event
 
 Installed `autonomous-software-house-orchestrator` in `.agent/skills/` and `.agents/skills/`, registered it in `AGENTS.md`, and applied QA, business R&D, project management, architecture, security, DevOps, board, and investor methods to the existing evidence. Full report: [docs/SOFTWARE_HOUSE_REPORT.md](./SOFTWARE_HOUSE_REPORT.md).
 
-- [x] No duplicate GitHub issue created — every finding mapped to #8, #31–#44, or #45–#92.
+- [x] No duplicate GitHub issue created — findings mapped to #8, #31–#44, or #45–#92; the five previously unfiled recommendations became #93–#97.
 - [x] #42 is the narrower QA finding; #67 covers the full payment-verification boundary. Both stay traceable.
 - [x] Board and investor reviews remained evidence-only: no minutes, resolutions, investor asks, metrics, or confidential material were published.
 - [x] `MARKETPLACE_RND_REPORT.md` issue references reconciled to real issue numbers, not archived PR numbers.
@@ -126,10 +126,11 @@ Installed `autonomous-software-house-orchestrator` in `.agent/skills/` and `.age
 - #42–#44 — code-confirmed QA findings: payment callback, FCM relay, discarded FCM token.
 - #45–#66 — Access report audit findings created from the repository owner's report inventory: broken references, hard-coded tax/rounding, settlement gaps, localization and delivery gaps.
 - #67–#92 — business R&D backlog: payment integrity, checkout totals, inventory atomicity, order roles, refunds, PKR precision, seller/region rules, delivery address, provider config, settlements, observability, RBAC, audit, privacy, tax identity, localization, shipping, CI tests, and OTP hardening.
-- Local issue briefs for #67–#92 are in [R&D Issues](../R%26D%20Issues/README.md).
+- #93–#97 — task/feature issues from previously unfiled R&D recommendations: seller-verification form/upload wiring, buyer review creation, promotions creation route, Bahrain WhatsApp normalization, and admin launch-gate register.
+- Local issue index for #67–#97 is in [R&D Issues](../R%26D%20Issues/README.md).
 
 ## Issue hygiene
 
 - Issue #9 was closed as completed after confirming `main` contains the progress checklist and one-by-one status list.
 - Labels applied to earlier issues: #8 `legal, blocked`; #10–#16 `documentation`; #17–#23 `bug, qa`; #24 `bug, qa`; #25 `bug, devops`; #26 `bug, localization, qa`; #27 `enhancement, localization`; #28 `refactor, good first issue`; #29 `devops, test`; #30 `documentation, devops`.
-- Available repository labels now include `bug`, `documentation`, `enhancement`, `good first issue`, `help wanted`, `security`, `devops`, `test`, `refactor`, `localization`, `integration`, `legal`, `blocked`, and `qa`.
+- Available repository labels now include `bug`, `documentation`, `enhancement`, `good first issue`, `help wanted`, `security`, `devops`, `test`, `refactor`, `localization`, `integration`, `legal`, `blocked`, `qa`, `task`, and `feature`.

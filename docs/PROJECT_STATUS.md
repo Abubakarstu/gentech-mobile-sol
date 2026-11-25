@@ -21,6 +21,7 @@ Progress checklist: [docs/PROGRESS_CHECKLIST.md](./PROGRESS_CHECKLIST.md)
 - [x] Full audit created labeled delivery backlog issues #31–#41 (finance ledger, health checks, PTA/PayFast/BenefitPay/JazzCash/Easypaisa, dealer documents, `/bh/ar`, lint warnings, SF3D 512px, compare-history test); issue #9 closed and labels applied to #8–#30.
 - [x] Marketplace QA created issues #42–#44 (payment callback, FCM relay, discarded token); full audit index is in `docs/PROGRESS_CHECKLIST.md`.
 - [x] Access report audit and business R&D published issues #45–#66 and #67–#92; no duplicates were re-filed during orchestration.
+- [x] Previously unfiled R&D recommendations published as task/feature issues #93–#97 (seller verification wiring, buyer reviews, promotion route, BH WhatsApp normalization, admin launch-gate register).
 - [x] Autonomous software-house orchestrator installed in `.agent/skills/` and `.agents/skills/`, registered in `AGENTS.md`, and run evidence-only; report at `docs/SOFTWARE_HOUSE_REPORT.md`.
 - [x] Seller "Generate 3D" flow added to create-listing and post-publication management.
 - [x] WebGPU capability check and explicit seller licence acceptance gate added.
