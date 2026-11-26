@@ -63,6 +63,10 @@ The full evidence-based detail lives in [`docs/PROJECT_STATUS.md`](./docs/PROJEC
 [`docs/PROJECT_ROADMAP.md`](./docs/PROJECT_ROADMAP.md), and
 [`docs/DECISIONS.md`](./docs/DECISIONS.md). Canonical upstream issues are recorded in the
 `usamawta-tech/gentech` tracker; the port did not create duplicate GitHub issues.
+The full tracker has been mirrored to
+[`M-UsamaIqbal/gentech-mobile-sol`](https://github.com/M-UsamaIqbal/gentech-mobile-sol/issues):
+90 issues with labels and source links preserved, of which 74 are open and 16 are closed,
+matching the old tracker exactly.
 
 | Area | State |
 | --- | --- |
