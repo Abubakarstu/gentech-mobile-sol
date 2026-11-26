@@ -1,9 +1,11 @@
+export const dynamic = "force-dynamic";
+
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { parseListingFilters } from "@/features/listings/schemas/filters";
 import { getListingFeed } from "@/features/listings/services/listing.service";
 import { getCurrentUser } from "@/lib/session";
-import { DEMO_BRANDS, DEMO_CATEGORIES } from "@/features/marketplace/data/fixtures";
 import { ListingsGrid } from "@/features/marketplace/components/listings-grid";
 import { MarketplaceFilters } from "@/features/listings/components/marketplace-filters";
 import { FilterDrawer } from "@/features/listings/components/filter-drawer";
@@ -13,17 +15,41 @@ import { ListingsPagination } from "@/features/listings/components/listings-pagi
 import { SaveSearchButton } from "@/features/saved-searches/components/save-search-button";
 import type { ListingFilters } from "@/types/marketplace";
 import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { getActiveLocationTree } from "@/features/locations/services/location.service";
+import {
+  getMarketplaceBrands,
+  getMarketplaceCategories,
+} from "@/features/marketplace/services/catalog.service";
+import { getListingFilterOptions } from "@/features/listings/services/listing.service";
+import { getFavoriteListingIds } from "@/features/favorites/services/favorite.service";
 
 /** True when the user has narrowed the feed in some way worth saving. */
 function hasActiveFilters(filters: ListingFilters): boolean {
   return Boolean(
     filters.q ||
-      filters.category ||
-      filters.brand ||
-      filters.condition ||
-      filters.city ||
-      filters.minPrice !== undefined ||
-      filters.maxPrice !== undefined,
+    filters.category ||
+    filters.brand ||
+    filters.condition ||
+    filters.city ||
+    filters.minPrice !== undefined ||
+    filters.maxPrice !== undefined ||
+    filters.storage ||
+    filters.ram ||
+    filters.batteryHealthMin !== undefined ||
+    filters.ptaStatus ||
+    filters.cpidStatus ||
+    filters.warranty ||
+    filters.processor ||
+    filters.operatingSystem ||
+    filters.screenSize ||
+    filters.connectivity ||
+    filters.accessoryType ||
+    filters.compatibility ||
+    filters.isInspected ||
+    filters.isVerifiedSeller ||
+    filters.isDealer ||
+    filters.color,
   );
 }
 
@@ -38,8 +64,23 @@ export default async function MarketplacePage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const filters = parseListingFilters(await searchParams);
-  const [feed, user] = await Promise.all([getListingFeed(filters), getCurrentUser()]);
+  const [feed, user, locations, categories, brands, filterOptions] = await Promise.all([
+    getListingFeed(filters),
+    getCurrentUser(),
+    getActiveLocationTree(),
+    getMarketplaceCategories(),
+    getMarketplaceBrands(undefined, filters.category),
+    getListingFilterOptions(undefined, filters.category),
+  ]);
   const canSaveSearch = hasActiveFilters(filters);
+  const isAuthenticated = Boolean(user);
+  const favoriteIds =
+    isAuthenticated && user
+      ? await getFavoriteListingIds(
+          user.id,
+          feed.items.map((listing) => listing.id),
+        )
+      : [];
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6">
@@ -58,7 +99,13 @@ export default async function MarketplacePage({
         </div>
         <div className="flex items-center gap-2">
           {canSaveSearch ? <SaveSearchButton isAuthenticated={Boolean(user)} /> : null}
-          <FilterDrawer categories={DEMO_CATEGORIES} brands={DEMO_BRANDS} filters={filters} />
+          <FilterDrawer
+            categories={categories}
+            brands={brands}
+            filters={filters}
+            locations={locations}
+            filterOptions={filterOptions}
+          />
           <SortSelect value={filters.sort} />
         </div>
       </div>
@@ -69,8 +116,21 @@ export default async function MarketplacePage({
         </Badge>
       ) : null}
 
+      {/* Phone Intelligence Quick Links */}
+      <div className="mb-4 flex flex-wrap gap-3">
+        <Link href="/compare" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          Compare Phones
+        </Link>
+        <Link href="/valuation" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          Check Value
+        </Link>
+        <Link href="/imei-check" className={buttonVariants({ variant: "outline", size: "sm" })}>
+          Verify IMEI
+        </Link>
+      </div>
+
       <div className="mb-4">
-        <ActiveFilters filters={filters} categories={DEMO_CATEGORIES} brands={DEMO_BRANDS} />
+        <ActiveFilters filters={filters} categories={categories} brands={brands} />
       </div>
 
       <div className="flex gap-6">
@@ -78,16 +138,22 @@ export default async function MarketplacePage({
         <aside className="hidden w-60 shrink-0 lg:block">
           <div className="bg-card sticky top-20 rounded-xl border p-4">
             <MarketplaceFilters
-              categories={DEMO_CATEGORIES}
-              brands={DEMO_BRANDS}
+              categories={categories}
+              brands={brands}
               filters={filters}
+              locations={locations}
+              filterOptions={filterOptions}
             />
           </div>
         </aside>
 
         {/* Results */}
         <div className="min-w-0 flex-1">
-          <ListingsGrid listings={feed.items} />
+          <ListingsGrid
+            listings={feed.items}
+            favoriteIds={favoriteIds}
+            isAuthenticated={isAuthenticated}
+          />
           <ListingsPagination page={feed.page} totalPages={feed.totalPages} />
         </div>
       </div>

@@ -1,15 +1,21 @@
 /**
  * Database seed — catalog reference data.
  *
- * Seeds the phone-focused category tree and popular brands. Idempotent: safe to
- * run repeatedly (everything upserts by unique slug). User accounts are NOT seeded
- * here — they go through Better Auth's sign-up flow so passwords hash correctly.
+ * Seeds the phone, laptop, tablet and accessory category tree plus popular brands. Idempotent: safe to
+ * run repeatedly (everything upserts by unique slug).
  *
  * Run via `pnpm db:seed` or automatically after `pnpm db:migrate`.
  */
 import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../lib/generated/prisma/client";
+
+import {
+  buildExpansionListings,
+  buildGeneratedListings,
+  IMAGES_PER_LISTING,
+  listingImages,
+} from "./seed-listings";
 
 // Prisma 7 no longer auto-loads .env; load it for standalone `pnpm db:seed` runs.
 try {
@@ -23,17 +29,16 @@ const CATEGORIES: Array<{
   name: string;
   slug: string;
   icon?: string;
-  children?: Array<{ name: string; slug: string }>;
+  children?: Array<{ name: string; slug: string; icon: string }>;
 }> = [
   {
     name: "Mobile Phones",
     slug: "mobile-phones",
     icon: "smartphone",
     children: [
-      { name: "Smartphones", slug: "smartphones" },
-      { name: "Feature Phones", slug: "feature-phones" },
-      { name: "Tablets", slug: "tablets" },
-      { name: "Smart Watches", slug: "smart-watches" },
+      { name: "Smartphones", slug: "smartphones", icon: "smartphone" },
+      { name: "Feature Phones", slug: "feature-phones", icon: "phone" },
+      { name: "Smart Watches", slug: "smart-watches", icon: "watch" },
     ],
   },
   {
@@ -41,10 +46,21 @@ const CATEGORIES: Array<{
     slug: "accessories",
     icon: "cable",
     children: [
-      { name: "Chargers & Cables", slug: "chargers-cables" },
-      { name: "Cases & Covers", slug: "cases-covers" },
-      { name: "Power Banks", slug: "power-banks" },
-      { name: "Earphones & Headphones", slug: "earphones-headphones" },
+      { name: "Chargers & Cables", slug: "chargers-cables", icon: "cable" },
+      { name: "Cases & Covers", slug: "cases-covers", icon: "shield" },
+      { name: "Power Banks", slug: "power-banks", icon: "battery-charging" },
+      { name: "Earphones & Headphones", slug: "earphones-headphones", icon: "headphones" },
+      { name: "Laptop Accessories", slug: "laptop-accessories", icon: "keyboard" },
+      { name: "Tablet Accessories", slug: "tablet-accessories", icon: "tablet" },
+    ],
+  },
+  {
+    name: "Laptops & Tablets",
+    slug: "laptops-tablets",
+    icon: "laptop",
+    children: [
+      { name: "Laptops", slug: "laptops", icon: "laptop" },
+      { name: "Tablets", slug: "tablets", icon: "tablet" },
     ],
   },
 ];
@@ -63,6 +79,11 @@ const BRANDS = [
   "Nokia",
   "Huawei",
   "Motorola",
+  "Lenovo",
+  "Dell",
+  "HP",
+  "Asus",
+  "Anker",
 ];
 
 /** Inspection packages (PakWheels-style tiers). Prices in PKR. */
@@ -137,7 +158,11 @@ const SAMPLE_LISTINGS: Array<{
 ];
 
 /** Builds a plausible description + structured attributes from a sample listing. */
-function buildListingContent(item: (typeof SAMPLE_LISTINGS)[number]) {
+function buildListingContent(
+  item: (typeof SAMPLE_LISTINGS)[number] & {
+    attributes?: Record<string, string | number | boolean>;
+  },
+) {
   const combo = item.title.match(/(\d+)\s?GB\s?\/\s?(\d+)\s?GB/i);
   const storageOnly = item.title.match(/(\d+)\s?(GB|TB)\b/i);
   const attributes: Record<string, unknown> = {};
@@ -148,6 +173,7 @@ function buildListingContent(item: (typeof SAMPLE_LISTINGS)[number]) {
     attributes.storage = `${storageOnly[1]}${storageOnly[2].toUpperCase()}`;
   }
   if (/pta/i.test(item.title)) attributes.ptaApproved = true;
+  if (item.attributes) Object.assign(attributes, item.attributes);
 
   const conditionText = item.condition.toLowerCase().replace("_", " ");
   const description = `${item.title} in ${conditionText} condition, available in ${item.city}. ${
@@ -164,8 +190,10 @@ const SAMPLE_REPORTS: Array<{
   listingSlug: string;
   verdict: "RECOMMENDED" | "RECOMMENDED_WITH_NOTES" | "NOT_RECOMMENDED";
   summary: string;
-  imei: string;
-  ptaApproved: boolean;
+  /** Phone-only identity signals; omitted on laptop inspection reports. */
+  imei?: string;
+  ptaApproved?: boolean;
+  inspectionKind?: "PHONE" | "LAPTOP";
   batteryHealth: number;
   items: Array<{ category: string; label: string; result: ItemResult; comment?: string }>;
 }> = [
@@ -226,6 +254,25 @@ const SAMPLE_REPORTS: Array<{
       { category: "Connectivity", label: "Wi-Fi / GPS", result: "PASS" },
       { category: "Biometrics & Sensors", label: "Fingerprint", result: "PASS" },
       { category: "Software & Identity", label: "Google account lock", result: "PASS", comment: "Removed" },
+    ],
+  },
+  {
+    listingSlug: "pk-macbook-air-m3-13-sealed",
+    verdict: "RECOMMENDED",
+    summary:
+      "Clean laptop with a bright, even display and firm hinges. Keyboard and trackpad tested across all keys and gestures. Battery condition is strong and the unit is free of account locks. Safe to buy.",
+    inspectionKind: "LAPTOP",
+    batteryHealth: 94,
+    items: [
+      { category: "Display", label: "Screen scratches", result: "PASS" },
+      { category: "Display", label: "Dead pixels / backlight bleed", result: "PASS" },
+      { category: "Chassis & Keyboard", label: "Hinge firmness", result: "PASS" },
+      { category: "Chassis & Keyboard", label: "Keyboard (all keys)", result: "PASS" },
+      { category: "Performance", label: "RAM recognition", result: "PASS" },
+      { category: "Performance", label: "Storage health", result: "PASS" },
+      { category: "Battery & Charging", label: "Battery condition %", result: "PASS", comment: "94% — very good" },
+      { category: "Ports & Connectivity", label: "USB / HDMI ports", result: "PASS" },
+      { category: "OS & Security", label: "Find My Device / account lock", result: "PASS", comment: "Clean" },
     ],
   },
 ];
@@ -329,19 +376,33 @@ async function main() {
     for (const [rootIndex, root] of CATEGORIES.entries()) {
       const parent = await prisma.category.upsert({
         where: { slug: root.slug },
-        update: { name: root.name, icon: root.icon, position: rootIndex },
-        create: { name: root.name, slug: root.slug, icon: root.icon, position: rootIndex },
+        update: { name: root.name, icon: root.icon, position: rootIndex, region: null },
+        create: {
+          name: root.name,
+          slug: root.slug,
+          icon: root.icon,
+          position: rootIndex,
+          region: null,
+        },
       });
 
       for (const [childIndex, child] of (root.children ?? []).entries()) {
         await prisma.category.upsert({
           where: { slug: child.slug },
-          update: { name: child.name, parentId: parent.id, position: childIndex },
+          update: {
+            name: child.name,
+            parentId: parent.id,
+            position: childIndex,
+            icon: child.icon,
+            region: null,
+          },
           create: {
             name: child.name,
             slug: child.slug,
             parentId: parent.id,
             position: childIndex,
+            icon: child.icon,
+            region: null,
           },
         });
       }
@@ -382,7 +443,23 @@ async function main() {
       ]),
     );
 
-    for (const item of SAMPLE_LISTINGS) {
+    const seedListings = [
+      ...SAMPLE_LISTINGS.map((item, index) => ({
+        ...item,
+        region: "PAKISTAN" as const,
+        currency: "PKR" as const,
+        isFeatured: item.isFeatured ?? false,
+        negotiable: item.negotiable ?? false,
+        views: item.views ?? 0,
+        images: listingImages(item.categorySlug, index),
+      })),
+      ...buildGeneratedListings("PAKISTAN", 100 - SAMPLE_LISTINGS.length),
+      ...buildExpansionListings("PAKISTAN"),
+      ...buildGeneratedListings("BAHRAIN", 100),
+      ...buildExpansionListings("BAHRAIN"),
+    ];
+
+    for (const item of seedListings) {
       const categoryId = categoryBySlug.get(item.categorySlug);
       if (!categoryId) continue; // category not seeded — skip defensively
       const brandId = brandBySlug.get(item.brandSlug) ?? null;
@@ -393,12 +470,14 @@ async function main() {
         title: item.title,
         description,
         price: item.price,
+        currency: item.currency,
         condition: item.condition,
         status: "ACTIVE" as const,
+        region: item.region,
         city: item.city,
-        negotiable: item.negotiable ?? false,
-        isFeatured: item.isFeatured ?? false,
-        views: item.views ?? 0,
+        negotiable: item.negotiable,
+        isFeatured: item.isFeatured,
+        views: item.views,
         attributes: attributes as object,
         sellerId: demoSeller.id,
         categoryId,
@@ -406,14 +485,16 @@ async function main() {
         createdAt,
       };
 
-      await prisma.listing.upsert({
+      const listing = await prisma.listing.upsert({
         where: { slug: item.slug },
         update: {
           title: data.title,
           description: data.description,
           price: data.price,
+          currency: data.currency,
           condition: data.condition,
           status: data.status,
+          region: data.region,
           city: data.city,
           negotiable: data.negotiable,
           isFeatured: data.isFeatured,
@@ -423,6 +504,25 @@ async function main() {
         },
         create: { slug: item.slug, ...data },
       });
+
+      for (const [position, url] of item.images.entries()) {
+        const imageId = `${listing.id}-img-${position + 1}`;
+        await prisma.listingImage.upsert({
+          where: { id: imageId },
+          update: {
+            url,
+            position,
+            isPrimary: position === 0,
+          },
+          create: {
+            id: imageId,
+            listingId: listing.id,
+            url,
+            position,
+            isPrimary: position === 0,
+          },
+        });
+      }
     }
 
     // Populate the full-text search vector for any rows that don't have one yet
@@ -497,6 +597,7 @@ async function main() {
           listingId: listing.id,
           requesterId: buyerUser.id,
           inspectorId: inspectorUser.id,
+          inspectionKind: rep.inspectionKind ?? "PHONE",
           planId: compPlan?.id ?? null,
           planName: compPlan?.name ?? "Comprehensive Inspection",
           feeAmount: compPlan?.price ?? 2999,
@@ -511,8 +612,8 @@ async function main() {
               grade: scoreToGrade(overallScore),
               verdict: rep.verdict,
               summary: rep.summary,
-              imei: rep.imei,
-              ptaApproved: rep.ptaApproved,
+              imei: rep.imei ?? null,
+              ptaApproved: rep.ptaApproved ?? null,
               batteryHealth: rep.batteryHealth,
               isPublished: true,
               publishedAt: new Date(),
@@ -531,13 +632,13 @@ async function main() {
       });
     }
 
-    // Sell-Your-Phone price book (phone_model), one row per PTA status.
+    // Sell-Your-Phone price book (quote_price_book), one row per PTA status.
     for (const entry of PHONE_MODELS) {
       for (const [storage, ptaBase] of Object.entries(entry.storages)) {
         for (const [ptaStatus, factor] of Object.entries(PTA_FACTORS)) {
           if (APPLE_ONLY_STATUSES.has(ptaStatus) && entry.brand !== "Apple") continue;
           const basePricePkr = roundTo500(ptaBase * factor);
-          await prisma.phoneModel.upsert({
+          await prisma.quotePriceBook.upsert({
             where: {
               brand_model_storage_ptaStatus: {
                 brand: entry.brand,
@@ -589,18 +690,31 @@ async function main() {
       });
     }
 
-    const [categoryCount, brandCount, planCount, listingCount, phoneModelCount, deductionCount] =
-      await Promise.all([
-        prisma.category.count(),
-        prisma.brand.count(),
-        prisma.inspectionPlan.count(),
-        prisma.listing.count(),
-        prisma.phoneModel.count(),
-        prisma.deductionRule.count(),
-      ]);
+    const [
+      categoryCount,
+      brandCount,
+      planCount,
+      listingCount,
+      imageCount,
+      listingsByRegion,
+      priceBookCount,
+      deductionCount,
+    ] = await Promise.all([
+      prisma.category.count(),
+      prisma.brand.count(),
+      prisma.inspectionPlan.count(),
+      prisma.listing.count({ where: { deletedAt: null } }),
+      prisma.listingImage.count({ where: { listing: { deletedAt: null } } }),
+      prisma.listing.groupBy({ by: ["region"], where: { deletedAt: null }, _count: true }),
+      prisma.quotePriceBook.count(),
+      prisma.deductionRule.count(),
+    ]);
     const reportCount = await prisma.inspectionReport.count({ where: { isPublished: true } });
+    const regionSummary = listingsByRegion
+      .map((entry) => `${entry._count} ${entry.region.toLowerCase()}`)
+      .join(", ");
     console.info(
-      `✓ Seed complete — ${categoryCount} categories, ${brandCount} brands, ${planCount} inspection plans, ${listingCount} listings, ${reportCount} published reports, ${phoneModelCount} phone-model prices, ${deductionCount} deduction rules.`,
+      `✓ Seed complete — ${categoryCount} categories, ${brandCount} brands, ${planCount} inspection plans, ${listingCount} listings (${regionSummary}), ${imageCount} image links (${IMAGES_PER_LISTING}/listing), ${reportCount} published reports, ${priceBookCount} quote prices, ${deductionCount} deduction rules.`,
     );
   } finally {
     await prisma.$disconnect();
